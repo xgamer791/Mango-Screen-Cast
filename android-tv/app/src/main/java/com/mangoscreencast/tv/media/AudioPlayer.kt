@@ -17,10 +17,13 @@ import kotlin.math.pow
  *
  * Mirroring sends AAC-ELD; AirPlay "audio only" may send AAC-LC or PCM.
  * ALAC (Apple Lossless, used for music-only AirPlay) is not supported yet.
- * Everything is called on the AirPlay audio thread.
+ * A Windows computer (Mango Cast) sends 48 kHz PCM.
+ * Everything is called on the AirPlay audio thread, or the Windows one.
  */
 class AudioPlayer {
     private var codecType = 0
+    /** The PCM rate the track plays at: AirPlay's 44.1 kHz unless [configure] said otherwise. */
+    private var sampleRate = SAMPLE_RATE
     private var decoder: MediaCodec? = null
     private var track: AudioTrack? = null
     private var framesWritten = 0
@@ -32,10 +35,12 @@ class AudioPlayer {
     @Volatile
     var enabled = true
 
+    /** `sampleRate` applies to PCM ([CODEC_PCM]); AAC always decodes to 44.1 kHz. */
     @Synchronized
-    fun configure(ct: Int, samplesPerFrame: Int) {
+    fun configure(ct: Int, samplesPerFrame: Int, sampleRate: Int = SAMPLE_RATE) {
         release()
         codecType = ct
+        this.sampleRate = if (ct == CT_PCM) sampleRate else SAMPLE_RATE
         warnedUnsupported = false
         val config = when (ct) {
             CT_AAC_ELD -> byteArrayOf(0xF8.toByte(), 0xE8.toByte(), 0x50, 0x00) // ELD, 44.1 kHz, stereo, 480 spf
@@ -131,15 +136,15 @@ class AudioPlayer {
     private fun createTrack(): AudioTrack? {
         val channelMask = AudioFormat.CHANNEL_OUT_STEREO
         val encoding = AudioFormat.ENCODING_PCM_16BIT
-        val minimum = AudioTrack.getMinBufferSize(SAMPLE_RATE, channelMask, encoding)
+        val minimum = AudioTrack.getMinBufferSize(sampleRate, channelMask, encoding)
         if (minimum <= 0) return null
-        val size = maxOf(minimum * 2, SAMPLE_RATE * 4 * TRACK_BUFFER_MS / 1000)
+        val size = maxOf(minimum * 2, sampleRate * 4 * TRACK_BUFFER_MS / 1000)
         val attributes = AudioAttributes.Builder()
             .setUsage(AudioAttributes.USAGE_MEDIA)
             .setContentType(AudioAttributes.CONTENT_TYPE_MOVIE)
             .build()
         val format = AudioFormat.Builder()
-            .setSampleRate(SAMPLE_RATE)
+            .setSampleRate(sampleRate)
             .setChannelMask(channelMask)
             .setEncoding(encoding)
             .build()
@@ -215,14 +220,17 @@ class AudioPlayer {
         if (pcm.size < size) pcm = ByteArray(size)
     }
 
-    private companion object {
-        const val TAG = "MangoAudio"
-        const val SAMPLE_RATE = 44_100
-        const val CHANNELS = 2
-        const val CT_PCM = 1
-        const val CT_AAC_LC = 4
-        const val CT_AAC_ELD = 8
-        const val TRACK_BUFFER_MS = 60
-        const val START_THRESHOLD_FRAMES = 3
+    companion object {
+        /** Signed 16-bit little-endian PCM, as UxPlay and Mango Cast hand it over. */
+        const val CODEC_PCM = 1
+
+        private const val TAG = "MangoAudio"
+        private const val SAMPLE_RATE = 44_100
+        private const val CHANNELS = 2
+        private const val CT_PCM = CODEC_PCM
+        private const val CT_AAC_LC = 4
+        private const val CT_AAC_ELD = 8
+        private const val TRACK_BUFFER_MS = 60
+        private const val START_THRESHOLD_FRAMES = 3
     }
 }

@@ -81,6 +81,10 @@ class SettingsActivity : Activity(), AppUpdater.Listener {
             settings.soundEnabled = !settings.soundEnabled
             receiver.audio.enabled = settings.soundEnabled
         }
+        row(R.string.setting_windows, onOff(settings.windowsEnabled), R.string.setting_windows_hint) {
+            settings.windowsEnabled = !settings.windowsEnabled
+            receiver.applyWindowsSetting()
+        }
         row(R.string.setting_stats, onOff(settings.showStats), R.string.setting_stats_hint) {
             settings.showStats = !settings.showStats
         }

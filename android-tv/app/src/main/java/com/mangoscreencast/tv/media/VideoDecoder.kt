@@ -60,6 +60,14 @@ class VideoDecoder internal constructor(
     @Volatile
     var log: ((String) -> Unit)? = null
 
+    /**
+     * Asks the sender for a keyframe when the decoder needs one it doesn't
+     * have. A Windows computer (Mango Cast) can be asked; AirPlay senders
+     * can't, and leave this null.
+     */
+    @Volatile
+    var onKeyframeNeeded: (() -> Unit)? = null
+
     private val pool = FramePool(MAX_POOLED_BYTES)
 
     // Input queue: AirPlay thread -> input thread.
@@ -202,6 +210,7 @@ class VideoDecoder internal constructor(
         val info = NalUnits.inspect(item.data, length, h265)
         item.keyframe = info.keyframe
         item.configLength = info.configLength
+        var skipped = false
         synchronized(queueLock) {
             val current = stream
             if (current == null) {
@@ -215,11 +224,13 @@ class VideoDecoder internal constructor(
                 queue.forEach(pool::recycle)
                 queue.clear()
                 current.dropUntilKeyframe = true
+                skipped = true
                 note("decoder fell behind; skipping to the next keyframe")
             }
             queue.addLast(item)
             queueLock.notifyAll()
         }
+        if (skipped) onKeyframeNeeded?.invoke()
     }
 
     fun stats(): Stats {
@@ -314,7 +325,11 @@ class VideoDecoder internal constructor(
         val now = System.nanoTime()
         if (!force && now - s.lastStartAttemptNs < RETRY_INTERVAL_NS) return
         val sets = s.config ?: return
-        if (!s.gop.hasKeyframe) return // nothing to start from until the sender's next keyframe
+        if (!s.gop.hasKeyframe) {
+            // Nothing to start from until the sender's next keyframe.
+            onKeyframeNeeded?.invoke()
+            return
+        }
         val target: Surface
         val parkedStart: Boolean
         synchronized(codecLock) {

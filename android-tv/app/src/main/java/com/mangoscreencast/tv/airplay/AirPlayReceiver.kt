@@ -13,6 +13,11 @@ import com.mangoscreencast.tv.display.MirrorProfile
 import com.mangoscreencast.tv.media.AudioPlayer
 import com.mangoscreencast.tv.media.VideoDecoder
 import com.mangoscreencast.tv.media.DecoderSelection
+import com.mangoscreencast.tv.mangocast.Decision
+import com.mangoscreencast.tv.mangocast.Hello
+import com.mangoscreencast.tv.mangocast.MangoCast
+import com.mangoscreencast.tv.mangocast.MangoCastServer
+import com.mangoscreencast.tv.mangocast.Offer
 import java.io.File
 import java.nio.ByteBuffer
 import java.text.SimpleDateFormat
@@ -24,6 +29,12 @@ import java.util.concurrent.CopyOnWriteArrayList
 /**
  * Runs the AirPlay server while something needs it (the app's screens, or
  * the background service), and routes what it receives to the decoders.
+ *
+ * Next to it, Windows computers (Mango Cast, protocol/mango-cast.md) can show
+ * their screen through the same decoders. One device has the screen at a
+ * time: a Windows computer is refused while an Apple device mirrors, and
+ * gives way when one starts. While no Windows computer is connected,
+ * everything here works exactly as it did without them.
  */
 class AirPlayReceiver(private val context: Context, private val settings: Settings) : AirPlayCallbacks {
     enum class State { STOPPED, STARTING, READY, CONNECTED, MIRRORING, FAILED }
@@ -53,6 +64,19 @@ class AirPlayReceiver(private val context: Context, private val settings: Settin
         private set
 
     private val advertiser = ServiceAdvertiser(context)
+
+    /** Windows computers: their own listener and announcement, so neither can upset AirPlay's. */
+    private val windows = MangoCastServer(WindowsSink(), ::log)
+    private val windowsAdvertiser = ServiceAdvertiser(context)
+    private val windowsLock = Any()
+
+    /** A Windows computer has the screen. Changes only under [windowsLock]. */
+    @Volatile
+    private var windowsActive = false
+
+    /** The Apple device connected over AirPlay (name, model), for when a Windows computer is done. */
+    @Volatile
+    private var appleClient: Pair<String, String>? = null
     private val main = Handler(Looper.getMainLooper())
     private val control = Handler(HandlerThread("AirPlayControl").apply { start() }.looper)
     private val owners = mutableSetOf<Any>()
@@ -67,6 +91,9 @@ class AirPlayReceiver(private val context: Context, private val settings: Settin
             update { it.copy(state = State.FAILED, message = "Couldn't announce the TV on the network ($reason).") }
         }
         advertiser.onRegistered = { type, name -> log("advertising $type as \"$name\"") }
+        // Only Windows computers depend on this one: a failure is noted, AirPlay carries on.
+        windowsAdvertiser.onFailure = { reason -> log("Windows: announcing failed: $reason") }
+        windowsAdvertiser.onRegistered = { type, name -> log("advertising $type as \"$name\"") }
         video.log = ::log
     }
 
@@ -99,6 +126,11 @@ class AirPlayReceiver(private val context: Context, private val settings: Settin
             "player can open by itself: ${if (com.mangoscreencast.tv.MangoApp.instance.canOpenFromBackground()) "yes" else "no (needs Display over other apps)"}")
         appendLine("Decoders:")
         DecoderSelection.describe().forEach { appendLine("  $it") }
+        appendLine("Windows computers: " + when {
+            !settings.windowsEnabled -> "off"
+            windows.port < 0 -> "not listening"
+            else -> "listening on port ${windows.port}" + (windows.session?.let { ", ${it.hello.name} (${it.address}) connected" } ?: "")
+        })
         if (s.state == State.MIRRORING) {
             val v = video.stats()
             appendLine("Video: ${v.width}x${v.height} ${v.codec} via ${v.decoder}, " +
@@ -136,9 +168,20 @@ class AirPlayReceiver(private val context: Context, private val settings: Settin
         }
     }
 
+    /** Applies the Windows computers setting, leaving AirPlay as it is. */
+    fun applyWindowsSetting() {
+        if (owners.isEmpty()) return
+        control.post {
+            windowsAdvertiser.unregisterAll()
+            windows.stop("Windows computers were turned off on ${settings.tvName}.")
+            status.profile?.let { startWindows(settings.tvName, it) }
+        }
+    }
+
     /** Drops the connected device and returns to the ready screen. */
     fun disconnect() {
         control.post {
+            windows.disconnect("Disconnected on the TV.")
             AirPlayNative.nativeDisconnectClients()
             endMirroring()
             update { it.copy(state = State.READY, clientName = null, clientModel = null, paused = false) }
@@ -169,9 +212,35 @@ class AirPlayReceiver(private val context: Context, private val settings: Settin
             log("server failed to start: $result")
             update { it.copy(state = State.FAILED, profile = profile, message = describeError(result)) }
         }
+        startWindows(name, profile)
     }
 
+    /** Listens for Windows computers and announces the TV to them. Never affects AirPlay. */
+    private fun startWindows(name: String, profile: MirrorProfile) {
+        if (!settings.windowsEnabled) return
+        val port = windows.start()
+        if (port < 0) {
+            log("Windows: couldn't listen for Windows computers")
+            return
+        }
+        val txt = offer(profile).txtRecord(settings.deviceId, "${Build.MANUFACTURER} ${Build.MODEL}".trim())
+        windowsAdvertiser.register(MangoCast.SERVICE_TYPE, name, port, txt)
+        log("Windows: listening on port $port")
+    }
+
+    /** What the TV takes from a Windows computer: what it offers Apple devices. */
+    private fun offer(profile: MirrorProfile) = Offer(
+        name = settings.tvName,
+        maxWidth = profile.width,
+        maxHeight = profile.height,
+        fps = profile.maxFps,
+        h265 = profile.h265,
+        audio = settings.soundEnabled,
+    )
+
     private fun stopServer() {
+        windowsAdvertiser.unregisterAll()
+        windows.stop()
         try {
             AirPlayNative.nativeStop()
         } catch (_: Throwable) {
@@ -225,6 +294,9 @@ class AirPlayReceiver(private val context: Context, private val settings: Settin
 
     override fun onClientRequest(deviceId: String, model: String, name: String): Boolean {
         log("connection from $name ($model)")
+        appleClient = (name.ifBlank { null } ?: model) to model
+        // A Windows computer has the screen until this device starts mirroring.
+        if (windowsActive) return true
         update {
             it.copy(
                 state = if (it.state == State.MIRRORING) State.MIRRORING else State.CONNECTED,
@@ -238,6 +310,8 @@ class AirPlayReceiver(private val context: Context, private val settings: Settin
 
     override fun onConnectionsChanged(open: Int) {
         if (open == 0) {
+            appleClient = null
+            if (windowsActive) return
             endMirroring()
             update { it.copy(state = State.READY, clientName = null, clientModel = null, paused = false) }
         }
@@ -249,6 +323,8 @@ class AirPlayReceiver(private val context: Context, private val settings: Settin
         log("mirroring starts: ${if (h265) "HEVC" else "H.264"} ${sourceWidth}x$sourceHeight, " +
             "picture ${width}x$height at ($x, $y)")
         if (h265 && status.profile?.h265 == false) return -1
+        // The Apple device takes the screen from a Windows computer.
+        if (windowsActive) windows.disconnect("An Apple device started mirroring to ${settings.tvName}.")
         video.latencyMode = settings.latencyMode
         video.start(h265, sourceWidth, sourceHeight)
         control.removeCallbacks(statsTicker)
@@ -268,6 +344,7 @@ class AirPlayReceiver(private val context: Context, private val settings: Settin
     override fun onVideoReset(type: Int) {
         // The sender stopped mirroring (or another device took over).
         log("mirroring stopped (reset type $type)")
+        if (windowsActive) return
         video.stop()
         releaseWifiLock()
         update {
@@ -277,19 +354,29 @@ class AirPlayReceiver(private val context: Context, private val settings: Settin
 
     override fun onAudioFormat(ct: Int, spf: Int, usingScreen: Boolean, isMedia: Boolean, audioFormat: Long) {
         log("audio format ct=$ct spf=$spf")
+        // While a Windows computer has the screen, its sound plays, not an Apple device's.
+        if (windowsActive) return
         audio.enabled = settings.soundEnabled
         audio.configure(ct, spf)
     }
 
-    override fun onAudioFrame(frame: ByteBuffer, ct: Int, seq: Int, localTimeNs: Long) = audio.submit(frame, ct)
+    override fun onAudioFrame(frame: ByteBuffer, ct: Int, seq: Int, localTimeNs: Long) {
+        if (!windowsActive) audio.submit(frame, ct)
+    }
 
-    override fun onAudioFlush() = audio.flush()
+    override fun onAudioFlush() {
+        if (!windowsActive) audio.flush()
+    }
 
-    override fun onVolume(db: Float) = audio.setVolumeDb(db)
+    override fun onVolume(db: Float) {
+        if (!windowsActive) audio.setVolumeDb(db)
+    }
 
     override fun onConnectionReset(reason: Int) {
         val who = status.clientName
         log("connection reset (reason $reason)")
+        appleClient = null
+        if (windowsActive) return
         endMirroring()
         update {
             it.copy(
@@ -302,6 +389,81 @@ class AirPlayReceiver(private val context: Context, private val settings: Settin
     override fun onLog(level: Int, message: String) {
         // Info and above from the AirPlay server; skip its multi-line dumps.
         message.lineSequence().firstOrNull()?.takeIf { it.isNotBlank() }?.let { log(it.trim()) }
+    }
+
+    // --- Windows computers (Mango Cast threads) ----------------------------------------
+
+    private inner class WindowsSink : MangoCastServer.Sink {
+        override fun onHello(hello: Hello): Decision {
+            val s = status
+            val profile = s.profile
+            return when {
+                !settings.windowsEnabled -> Decision.Refuse("off",
+                    "Windows computers are turned off in Mango Screen Cast's settings on ${s.tvName}.")
+                profile == null -> Decision.Refuse("off", "${s.tvName} is starting. Try again in a moment.")
+                s.state == State.MIRRORING -> Decision.Refuse("busy",
+                    "${s.clientName ?: "An Apple device"} is mirroring to ${s.tvName} right now.")
+                else -> Decision.Accept(offer(profile))
+            }
+        }
+
+        override fun onStart(session: MangoCastServer.Session) {
+            synchronized(windowsLock) { windowsActive = true }
+            log("Windows: ${session.hello.name} is showing its screen: ${if (session.h265) "HEVC" else "H.264"} " +
+                "${session.width}x${session.height}, sound ${if (session.audio) "on" else "off"}")
+            video.latencyMode = settings.latencyMode
+            video.onKeyframeNeeded = session::requestKeyframe
+            video.start(session.h265, session.width, session.height)
+            audio.release()
+            if (session.audio) {
+                audio.enabled = settings.soundEnabled
+                audio.configure(AudioPlayer.CODEC_PCM, 0, MangoCast.AUDIO_RATE)
+                // An Apple device's volume doesn't carry over.
+                audio.setVolumeDb(0f)
+            }
+            control.removeCallbacks(statsTicker)
+            control.postDelayed(statsTicker, STATS_INTERVAL_MS)
+            acquireWifiLock()
+            update {
+                it.copy(state = State.MIRRORING, clientName = session.hello.name, clientModel = session.hello.os,
+                    paused = false, message = null)
+            }
+            main.post { onMirroringStarted?.invoke() }
+        }
+
+        override fun onVideo(session: MangoCastServer.Session, frame: ByteBuffer) {
+            // Under the lock, so no Windows picture lands in an Apple device's stream as it takes over.
+            synchronized(windowsLock) {
+                if (windowsActive && windows.session === session) video.submit(frame, session.h265)
+            }
+        }
+
+        override fun onAudio(session: MangoCastServer.Session, pcm: ByteBuffer) {
+            synchronized(windowsLock) {
+                if (windowsActive && windows.session === session) audio.submit(pcm, AudioPlayer.CODEC_PCM)
+            }
+        }
+
+        override fun onEnd(session: MangoCastServer.Session, reason: String, lost: Boolean) {
+            val was = synchronized(windowsLock) {
+                val active = windowsActive
+                windowsActive = false
+                active
+            }
+            if (!was) return
+            video.onKeyframeNeeded = null
+            endMirroring()
+            val apple = appleClient
+            update {
+                if (apple != null) {
+                    it.copy(state = State.CONNECTED, clientName = apple.first, clientModel = apple.second,
+                        paused = false, message = null)
+                } else {
+                    it.copy(state = State.READY, clientName = null, clientModel = null, paused = false,
+                        message = if (lost) reason else null)
+                }
+            }
+        }
     }
 
     /** While mirroring, logs what the decoder is doing every few seconds. */

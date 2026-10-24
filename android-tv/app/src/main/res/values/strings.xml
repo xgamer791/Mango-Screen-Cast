@@ -6,7 +6,7 @@
     <!-- Home -->
     <string name="status_starting">Starting…</string>
     <string name="status_ready">Ready to mirror</string>
-    <string name="status_ready_detail">Pick “%1$s” in Screen Mirroring on your Mac, iPhone or iPad.</string>
+    <string name="status_ready_detail">Pick “%1$s” in Screen Mirroring on your Mac, iPhone or iPad, or in Mango Cast on Windows.</string>
     <string name="status_connected">%1$s is connected</string>
     <string name="status_connected_detail">Start Screen Mirroring on it to show its screen here.</string>
     <string name="status_mirroring">Mirroring %1$s</string>
@@ -15,6 +15,8 @@
     <string name="mac_steps">Control Center → Screen Mirroring → “%1$s”. Choose Use As Separate Display to extend instead of mirror. Not in Control Center? System Settings → Displays → Add Display.</string>
     <string name="ios_title">iPhone and iPad</string>
     <string name="ios_steps">Open Control Center, tap Screen Mirroring, then “%1$s”.</string>
+    <string name="windows_title">Windows</string>
+    <string name="windows_steps">Open Mango Cast on the PC and pick “%1$s”.</string>
     <string name="capability">Up to %1$s · %2$d × %3$d · %4$d fps · %5$s   ·   TV screen %6$d × %7$d</string>
     <string name="settings">Settings</string>
 
@@ -50,6 +52,8 @@
     <string name="fill_off">Whole picture. Up or Down to fill the screen.</string>
     <string name="setting_sound">Sound</string>
     <string name="setting_sound_hint">Play the mirrored device’s sound on the TV</string>
+    <string name="setting_windows">Windows computers</string>
+    <string name="setting_windows_hint">Let PCs show their screen here with Mango Cast for Windows</string>
     <string name="setting_stats">Show stats while mirroring</string>
     <string name="setting_stats_hint">You can also press OK on the remote while mirroring</string>
     <string name="setting_background">Stay visible after closing the app</string>

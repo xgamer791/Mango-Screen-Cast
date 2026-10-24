@@ -68,6 +68,11 @@ class Settings(private val context: Context) {
         get() = prefs.getBoolean(KEY_SOUND, true)
         set(value) = prefs.edit().putBoolean(KEY_SOUND, value).apply()
 
+    /** Windows computers can show their screen here with Mango Cast for Windows (protocol/mango-cast.md). */
+    var windowsEnabled: Boolean
+        get() = prefs.getBoolean(KEY_WINDOWS, true)
+        set(value) = prefs.edit().putBoolean(KEY_WINDOWS, value).apply()
+
     var showStats: Boolean
         get() = prefs.getBoolean(KEY_STATS, false)
         set(value) = prefs.edit().putBoolean(KEY_STATS, value).apply()
@@ -102,6 +107,7 @@ class Settings(private val context: Context) {
         const val KEY_FRAME_RATE = "frame_rate"
         const val KEY_LATENCY = "latency_mode"
         const val KEY_SOUND = "sound"
+        const val KEY_WINDOWS = "windows"
         const val KEY_FILL_WIDE = "fill_wide"
         const val KEY_STATS = "show_stats"
         const val KEY_BACKGROUND = "background"
