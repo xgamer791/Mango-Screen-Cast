@@ -6,6 +6,7 @@ plugins {
 android {
     namespace = "com.mangoscreencast.tv"
     compileSdk = 35
+    ndkVersion = "27.2.12479018"
 
     defaultConfig {
         applicationId = "com.mangoscreencast.tv"
@@ -15,6 +16,23 @@ android {
         targetSdk = 35
         versionCode = 1
         versionName = "1.0.0"
+
+        ndk {
+            // TVs and streaming sticks are ARM; x86_64 is for the emulator.
+            abiFilters += listOf("arm64-v8a", "armeabi-v7a", "x86_64")
+        }
+        externalNativeBuild {
+            cmake {
+                arguments += listOf("-DANDROID_STL=c++_shared")
+            }
+        }
+    }
+
+    externalNativeBuild {
+        cmake {
+            path = file("src/main/cpp/CMakeLists.txt")
+            version = "3.22.1"
+        }
     }
 
     buildTypes {
@@ -38,10 +56,14 @@ android {
 
     buildFeatures {
         buildConfig = true
+        prefab = true
     }
 
-    // Shared protocol test vectors (protocol/test-vectors.json).
-    sourceSets["test"].resources.srcDir("../../protocol")
+    packaging {
+        jniLibs {
+            useLegacyPackaging = false
+        }
+    }
 
     testOptions {
         unitTests.isReturnDefaultValues = true
@@ -50,11 +72,9 @@ android {
 
 dependencies {
     implementation("androidx.core:core-ktx:1.13.1")
-    implementation("androidx.media3:media3-exoplayer:1.5.1")
-    implementation("androidx.media3:media3-exoplayer-hls:1.5.1")
-    implementation("androidx.media3:media3-ui:1.5.1")
+    // Prebuilt OpenSSL for the NDK, published by Google. UxPlay uses it for
+    // AirPlay pairing and stream decryption.
+    implementation("com.android.ndk.thirdparty:openssl:1.1.1q-beta-1")
 
     testImplementation("junit:junit:4.13.2")
-    // Real org.json for JVM tests (android.jar only has stubs).
-    testImplementation("org.json:json:20240303")
 }

@@ -8,7 +8,7 @@
     <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_CONNECTED_DEVICE" />
-    <!-- Lets a cast that starts while the app is in the background bring the player up. -->
+    <!-- Lets mirroring that starts while the app is in the background bring the player up. -->
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
 
     <uses-feature android:name="android.software.leanback" android:required="false" />
@@ -38,15 +38,7 @@
         </activity>
 
         <activity
-            android:name=".ui.CastActivity"
-            android:exported="false"
-            android:launchMode="singleTask"
-            android:screenOrientation="sensorLandscape"
-            android:theme="@style/Theme.Mango.Fullscreen"
-            android:configChanges="keyboard|keyboardHidden|navigation|screenSize|screenLayout|smallestScreenSize|orientation|uiMode|density" />
-
-        <activity
-            android:name=".ui.MediaPlayerActivity"
+            android:name=".ui.MirrorActivity"
             android:exported="false"
             android:launchMode="singleTask"
             android:screenOrientation="sensorLandscape"

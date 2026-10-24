@@ -1,0 +1,6 @@
+[submodule "android-tv/third_party/uxplay"]
+	path = android-tv/third_party/uxplay
+	url = https://github.com/FDH2/UxPlay
+[submodule "android-tv/third_party/libplist"]
+	path = android-tv/third_party/libplist
+	url = https://github.com/libimobiledevice/libplist

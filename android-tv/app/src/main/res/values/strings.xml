@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Mango Screen Cast</string>
+    <string name="a_device">a device</string>
+
+    <!-- Home -->
+    <string name="status_starting">Starting…</string>
+    <string name="status_ready">Ready to mirror</string>
+    <string name="status_ready_detail">Pick “%1$s” in Screen Mirroring on your Mac, iPhone or iPad.</string>
+    <string name="status_connected">%1$s is connected</string>
+    <string name="status_connected_detail">Start Screen Mirroring on it to show its screen here.</string>
+    <string name="status_mirroring">Mirroring %1$s</string>
+    <string name="status_failed">AirPlay isn’t running</string>
+    <string name="mac_title">Mac</string>
+    <string name="mac_steps">Click Control Center in the menu bar, then Screen Mirroring, then “%1$s”. To use the TV as a second monitor, choose Use As Separate Display.</string>
+    <string name="ios_title">iPhone and iPad</string>
+    <string name="ios_steps">Open Control Center, tap Screen Mirroring, then “%1$s”.</string>
+    <string name="capability">Up to %1$s · %2$d × %3$d · %4$d fps · %5$s   ·   TV screen %6$d × %7$d</string>
+    <string name="settings">Settings</string>
+
+    <!-- Player -->
+    <string name="mirroring_banner">Mirroring %1$s · press Back twice to stop</string>
+    <string name="back_again">Press Back again to stop mirroring</string>
+    <string name="paused">Paused on the other device</string>
+    <string name="stats_format">%1$d × %2$d %3$s · %4$.0f fps · decode %5$.1f ms · dropped %6$d\nTV offers %7$d × %8$d · pacing: %9$s</string>
+
+    <!-- Settings -->
+    <string name="setting_name">TV name</string>
+    <string name="setting_name_hint">What Macs and iPhones show in Screen Mirroring</string>
+    <string name="setting_resolution">Resolution</string>
+    <string name="setting_resolution_hint">Apple devices size their picture to this. Auto uses the TV’s own resolution, up to 4K.</string>
+    <string name="resolution_auto">Auto</string>
+    <string name="resolution_auto_value">Auto (%1$s)</string>
+    <string name="setting_pacing">Frame pacing</string>
+    <string name="pacing_balanced">Balanced</string>
+    <string name="pacing_fastest">Fastest</string>
+    <string name="pacing_smoothest">Smoothest</string>
+    <string name="pacing_balanced_hint">Shows each frame right away, one per screen refresh. Best for most networks.</string>
+    <string name="pacing_fastest_hint">Lowest delay. Motion can stutter if Wi-Fi delivers frames unevenly.</string>
+    <string name="pacing_smoothest_hint">Holds one frame (about 17 ms) to smooth out a busy Wi-Fi network.</string>
+    <string name="setting_sound">Sound</string>
+    <string name="setting_sound_hint">Play the mirrored device’s sound on the TV</string>
+    <string name="setting_stats">Show stats while mirroring</string>
+    <string name="setting_stats_hint">You can also press OK on the remote while mirroring</string>
+    <string name="setting_background">Stay visible after closing the app</string>
+    <string name="setting_background_hint">Keeps the TV in Screen Mirroring lists while you use other apps</string>
+    <string name="on">On</string>
+    <string name="off">Off</string>
+    <string name="overlay_title">Allow the player to open by itself?</string>
+    <string name="overlay_message">To start mirroring while another app is open, Android needs Mango Screen Cast to have “Display over other apps” permission.</string>
+    <string name="overlay_open">Open settings</string>
+    <string name="overlay_later">Not now</string>
+    <string name="about">Mango Screen Cast %1$s. Built on UxPlay (GPL-3.0), libplist (LGPL-2.1) and OpenSSL. AirPlay is a trademark of Apple Inc.</string>
+
+    <!-- Background service -->
+    <string name="background_notice">“%1$s” is visible to Macs, iPhones and iPads</string>
+</resources>

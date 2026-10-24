@@ -1,11 +1,3 @@
-# Swift / Xcode
-apple/.build/
-apple/.swiftpm/
-apple/*.xcodeproj/
-apple/build/
-xcuserdata/
-DerivedData/
-*.xcuserstate
 
 # Android
 android-tv/.gradle/
@@ -20,3 +12,6 @@ android-tv/.kotlin/
 # Misc
 .DS_Store
 __pycache__/
+
+# Android native build
+android-tv/app/.cxx/

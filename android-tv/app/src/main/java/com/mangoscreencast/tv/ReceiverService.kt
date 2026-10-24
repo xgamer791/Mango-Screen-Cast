@@ -44,11 +44,11 @@ class ReceiverService : Service() {
         } else {
             startForeground(NOTIFICATION_ID, notification)
         }
-        MangoApp.hub.acquire(this)
+        MangoApp.receiver.acquire(this)
     }
 
     override fun onDestroy() {
-        MangoApp.hub.release(this)
+        MangoApp.receiver.release(this)
         super.onDestroy()
     }
 
