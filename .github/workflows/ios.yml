@@ -1,0 +1,103 @@
+name: iOS app
+
+on:
+  push:
+    paths:
+      - "ios/**"
+      - "android-tv/app/src/main/cpp/**"
+      - "android-tv/third_party/**"
+      - ".gitmodules"
+      - "tools/gen_ios_project.py"
+      - ".github/workflows/ios.yml"
+  pull_request:
+    paths:
+      - "ios/**"
+      - "android-tv/app/src/main/cpp/**"
+      - "android-tv/third_party/**"
+      - ".gitmodules"
+      - "tools/gen_ios_project.py"
+      - ".github/workflows/ios.yml"
+  workflow_dispatch:
+
+# Publishing the IPA needs write access to the repository's contents.
+permissions:
+  contents: write
+
+concurrency:
+  group: ios-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: macos-15
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Xcode
+        run: xcodebuild -version
+
+      - name: Xcode project matches the sources
+        run: |
+          python3 tools/gen_ios_project.py
+          git diff --exit-code -- ios/MangoScreenCast.xcodeproj
+
+      - name: Unit tests (iPad simulator)
+        run: |
+          udid=$(xcrun simctl list devices available --json | python3 -c '
+          import json, sys
+          devices = json.load(sys.stdin)["devices"]
+          print(next(d["udid"] for runtime, ds in sorted(devices.items(), reverse=True)
+                     if "iOS" in runtime for d in ds if d["name"].startswith("iPad")))')
+          xcodebuild test -project ios/MangoScreenCast.xcodeproj -scheme MangoScreenCast \
+            -destination "id=$udid" -derivedDataPath build/sim > test.log 2>&1 || status=$?
+          grep -E "error:|Test Case .*(passed|failed|skipped)|Executed [0-9]+ test" test.log | sort -u | head -150
+          tail -n 25 test.log
+          exit "${status:-0}"
+
+      # Unsigned: sign it with your own Apple ID when installing (Xcode,
+      # Sideloadly, AltStore). See the README.
+      - name: Build for iPhone and iPad
+        run: |
+          xcodebuild build -project ios/MangoScreenCast.xcodeproj -scheme MangoScreenCast -configuration Release \
+            -destination "generic/platform=iOS" -derivedDataPath build/device \
+            CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" > build.log 2>&1 || status=$?
+          grep -E "error:|warning: .*/ios/" build.log | sort -u | head -150
+          tail -n 25 build.log
+          exit "${status:-0}"
+
+      - name: Package IPA
+        run: |
+          app=build/device/Build/Products/Release-iphoneos/MangoScreenCast.app
+          test -d "$app/Frameworks/OpenSSL.framework" || { echo "OpenSSL.framework isn't embedded"; exit 1; }
+          lipo -info "$app/MangoScreenCast"
+          mkdir -p dist/Payload
+          cp -R "$app" dist/Payload/
+          (cd dist && zip -qry MangoScreenCast-unsigned.ipa Payload)
+          ls -l dist/MangoScreenCast-unsigned.ipa
+
+      # A rolling pre-release, so it never becomes the "latest" release the
+      # TV app updates itself from.
+      - name: Publish IPA
+        if: >-
+          github.event_name != 'pull_request' &&
+          (github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main' ||
+           github.ref == 'refs/heads/claude/mango-screencast-app-r33dwn')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          notes="Unsigned iPhone/iPad build: $(git log -1 --pretty=%s) (built from ${GITHUB_SHA::7}). See the README to install it."
+          # Replace the previous build, tag included, so the tag points at this commit.
+          gh release delete ios-latest --cleanup-tag --yes --repo "$GITHUB_REPOSITORY" 2> /dev/null || true
+          gh release create ios-latest dist/MangoScreenCast-unsigned.ipa --repo "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" --prerelease --latest=false \
+            --title "Mango Screen Cast for iPad and iPhone" --notes "$notes"
+
+      - uses: actions/upload-artifact@v4
+        continue-on-error: true
+        with:
+          name: MangoScreenCast-ios-unsigned
+          path: dist/MangoScreenCast-unsigned.ipa
+          retention-days: 30

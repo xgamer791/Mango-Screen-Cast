@@ -1,15 +1,19 @@
 #!/usr/bin/env python3
-"""Draws the Mango Screen Cast logo, launcher icons and Android TV banner.
+"""Draws the Mango Screen Cast logo, launcher icons and Android TV banner,
+and the iOS app icon and logo.
 
-    python3 tools/make_icons.py
+    python3 tools/make_icons.py [android] [ios]   (both by default)
 """
+import json
 import math
 import os
+import sys
 
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RES = os.path.join(ROOT, "android-tv", "app", "src", "main", "res")
+ASSETS = os.path.join(ROOT, "ios", "MangoScreenCast", "Assets.xcassets")
 BG = (14, 13, 18, 255)
 SS = 4  # supersampling
 
@@ -93,16 +97,55 @@ def banner(width, height):
     return img.resize((width, height), Image.LANCZOS)
 
 
-def save(img, *parts):
-    path = os.path.join(RES, *parts)
+def ios_icon(size):
+    """Full-bleed and opaque: iOS rounds the corners itself."""
+    img = Image.new("RGBA", (size, size), BG)
+    fruit = mango(int(size * 0.80))
+    img.alpha_composite(fruit, (int(size * 0.10), int(size * 0.10)))
+    return img.convert("RGB")
+
+
+def save(img, *parts, root=RES):
+    path = os.path.join(root, *parts)
     os.makedirs(os.path.dirname(path), exist_ok=True)
     img.save(path, optimize=True)
     print("wrote", os.path.relpath(path, ROOT))
 
 
-if __name__ == "__main__":
+def save_json(data, *parts):
+    path = os.path.join(ASSETS, *parts)
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    with open(path, "w") as f:
+        json.dump(data, f, indent=2)
+        f.write("\n")
+
+
+def android():
     for folder, px in (("mipmap-mdpi", 48), ("mipmap-hdpi", 72), ("mipmap-xhdpi", 96),
                        ("mipmap-xxhdpi", 144), ("mipmap-xxxhdpi", 192)):
         save(launcher(px), folder, "ic_launcher.png")
     save(mango(288), "drawable-nodpi", "logo.png")
     save(banner(320, 180), "drawable-xhdpi", "banner.png")
+
+
+def ios():
+    info = {"author": "xcode", "version": 1}
+    save_json({"info": info}, "Contents.json")
+    save(ios_icon(1024), "AppIcon.appiconset", "icon-1024.png", root=ASSETS)
+    save_json({"images": [{"filename": "icon-1024.png", "idiom": "universal", "platform": "ios",
+                           "size": "1024x1024"}], "info": info}, "AppIcon.appiconset", "Contents.json")
+    save(mango(156), "Logo.imageset", "logo.png", root=ASSETS)
+    save_json({"images": [{"filename": "logo.png", "idiom": "universal"}], "info": info},
+              "Logo.imageset", "Contents.json")
+    r, g, b = (f"0x{c:02X}" for c in BG[:3])
+    save_json({"colors": [{"color": {"color-space": "srgb", "components": {
+        "alpha": "1.000", "red": r, "green": g, "blue": b}}, "idiom": "universal"}], "info": info},
+        "LaunchBackground.colorset", "Contents.json")
+
+
+if __name__ == "__main__":
+    targets = sys.argv[1:] or ["android", "ios"]
+    if "android" in targets:
+        android()
+    if "ios" in targets:
+        ios()

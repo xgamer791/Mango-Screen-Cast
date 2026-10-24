@@ -1,0 +1,1499 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 60;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		0038A8F573B78EE220B8D289 /* libplist/src/plist.c in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = F4CFACAF740F1F9BD51E1877 /* libplist/src/plist.c */;
+		};
+		04F17FA284229721132EB75D /* libplist/src/xplist.c in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = CF16AC772457C85E10BBD1A1 /* libplist/src/xplist.c */;
+		};
+		063B0A21416969DECC84C1CC /* uxplay/utils.c in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = 3BD1387FBA7EA08A76DEA479 /* uxplay/utils.c */;
+		};
+		0673B64CCBA2426BB75EAC49 /* HomeView.swift in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = DA806D125064261B2E69C6E3 /* HomeView.swift */;
+		};
+		094A9FBED56228662D9CE225 /* libplist/src/ptrarray.c in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = 1A10C6A934B154A4DC971B3A /* libplist/src/ptrarray.c */;
+		};
+		0A13737D6F201A5BE0506E60 /* VideoRenderer.swift in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = 89276C6FDED1F139390BD16F /* VideoRenderer.swift */;
+		};
+		0B7BD122B11363F827E52DF4 /* MirrorProfile.swift in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = 9523147EF3861616EA05EF16 /* MirrorProfile.swift */;
+		};
+		0D8EBD1BBC028891A8A34457 /* AudioPlayer.swift in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = 07C82DD87630E6884BF38D8D /* AudioPlayer.swift */;
+		};
+		1672007895F522F2A190759A /* uxplay/playfair/sap_hash.c in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = C7B9C52208B68936C195E31B /* uxplay/playfair/sap_hash.c */;
+		};
+		16BD86A1CDC8B951873A94EC /* uxplay/playfair/playfair.c in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = 35B33EB7DE7A5544631E7800 /* uxplay/playfair/playfair.c */;
+		};
+		1C275174E235C79E30B17168 /* RootView.swift in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = D359B0F08BA63041B2A3D344 /* RootView.swift */;
+		};
+		1E2DC6218AB505D30ED97655 /* uxplay/httpd.c in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = BBA83105F0E4994DE3C7D61E /* uxplay/httpd.c */;
+		};
+		1FAEC0737B42CD680023AFDB /* uxplay/compat.c in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = FC9B108732ECDBABF88A17DB /* uxplay/compat.c */;
+		};
+		2ED6BDF3DD7B6663515E1966 /* uxplay/dns_sd/dns_sd.c in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = C38F450146D4CF773889FD1B /* uxplay/dns_sd/dns_sd.c */;
+		};
+		3028B4C43D1BD88552DF2026 /* uxplay/raop_rtp.c in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = 65D4ADC21910573FF82BAB5D /* uxplay/raop_rtp.c */;
+		};
+		3744DD39FE87428622A60841 /* uxplay/crypto.c in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = 3066EC683512357866A1682E /* uxplay/crypto.c */;
+		};
+		3749B09B9124D7649A9919A2 /* VideoRenderer.swift in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = 89276C6FDED1F139390BD16F /* VideoRenderer.swift */;
+		};
+		38B077C845B10D9605E58240 /* uxplay/netutils.c in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = 9B55FDB9B21638AB3F344B9C /* uxplay/netutils.c */;
+		};
+		3BA316D82E5B93655287C37F /* AudioCookie.swift in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = 1B8BD01E19DA17A48F0CC037 /* AudioCookie.swift */;
+		};
+		3ED7C7513A6526F6F1E85F89 /* libplist/src/jplist.c in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = C49D5C5572EE4BB4B57DB525 /* libplist/src/jplist.c */;
+		};
+		45CBCAB64D2F3CC0D2C6B09C /* uxplay/byteutils.c in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = 791F6A6EF289E71AFAF00BEA /* uxplay/byteutils.c */;
+		};
+		535777A04BCC77238A7C2F92 /* Fixtures.swift in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = 1EE1C3DD4B75A85EAB818FDE /* Fixtures.swift */;
+		};
+		5B4446BDBB0674D9F76E25B6 /* android_dnssd/dns_sd_android.c in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = 1EC4B420F7B6AEE0CD92246B /* android_dnssd/dns_sd_android.c */;
+		};
+		5BBA3CF2C596A209A5E3DF04 /* uxplay/llhttp/http.c in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = D98395F30646B3A176CE8CB8 /* uxplay/llhttp/http.c */;
+		};
+		5E73247FC2FC196CE55BC189 /* NalUnitsTests.swift in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = A71B8DB044EDCC3196DD75C8 /* NalUnitsTests.swift */;
+		};
+		5FC7A95FA9CD59176A3FC56F /* NalUnits.swift in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = D2901938D18BD10743B7BA04 /* NalUnits.swift */;
+		};
+		5FE00CEC49C6FE8935BAD37F /* uxplay/mirror_buffer.c in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = 19697854A2D2EF592B36936C /* uxplay/mirror_buffer.c */;
+		};
+		63AC90CF510BB4F34AD55671 /* libplist/src/bplist.c in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = BD69EBBCF18B45118375C380 /* libplist/src/bplist.c */;
+		};
+		69D9DD1B285D994A292BC2B6 /* uxplay/playfair/hand_garble.c in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = A14F694C7230AC061230D292 /* uxplay/playfair/hand_garble.c */;
+		};
+		6C967DB279AF51E0ADA3BA3D /* uxplay/dnssd.c in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = F0DBC73FC2A203DE1D6A08B1 /* uxplay/dnssd.c */;
+		};
+		6D3E809906C5855DE7ABAA0C /* MirrorView.swift in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = AB6184959352F959845FC990 /* MirrorView.swift */;
+		};
+		71C3FC528EFAB7BBF1A9F06D /* libplist/src/oplist.c in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = DFC88DCC451C7DF57D4F5C3A /* libplist/src/oplist.c */;
+		};
+		774F398DFEBF17EDAAAE724C /* uxplay/http_request.c in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = 7DB1D6ED6783A6417F26163D /* uxplay/http_request.c */;
+		};
+		79394B7477BC2EF20E00249D /* uxplay/fairplay_playfair.c in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = E73BDCB6F34904597AD9A580 /* uxplay/fairplay_playfair.c */;
+		};
+		79AD3B53505DBF16131343C7 /* Assets.xcassets in Resources */ = {
+			isa = PBXBuildFile;
+			fileRef = CB9299A3A63F89FD4A5A1C26 /* Assets.xcassets */;
+		};
+		7EFA1B6D6ACCE1DFFC07A1A3 /* uxplay/logger.c in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = 62D0BB2E27C166CC63A3BA36 /* uxplay/logger.c */;
+		};
+		7FF8131D742C014D556AD463 /* libplist/src/out-default.c in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = 79CAE6731E7E2DB04EEE7A47 /* libplist/src/out-default.c */;
+		};
+		82A930C753862F68DF52D9E7 /* uxplay/playfair/omg_hax.c in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = E0996224881AEC84FF78B6F7 /* uxplay/playfair/omg_hax.c */;
+		};
+		88B30A8C5FD4086AFA8AEA44 /* AudioCookie.swift in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = 1B8BD01E19DA17A48F0CC037 /* AudioCookie.swift */;
+		};
+		8C4689A342C687FA22619A96 /* libplist/libcnary/node.c in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = A2A2BB23688EC0D0F6AABB1B /* libplist/libcnary/node.c */;
+		};
+		900A17B1B734EF23CF188E18 /* SettingsView.swift in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = 8C9E47845C19CD4203A878C0 /* SettingsView.swift */;
+		};
+		9375B863994A6332475AE365 /* mango_server.c in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = 92EC3D20BAB085C5B59B4E4A /* mango_server.c */;
+		};
+		948589A24A3B6BE91C121474 /* MirrorProfile.swift in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = 9523147EF3861616EA05EF16 /* MirrorProfile.swift */;
+		};
+		9748B157A95798FF70206318 /* libplist/src/hashtable.c in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = E4577E38700EEA8945FF5A48 /* libplist/src/hashtable.c */;
+		};
+		976DE43D06C9ADF1906E8A37 /* DecodeTests.swift in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = BE649C1CFBD2DD43C088B14F /* DecodeTests.swift */;
+		};
+		9CC7EB3AD50447A75332257E /* MangoScreenCastApp.swift in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = 26ED4D03850022678A5CB0E7 /* MangoScreenCastApp.swift */;
+		};
+		A43E94DA88C46421F13C4306 /* uxplay/llhttp/api.c in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = EACC9043A4C7199A45B95ED7 /* uxplay/llhttp/api.c */;
+		};
+		A53BF7FAEE66386D4884B59C /* Receiver.swift in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = 1922E7E812951706B566A5ED /* Receiver.swift */;
+		};
+		ABEA3167FC07A49F9337908A /* libplist/src/time64.c in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = 9C1DB751F3EB8CBDF95EF499 /* libplist/src/time64.c */;
+		};
+		B08B441909D2F8BDFB3465AB /* Settings.swift in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = 70252C5B07C05771F091BD46 /* Settings.swift */;
+		};
+		B7DF6301E14BB9A9F411ABDA /* MirrorProfileTests.swift in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = 8312D0C41899E2431E3C58D1 /* MirrorProfileTests.swift */;
+		};
+		BB11816C7853D9687911F2F9 /* AudioCookieTests.swift in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = 34E566E0AC688DC5B489B5B1 /* AudioCookieTests.swift */;
+		};
+		C2FE1454164512A8B31D3D95 /* uxplay/playfair/modified_md5.c in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = 568B760BAEDF4512A0494170 /* uxplay/playfair/modified_md5.c */;
+		};
+		C467873858A3910DD29B85E7 /* uxplay/raop.c in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = 3D62ABFA6DEF71DC2FBF7C3A /* uxplay/raop.c */;
+		};
+		C4CF54C03C1D76FC821C7F7D /* ServiceAdvertiser.swift in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = A23E8E0D17DD7499BA6042D1 /* ServiceAdvertiser.swift */;
+		};
+		CA9839EB0E5096538EC71F18 /* libplist/src/out-plutil.c in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = DED2DF1AA693BB813038C430 /* libplist/src/out-plutil.c */;
+		};
+		D2D70C22A5D36D8671D8FCF0 /* OpenSSL in Frameworks */ = {
+			isa = PBXBuildFile;
+			productRef = A06CE0A20C761D449A82BE71 /* OpenSSL */;
+		};
+		D4F0FDC005B83616896FD6D1 /* libplist/src/out-limd.c in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = 3A556112264ABB6F13A05C6C /* libplist/src/out-limd.c */;
+		};
+		D5B2F684CAA3CA6C81683A97 /* libMangoCore.a in Frameworks */ = {
+			isa = PBXBuildFile;
+			fileRef = 6CB20C4BC9696047F5CA5B1E /* libMangoCore.a */;
+		};
+		D6B417A17022AA043A69543A /* NalUnits.swift in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = D2901938D18BD10743B7BA04 /* NalUnits.swift */;
+		};
+		D973956F665A3980BE8E830C /* uxplay/llhttp/llhttp.c in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = E3C929ED90AA1CF176D9F1C4 /* uxplay/llhttp/llhttp.c */;
+		};
+		DF3C0899206003DFD73565F4 /* uxplay/airplay_video.c in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = E1BA2F3F2686C3E03F798010 /* uxplay/airplay_video.c */;
+		};
+		E41E3B97A1D508D96922D023 /* uxplay/pairing.c in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = 333BF1D6BF2F76DA8892602A /* uxplay/pairing.c */;
+		};
+		E5325DBAE4F50B23C720ED8F /* uxplay/raop_ntp.c in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = EA678134DE4DBDB8F7E065EA /* uxplay/raop_ntp.c */;
+		};
+		E673A69C3530429B70E27BC0 /* libplist/src/bytearray.c in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = 6957053C717BBEA0CE827742 /* libplist/src/bytearray.c */;
+		};
+		E94DCB7FDC0B24A754E4AD0E /* OpenSSL in Frameworks */ = {
+			isa = PBXBuildFile;
+			productRef = C75E4CB4C65BE036EEB8553A /* OpenSSL */;
+		};
+		E9C3F4058C204CEF4A605C76 /* uxplay/raop_buffer.c in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = 1E434FECC7D8CFEECEED0279 /* uxplay/raop_buffer.c */;
+		};
+		EA2BF66E24C30BC394109762 /* libplist/src/common.c in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = 36A5238D8BFC17E6F4D919B2 /* libplist/src/common.c */;
+		};
+		ECB1995564CD1384F2704C29 /* uxplay/raop_rtp_mirror.c in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = 4662987A23C2FF58A67CE538 /* uxplay/raop_rtp_mirror.c */;
+		};
+		EDC3DCABAEDE34F73B4CE95B /* uxplay/srp.c in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = 7E04A07D6CE463EEF4EEBC94 /* uxplay/srp.c */;
+		};
+		F365CC71B6B34CD598D1281F /* libplist/src/base64.c in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = C5A9D21015DE0ED90EFA6E2F /* libplist/src/base64.c */;
+		};
+		F64C29856E8C2B443F5F9F79 /* libplist/src/jsmn.c in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = 9E5A80970E3888F06CD95BAD /* libplist/src/jsmn.c */;
+		};
+		FC84570015A004435ED16CE0 /* uxplay/http_response.c in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = 3EBF570842216F1ABE31E2C4 /* uxplay/http_response.c */;
+		};
+		FCF8B7025CE1AA0B7A0A11D6 /* libplist/libcnary/node_list.c in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = DEA8ABF94F8478324897B1CF /* libplist/libcnary/node_list.c */;
+		};
+		FE4399045479CC4577BEC1CE /* mango_bridge.c in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = 89B7EEEFB90C911F67FD329D /* mango_bridge.c */;
+		};
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		D87959A19C960C82CA1AFF9F /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 34B36BD8C5576B94E8FC1832 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 0A26C2C5D03B539C572657FD /* MangoCore */;
+			remoteInfo = MangoCore;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		07C82DD87630E6884BF38D8D /* AudioPlayer.swift */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			path = AudioPlayer.swift;
+			sourceTree = "<group>";
+		};
+		1922E7E812951706B566A5ED /* Receiver.swift */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			path = Receiver.swift;
+			sourceTree = "<group>";
+		};
+		19697854A2D2EF592B36936C /* uxplay/mirror_buffer.c */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.c;
+			name = uxplay/mirror_buffer.c;
+			path = "../android-tv/third_party/uxplay/lib/mirror_buffer.c";
+			sourceTree = SOURCE_ROOT;
+		};
+		1A10C6A934B154A4DC971B3A /* libplist/src/ptrarray.c */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.c;
+			name = libplist/src/ptrarray.c;
+			path = "../android-tv/third_party/libplist/src/ptrarray.c";
+			sourceTree = SOURCE_ROOT;
+		};
+		1B8BD01E19DA17A48F0CC037 /* AudioCookie.swift */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			path = AudioCookie.swift;
+			sourceTree = "<group>";
+		};
+		1E434FECC7D8CFEECEED0279 /* uxplay/raop_buffer.c */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.c;
+			name = uxplay/raop_buffer.c;
+			path = "../android-tv/third_party/uxplay/lib/raop_buffer.c";
+			sourceTree = SOURCE_ROOT;
+		};
+		1EC4B420F7B6AEE0CD92246B /* android_dnssd/dns_sd_android.c */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.c;
+			name = android_dnssd/dns_sd_android.c;
+			path = "../android-tv/app/src/main/cpp/android_dnssd/dns_sd_android.c";
+			sourceTree = SOURCE_ROOT;
+		};
+		1EE1C3DD4B75A85EAB818FDE /* Fixtures.swift */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			path = Fixtures.swift;
+			sourceTree = "<group>";
+		};
+		26ED4D03850022678A5CB0E7 /* MangoScreenCastApp.swift */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			path = MangoScreenCastApp.swift;
+			sourceTree = "<group>";
+		};
+		3066EC683512357866A1682E /* uxplay/crypto.c */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.c;
+			name = uxplay/crypto.c;
+			path = "../android-tv/third_party/uxplay/lib/crypto.c";
+			sourceTree = SOURCE_ROOT;
+		};
+		333BF1D6BF2F76DA8892602A /* uxplay/pairing.c */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.c;
+			name = uxplay/pairing.c;
+			path = "../android-tv/third_party/uxplay/lib/pairing.c";
+			sourceTree = SOURCE_ROOT;
+		};
+		34E566E0AC688DC5B489B5B1 /* AudioCookieTests.swift */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			path = AudioCookieTests.swift;
+			sourceTree = "<group>";
+		};
+		35B33EB7DE7A5544631E7800 /* uxplay/playfair/playfair.c */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.c;
+			name = uxplay/playfair/playfair.c;
+			path = "../android-tv/third_party/uxplay/lib/playfair/playfair.c";
+			sourceTree = SOURCE_ROOT;
+		};
+		36A5238D8BFC17E6F4D919B2 /* libplist/src/common.c */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.c;
+			name = libplist/src/common.c;
+			path = "../android-tv/third_party/libplist/src/common.c";
+			sourceTree = SOURCE_ROOT;
+		};
+		3A556112264ABB6F13A05C6C /* libplist/src/out-limd.c */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.c;
+			name = "libplist/src/out-limd.c";
+			path = "../android-tv/third_party/libplist/src/out-limd.c";
+			sourceTree = SOURCE_ROOT;
+		};
+		3BD1387FBA7EA08A76DEA479 /* uxplay/utils.c */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.c;
+			name = uxplay/utils.c;
+			path = "../android-tv/third_party/uxplay/lib/utils.c";
+			sourceTree = SOURCE_ROOT;
+		};
+		3D62ABFA6DEF71DC2FBF7C3A /* uxplay/raop.c */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.c;
+			name = uxplay/raop.c;
+			path = "../android-tv/third_party/uxplay/lib/raop.c";
+			sourceTree = SOURCE_ROOT;
+		};
+		3EBF570842216F1ABE31E2C4 /* uxplay/http_response.c */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.c;
+			name = uxplay/http_response.c;
+			path = "../android-tv/third_party/uxplay/lib/http_response.c";
+			sourceTree = SOURCE_ROOT;
+		};
+		4662987A23C2FF58A67CE538 /* uxplay/raop_rtp_mirror.c */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.c;
+			name = uxplay/raop_rtp_mirror.c;
+			path = "../android-tv/third_party/uxplay/lib/raop_rtp_mirror.c";
+			sourceTree = SOURCE_ROOT;
+		};
+		568B760BAEDF4512A0494170 /* uxplay/playfair/modified_md5.c */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.c;
+			name = uxplay/playfair/modified_md5.c;
+			path = "../android-tv/third_party/uxplay/lib/playfair/modified_md5.c";
+			sourceTree = SOURCE_ROOT;
+		};
+		62D0BB2E27C166CC63A3BA36 /* uxplay/logger.c */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.c;
+			name = uxplay/logger.c;
+			path = "../android-tv/third_party/uxplay/lib/logger.c";
+			sourceTree = SOURCE_ROOT;
+		};
+		65D4ADC21910573FF82BAB5D /* uxplay/raop_rtp.c */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.c;
+			name = uxplay/raop_rtp.c;
+			path = "../android-tv/third_party/uxplay/lib/raop_rtp.c";
+			sourceTree = SOURCE_ROOT;
+		};
+		66F8F7FC52639EF9C1C6D93B /* MangoScreenCastTests.xctest */ = {
+			isa = PBXFileReference;
+			explicitFileType = wrapper.cfbundle;
+			includeInIndex = 0;
+			path = MangoScreenCastTests.xctest;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		6957053C717BBEA0CE827742 /* libplist/src/bytearray.c */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.c;
+			name = libplist/src/bytearray.c;
+			path = "../android-tv/third_party/libplist/src/bytearray.c";
+			sourceTree = SOURCE_ROOT;
+		};
+		6CB20C4BC9696047F5CA5B1E /* libMangoCore.a */ = {
+			isa = PBXFileReference;
+			explicitFileType = archive.ar;
+			includeInIndex = 0;
+			path = libMangoCore.a;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		70252C5B07C05771F091BD46 /* Settings.swift */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			path = Settings.swift;
+			sourceTree = "<group>";
+		};
+		791F6A6EF289E71AFAF00BEA /* uxplay/byteutils.c */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.c;
+			name = uxplay/byteutils.c;
+			path = "../android-tv/third_party/uxplay/lib/byteutils.c";
+			sourceTree = SOURCE_ROOT;
+		};
+		79CAE6731E7E2DB04EEE7A47 /* libplist/src/out-default.c */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.c;
+			name = "libplist/src/out-default.c";
+			path = "../android-tv/third_party/libplist/src/out-default.c";
+			sourceTree = SOURCE_ROOT;
+		};
+		7DB1D6ED6783A6417F26163D /* uxplay/http_request.c */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.c;
+			name = uxplay/http_request.c;
+			path = "../android-tv/third_party/uxplay/lib/http_request.c";
+			sourceTree = SOURCE_ROOT;
+		};
+		7E04A07D6CE463EEF4EEBC94 /* uxplay/srp.c */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.c;
+			name = uxplay/srp.c;
+			path = "../android-tv/third_party/uxplay/lib/srp.c";
+			sourceTree = SOURCE_ROOT;
+		};
+		81B5152712610E32384EAD5F /* mango_bridge.h */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			path = mango_bridge.h;
+			sourceTree = "<group>";
+		};
+		8312D0C41899E2431E3C58D1 /* MirrorProfileTests.swift */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			path = MirrorProfileTests.swift;
+			sourceTree = "<group>";
+		};
+		89276C6FDED1F139390BD16F /* VideoRenderer.swift */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			path = VideoRenderer.swift;
+			sourceTree = "<group>";
+		};
+		89B7EEEFB90C911F67FD329D /* mango_bridge.c */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.c;
+			path = mango_bridge.c;
+			sourceTree = "<group>";
+		};
+		8C9E47845C19CD4203A878C0 /* SettingsView.swift */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			path = SettingsView.swift;
+			sourceTree = "<group>";
+		};
+		90F1E934B2D28474CA0477E1 /* MangoScreenCast.app */ = {
+			isa = PBXFileReference;
+			explicitFileType = wrapper.application;
+			includeInIndex = 0;
+			path = MangoScreenCast.app;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		9147B23F269CC003917866AE /* Info.plist */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = text.plist.xml;
+			path = Info.plist;
+			sourceTree = "<group>";
+		};
+		92EC3D20BAB085C5B59B4E4A /* mango_server.c */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.c;
+			name = mango_server.c;
+			path = "../android-tv/app/src/main/cpp/mango_server.c";
+			sourceTree = SOURCE_ROOT;
+		};
+		9523147EF3861616EA05EF16 /* MirrorProfile.swift */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			path = MirrorProfile.swift;
+			sourceTree = "<group>";
+		};
+		9B55FDB9B21638AB3F344B9C /* uxplay/netutils.c */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.c;
+			name = uxplay/netutils.c;
+			path = "../android-tv/third_party/uxplay/lib/netutils.c";
+			sourceTree = SOURCE_ROOT;
+		};
+		9C1DB751F3EB8CBDF95EF499 /* libplist/src/time64.c */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.c;
+			name = libplist/src/time64.c;
+			path = "../android-tv/third_party/libplist/src/time64.c";
+			sourceTree = SOURCE_ROOT;
+		};
+		9E5A80970E3888F06CD95BAD /* libplist/src/jsmn.c */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.c;
+			name = libplist/src/jsmn.c;
+			path = "../android-tv/third_party/libplist/src/jsmn.c";
+			sourceTree = SOURCE_ROOT;
+		};
+		A14F694C7230AC061230D292 /* uxplay/playfair/hand_garble.c */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.c;
+			name = uxplay/playfair/hand_garble.c;
+			path = "../android-tv/third_party/uxplay/lib/playfair/hand_garble.c";
+			sourceTree = SOURCE_ROOT;
+		};
+		A23E8E0D17DD7499BA6042D1 /* ServiceAdvertiser.swift */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			path = ServiceAdvertiser.swift;
+			sourceTree = "<group>";
+		};
+		A2A2BB23688EC0D0F6AABB1B /* libplist/libcnary/node.c */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.c;
+			name = libplist/libcnary/node.c;
+			path = "../android-tv/third_party/libplist/libcnary/node.c";
+			sourceTree = SOURCE_ROOT;
+		};
+		A71B8DB044EDCC3196DD75C8 /* NalUnitsTests.swift */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			path = NalUnitsTests.swift;
+			sourceTree = "<group>";
+		};
+		AB6184959352F959845FC990 /* MirrorView.swift */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			path = MirrorView.swift;
+			sourceTree = "<group>";
+		};
+		BBA83105F0E4994DE3C7D61E /* uxplay/httpd.c */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.c;
+			name = uxplay/httpd.c;
+			path = "../android-tv/third_party/uxplay/lib/httpd.c";
+			sourceTree = SOURCE_ROOT;
+		};
+		BD69EBBCF18B45118375C380 /* libplist/src/bplist.c */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.c;
+			name = libplist/src/bplist.c;
+			path = "../android-tv/third_party/libplist/src/bplist.c";
+			sourceTree = SOURCE_ROOT;
+		};
+		BE649C1CFBD2DD43C088B14F /* DecodeTests.swift */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			path = DecodeTests.swift;
+			sourceTree = "<group>";
+		};
+		C38F450146D4CF773889FD1B /* uxplay/dns_sd/dns_sd.c */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.c;
+			name = uxplay/dns_sd/dns_sd.c;
+			path = "../android-tv/third_party/uxplay/lib/dns_sd/dns_sd.c";
+			sourceTree = SOURCE_ROOT;
+		};
+		C49D5C5572EE4BB4B57DB525 /* libplist/src/jplist.c */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.c;
+			name = libplist/src/jplist.c;
+			path = "../android-tv/third_party/libplist/src/jplist.c";
+			sourceTree = SOURCE_ROOT;
+		};
+		C5A9D21015DE0ED90EFA6E2F /* libplist/src/base64.c */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.c;
+			name = libplist/src/base64.c;
+			path = "../android-tv/third_party/libplist/src/base64.c";
+			sourceTree = SOURCE_ROOT;
+		};
+		C712C402730B996CC807C64D /* MangoScreenCast-Bridging-Header.h */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.h;
+			path = "MangoScreenCast-Bridging-Header.h";
+			sourceTree = "<group>";
+		};
+		C7B9C52208B68936C195E31B /* uxplay/playfair/sap_hash.c */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.c;
+			name = uxplay/playfair/sap_hash.c;
+			path = "../android-tv/third_party/uxplay/lib/playfair/sap_hash.c";
+			sourceTree = SOURCE_ROOT;
+		};
+		CB9299A3A63F89FD4A5A1C26 /* Assets.xcassets */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = folder.assetcatalog;
+			path = Assets.xcassets;
+			sourceTree = "<group>";
+		};
+		CF16AC772457C85E10BBD1A1 /* libplist/src/xplist.c */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.c;
+			name = libplist/src/xplist.c;
+			path = "../android-tv/third_party/libplist/src/xplist.c";
+			sourceTree = SOURCE_ROOT;
+		};
+		D2901938D18BD10743B7BA04 /* NalUnits.swift */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			path = NalUnits.swift;
+			sourceTree = "<group>";
+		};
+		D359B0F08BA63041B2A3D344 /* RootView.swift */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			path = RootView.swift;
+			sourceTree = "<group>";
+		};
+		D98395F30646B3A176CE8CB8 /* uxplay/llhttp/http.c */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.c;
+			name = uxplay/llhttp/http.c;
+			path = "../android-tv/third_party/uxplay/lib/llhttp/http.c";
+			sourceTree = SOURCE_ROOT;
+		};
+		DA806D125064261B2E69C6E3 /* HomeView.swift */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			path = HomeView.swift;
+			sourceTree = "<group>";
+		};
+		DEA8ABF94F8478324897B1CF /* libplist/libcnary/node_list.c */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.c;
+			name = libplist/libcnary/node_list.c;
+			path = "../android-tv/third_party/libplist/libcnary/node_list.c";
+			sourceTree = SOURCE_ROOT;
+		};
+		DED2DF1AA693BB813038C430 /* libplist/src/out-plutil.c */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.c;
+			name = "libplist/src/out-plutil.c";
+			path = "../android-tv/third_party/libplist/src/out-plutil.c";
+			sourceTree = SOURCE_ROOT;
+		};
+		DFC88DCC451C7DF57D4F5C3A /* libplist/src/oplist.c */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.c;
+			name = libplist/src/oplist.c;
+			path = "../android-tv/third_party/libplist/src/oplist.c";
+			sourceTree = SOURCE_ROOT;
+		};
+		E0996224881AEC84FF78B6F7 /* uxplay/playfair/omg_hax.c */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.c;
+			name = uxplay/playfair/omg_hax.c;
+			path = "../android-tv/third_party/uxplay/lib/playfair/omg_hax.c";
+			sourceTree = SOURCE_ROOT;
+		};
+		E1BA2F3F2686C3E03F798010 /* uxplay/airplay_video.c */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.c;
+			name = uxplay/airplay_video.c;
+			path = "../android-tv/third_party/uxplay/lib/airplay_video.c";
+			sourceTree = SOURCE_ROOT;
+		};
+		E3C929ED90AA1CF176D9F1C4 /* uxplay/llhttp/llhttp.c */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.c;
+			name = uxplay/llhttp/llhttp.c;
+			path = "../android-tv/third_party/uxplay/lib/llhttp/llhttp.c";
+			sourceTree = SOURCE_ROOT;
+		};
+		E4577E38700EEA8945FF5A48 /* libplist/src/hashtable.c */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.c;
+			name = libplist/src/hashtable.c;
+			path = "../android-tv/third_party/libplist/src/hashtable.c";
+			sourceTree = SOURCE_ROOT;
+		};
+		E73BDCB6F34904597AD9A580 /* uxplay/fairplay_playfair.c */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.c;
+			name = uxplay/fairplay_playfair.c;
+			path = "../android-tv/third_party/uxplay/lib/fairplay_playfair.c";
+			sourceTree = SOURCE_ROOT;
+		};
+		EA678134DE4DBDB8F7E065EA /* uxplay/raop_ntp.c */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.c;
+			name = uxplay/raop_ntp.c;
+			path = "../android-tv/third_party/uxplay/lib/raop_ntp.c";
+			sourceTree = SOURCE_ROOT;
+		};
+		EACC9043A4C7199A45B95ED7 /* uxplay/llhttp/api.c */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.c;
+			name = uxplay/llhttp/api.c;
+			path = "../android-tv/third_party/uxplay/lib/llhttp/api.c";
+			sourceTree = SOURCE_ROOT;
+		};
+		F0DBC73FC2A203DE1D6A08B1 /* uxplay/dnssd.c */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.c;
+			name = uxplay/dnssd.c;
+			path = "../android-tv/third_party/uxplay/lib/dnssd.c";
+			sourceTree = SOURCE_ROOT;
+		};
+		F4CFACAF740F1F9BD51E1877 /* libplist/src/plist.c */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.c;
+			name = libplist/src/plist.c;
+			path = "../android-tv/third_party/libplist/src/plist.c";
+			sourceTree = SOURCE_ROOT;
+		};
+		FC9B108732ECDBABF88A17DB /* uxplay/compat.c */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.c.c;
+			name = uxplay/compat.c;
+			path = "../android-tv/third_party/uxplay/lib/compat.c";
+			sourceTree = SOURCE_ROOT;
+		};
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		1876E04271A7B9F012661AB2 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				D5B2F684CAA3CA6C81683A97 /* libMangoCore.a in Frameworks */,
+				D2D70C22A5D36D8671D8FCF0 /* OpenSSL in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E9AD61BB85AF52786038DE51 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		FC837AE11B500537B2F03D4C /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				E94DCB7FDC0B24A754E4AD0E /* OpenSSL in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		0ACACDE51BB2F046E791E653 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				90F1E934B2D28474CA0477E1 /* MangoScreenCast.app */,
+				6CB20C4BC9696047F5CA5B1E /* libMangoCore.a */,
+				66F8F7FC52639EF9C1C6D93B /* MangoScreenCastTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		2CAB67E4894A013F8A3495E3 /* AirPlay */ = {
+			isa = PBXGroup;
+			children = (
+				9523147EF3861616EA05EF16 /* MirrorProfile.swift */,
+				1922E7E812951706B566A5ED /* Receiver.swift */,
+				A23E8E0D17DD7499BA6042D1 /* ServiceAdvertiser.swift */,
+			);
+			path = AirPlay;
+			sourceTree = "<group>";
+		};
+		720481B02A26324A49FAC621 /* Shared AirPlay core */ = {
+			isa = PBXGroup;
+			children = (
+				92EC3D20BAB085C5B59B4E4A /* mango_server.c */,
+				1EC4B420F7B6AEE0CD92246B /* android_dnssd/dns_sd_android.c */,
+				E1BA2F3F2686C3E03F798010 /* uxplay/airplay_video.c */,
+				791F6A6EF289E71AFAF00BEA /* uxplay/byteutils.c */,
+				FC9B108732ECDBABF88A17DB /* uxplay/compat.c */,
+				3066EC683512357866A1682E /* uxplay/crypto.c */,
+				F0DBC73FC2A203DE1D6A08B1 /* uxplay/dnssd.c */,
+				E73BDCB6F34904597AD9A580 /* uxplay/fairplay_playfair.c */,
+				7DB1D6ED6783A6417F26163D /* uxplay/http_request.c */,
+				3EBF570842216F1ABE31E2C4 /* uxplay/http_response.c */,
+				BBA83105F0E4994DE3C7D61E /* uxplay/httpd.c */,
+				62D0BB2E27C166CC63A3BA36 /* uxplay/logger.c */,
+				19697854A2D2EF592B36936C /* uxplay/mirror_buffer.c */,
+				9B55FDB9B21638AB3F344B9C /* uxplay/netutils.c */,
+				333BF1D6BF2F76DA8892602A /* uxplay/pairing.c */,
+				3D62ABFA6DEF71DC2FBF7C3A /* uxplay/raop.c */,
+				1E434FECC7D8CFEECEED0279 /* uxplay/raop_buffer.c */,
+				EA678134DE4DBDB8F7E065EA /* uxplay/raop_ntp.c */,
+				65D4ADC21910573FF82BAB5D /* uxplay/raop_rtp.c */,
+				4662987A23C2FF58A67CE538 /* uxplay/raop_rtp_mirror.c */,
+				7E04A07D6CE463EEF4EEBC94 /* uxplay/srp.c */,
+				3BD1387FBA7EA08A76DEA479 /* uxplay/utils.c */,
+				A14F694C7230AC061230D292 /* uxplay/playfair/hand_garble.c */,
+				568B760BAEDF4512A0494170 /* uxplay/playfair/modified_md5.c */,
+				E0996224881AEC84FF78B6F7 /* uxplay/playfair/omg_hax.c */,
+				35B33EB7DE7A5544631E7800 /* uxplay/playfair/playfair.c */,
+				C7B9C52208B68936C195E31B /* uxplay/playfair/sap_hash.c */,
+				EACC9043A4C7199A45B95ED7 /* uxplay/llhttp/api.c */,
+				D98395F30646B3A176CE8CB8 /* uxplay/llhttp/http.c */,
+				E3C929ED90AA1CF176D9F1C4 /* uxplay/llhttp/llhttp.c */,
+				C38F450146D4CF773889FD1B /* uxplay/dns_sd/dns_sd.c */,
+				C5A9D21015DE0ED90EFA6E2F /* libplist/src/base64.c */,
+				BD69EBBCF18B45118375C380 /* libplist/src/bplist.c */,
+				6957053C717BBEA0CE827742 /* libplist/src/bytearray.c */,
+				36A5238D8BFC17E6F4D919B2 /* libplist/src/common.c */,
+				E4577E38700EEA8945FF5A48 /* libplist/src/hashtable.c */,
+				C49D5C5572EE4BB4B57DB525 /* libplist/src/jplist.c */,
+				9E5A80970E3888F06CD95BAD /* libplist/src/jsmn.c */,
+				DFC88DCC451C7DF57D4F5C3A /* libplist/src/oplist.c */,
+				79CAE6731E7E2DB04EEE7A47 /* libplist/src/out-default.c */,
+				3A556112264ABB6F13A05C6C /* libplist/src/out-limd.c */,
+				DED2DF1AA693BB813038C430 /* libplist/src/out-plutil.c */,
+				F4CFACAF740F1F9BD51E1877 /* libplist/src/plist.c */,
+				1A10C6A934B154A4DC971B3A /* libplist/src/ptrarray.c */,
+				9C1DB751F3EB8CBDF95EF499 /* libplist/src/time64.c */,
+				CF16AC772457C85E10BBD1A1 /* libplist/src/xplist.c */,
+				A2A2BB23688EC0D0F6AABB1B /* libplist/libcnary/node.c */,
+				DEA8ABF94F8478324897B1CF /* libplist/libcnary/node_list.c */,
+			);
+			name = "Shared AirPlay core";
+			sourceTree = "<group>";
+		};
+		8B6E0E1F13CF408BB6BFC45C = {
+			isa = PBXGroup;
+			children = (
+				BF26E6BE873B013450E336A2 /* MangoScreenCast */,
+				B4063EC772534333C810DCCE /* MangoCore */,
+				D40EF620259600F65F0248A8 /* MangoScreenCastTests */,
+				0ACACDE51BB2F046E791E653 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		8CFEA836ED2AC03501E875D2 /* Views */ = {
+			isa = PBXGroup;
+			children = (
+				DA806D125064261B2E69C6E3 /* HomeView.swift */,
+				AB6184959352F959845FC990 /* MirrorView.swift */,
+				D359B0F08BA63041B2A3D344 /* RootView.swift */,
+				8C9E47845C19CD4203A878C0 /* SettingsView.swift */,
+			);
+			path = Views;
+			sourceTree = "<group>";
+		};
+		B4063EC772534333C810DCCE /* MangoCore */ = {
+			isa = PBXGroup;
+			children = (
+				89B7EEEFB90C911F67FD329D /* mango_bridge.c */,
+				81B5152712610E32384EAD5F /* mango_bridge.h */,
+				720481B02A26324A49FAC621 /* Shared AirPlay core */,
+			);
+			path = MangoCore;
+			sourceTree = "<group>";
+		};
+		BF26E6BE873B013450E336A2 /* MangoScreenCast */ = {
+			isa = PBXGroup;
+			children = (
+				2CAB67E4894A013F8A3495E3 /* AirPlay */,
+				CB9299A3A63F89FD4A5A1C26 /* Assets.xcassets */,
+				9147B23F269CC003917866AE /* Info.plist */,
+				C712C402730B996CC807C64D /* MangoScreenCast-Bridging-Header.h */,
+				26ED4D03850022678A5CB0E7 /* MangoScreenCastApp.swift */,
+				DF681E0BF6ABCF58F4B4B443 /* Media */,
+				70252C5B07C05771F091BD46 /* Settings.swift */,
+				8CFEA836ED2AC03501E875D2 /* Views */,
+			);
+			path = MangoScreenCast;
+			sourceTree = "<group>";
+		};
+		D40EF620259600F65F0248A8 /* MangoScreenCastTests */ = {
+			isa = PBXGroup;
+			children = (
+				34E566E0AC688DC5B489B5B1 /* AudioCookieTests.swift */,
+				BE649C1CFBD2DD43C088B14F /* DecodeTests.swift */,
+				1EE1C3DD4B75A85EAB818FDE /* Fixtures.swift */,
+				8312D0C41899E2431E3C58D1 /* MirrorProfileTests.swift */,
+				A71B8DB044EDCC3196DD75C8 /* NalUnitsTests.swift */,
+			);
+			path = MangoScreenCastTests;
+			sourceTree = "<group>";
+		};
+		DF681E0BF6ABCF58F4B4B443 /* Media */ = {
+			isa = PBXGroup;
+			children = (
+				1B8BD01E19DA17A48F0CC037 /* AudioCookie.swift */,
+				07C82DD87630E6884BF38D8D /* AudioPlayer.swift */,
+				D2901938D18BD10743B7BA04 /* NalUnits.swift */,
+				89276C6FDED1F139390BD16F /* VideoRenderer.swift */,
+			);
+			path = Media;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		0A26C2C5D03B539C572657FD /* MangoCore */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = E24B4C321F6981FF2B9A5DE0 /* Build configuration list for PBXNativeTarget "MangoCore" */;
+			buildPhases = (
+				172375CA73D9EF3BAB8321ED /* Sources */,
+				FC837AE11B500537B2F03D4C /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = MangoCore;
+			packageProductDependencies = (
+				C75E4CB4C65BE036EEB8553A /* OpenSSL */,
+			);
+			productName = MangoCore;
+			productReference = 6CB20C4BC9696047F5CA5B1E /* libMangoCore.a */;
+			productType = "com.apple.product-type.library.static";
+		};
+		996C4715DD027D7F8A6CEF97 /* MangoScreenCastTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = C60F2AB3E653BC241776A2D7 /* Build configuration list for PBXNativeTarget "MangoScreenCastTests" */;
+			buildPhases = (
+				2BBB8557E0E5A8099A95609B /* Sources */,
+				E9AD61BB85AF52786038DE51 /* Frameworks */,
+				D07F346CB390D0E144B55551 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = MangoScreenCastTests;
+			productName = MangoScreenCastTests;
+			productReference = 66F8F7FC52639EF9C1C6D93B /* MangoScreenCastTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+		A1F938A9A0D902A383207D1B /* MangoScreenCast */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 5AAE38FE161A15A9D280C10D /* Build configuration list for PBXNativeTarget "MangoScreenCast" */;
+			buildPhases = (
+				CD3494BED957B1B4044E5F68 /* Sources */,
+				1876E04271A7B9F012661AB2 /* Frameworks */,
+				E17D6F0B6504F03D17E9D21B /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				AE395EC95E0003B524BCD3BB /* PBXTargetDependency */,
+			);
+			name = MangoScreenCast;
+			packageProductDependencies = (
+				A06CE0A20C761D449A82BE71 /* OpenSSL */,
+			);
+			productName = MangoScreenCast;
+			productReference = 90F1E934B2D28474CA0477E1 /* MangoScreenCast.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		34B36BD8C5576B94E8FC1832 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1600;
+				LastUpgradeCheck = 1600;
+				TargetAttributes = {
+					0A26C2C5D03B539C572657FD = {
+						CreatedOnToolsVersion = 16.0;
+					};
+					996C4715DD027D7F8A6CEF97 = {
+						CreatedOnToolsVersion = 16.0;
+					};
+					A1F938A9A0D902A383207D1B = {
+						CreatedOnToolsVersion = 16.0;
+					};
+				};
+			};
+			buildConfigurationList = C94A9F9662F64561ACC07B6A /* Build configuration list for PBXProject "MangoScreenCast" */;
+			compatibilityVersion = "Xcode 15.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 8B6E0E1F13CF408BB6BFC45C;
+			packageReferences = (
+				E0A42FC2F99C4D75B06D9F72 /* XCRemoteSwiftPackageReference "OpenSSL-Package" */,
+			);
+			productRefGroup = 0ACACDE51BB2F046E791E653 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				A1F938A9A0D902A383207D1B /* MangoScreenCast */,
+				0A26C2C5D03B539C572657FD /* MangoCore */,
+				996C4715DD027D7F8A6CEF97 /* MangoScreenCastTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		D07F346CB390D0E144B55551 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		E17D6F0B6504F03D17E9D21B /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				79AD3B53505DBF16131343C7 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		172375CA73D9EF3BAB8321ED /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				FE4399045479CC4577BEC1CE /* mango_bridge.c in Sources */,
+				9375B863994A6332475AE365 /* mango_server.c in Sources */,
+				5B4446BDBB0674D9F76E25B6 /* android_dnssd/dns_sd_android.c in Sources */,
+				DF3C0899206003DFD73565F4 /* uxplay/airplay_video.c in Sources */,
+				45CBCAB64D2F3CC0D2C6B09C /* uxplay/byteutils.c in Sources */,
+				1FAEC0737B42CD680023AFDB /* uxplay/compat.c in Sources */,
+				3744DD39FE87428622A60841 /* uxplay/crypto.c in Sources */,
+				6C967DB279AF51E0ADA3BA3D /* uxplay/dnssd.c in Sources */,
+				79394B7477BC2EF20E00249D /* uxplay/fairplay_playfair.c in Sources */,
+				774F398DFEBF17EDAAAE724C /* uxplay/http_request.c in Sources */,
+				FC84570015A004435ED16CE0 /* uxplay/http_response.c in Sources */,
+				1E2DC6218AB505D30ED97655 /* uxplay/httpd.c in Sources */,
+				7EFA1B6D6ACCE1DFFC07A1A3 /* uxplay/logger.c in Sources */,
+				5FE00CEC49C6FE8935BAD37F /* uxplay/mirror_buffer.c in Sources */,
+				38B077C845B10D9605E58240 /* uxplay/netutils.c in Sources */,
+				E41E3B97A1D508D96922D023 /* uxplay/pairing.c in Sources */,
+				C467873858A3910DD29B85E7 /* uxplay/raop.c in Sources */,
+				E9C3F4058C204CEF4A605C76 /* uxplay/raop_buffer.c in Sources */,
+				E5325DBAE4F50B23C720ED8F /* uxplay/raop_ntp.c in Sources */,
+				3028B4C43D1BD88552DF2026 /* uxplay/raop_rtp.c in Sources */,
+				ECB1995564CD1384F2704C29 /* uxplay/raop_rtp_mirror.c in Sources */,
+				EDC3DCABAEDE34F73B4CE95B /* uxplay/srp.c in Sources */,
+				063B0A21416969DECC84C1CC /* uxplay/utils.c in Sources */,
+				69D9DD1B285D994A292BC2B6 /* uxplay/playfair/hand_garble.c in Sources */,
+				C2FE1454164512A8B31D3D95 /* uxplay/playfair/modified_md5.c in Sources */,
+				82A930C753862F68DF52D9E7 /* uxplay/playfair/omg_hax.c in Sources */,
+				16BD86A1CDC8B951873A94EC /* uxplay/playfair/playfair.c in Sources */,
+				1672007895F522F2A190759A /* uxplay/playfair/sap_hash.c in Sources */,
+				A43E94DA88C46421F13C4306 /* uxplay/llhttp/api.c in Sources */,
+				5BBA3CF2C596A209A5E3DF04 /* uxplay/llhttp/http.c in Sources */,
+				D973956F665A3980BE8E830C /* uxplay/llhttp/llhttp.c in Sources */,
+				2ED6BDF3DD7B6663515E1966 /* uxplay/dns_sd/dns_sd.c in Sources */,
+				F365CC71B6B34CD598D1281F /* libplist/src/base64.c in Sources */,
+				63AC90CF510BB4F34AD55671 /* libplist/src/bplist.c in Sources */,
+				E673A69C3530429B70E27BC0 /* libplist/src/bytearray.c in Sources */,
+				EA2BF66E24C30BC394109762 /* libplist/src/common.c in Sources */,
+				9748B157A95798FF70206318 /* libplist/src/hashtable.c in Sources */,
+				3ED7C7513A6526F6F1E85F89 /* libplist/src/jplist.c in Sources */,
+				F64C29856E8C2B443F5F9F79 /* libplist/src/jsmn.c in Sources */,
+				71C3FC528EFAB7BBF1A9F06D /* libplist/src/oplist.c in Sources */,
+				7FF8131D742C014D556AD463 /* libplist/src/out-default.c in Sources */,
+				D4F0FDC005B83616896FD6D1 /* libplist/src/out-limd.c in Sources */,
+				CA9839EB0E5096538EC71F18 /* libplist/src/out-plutil.c in Sources */,
+				0038A8F573B78EE220B8D289 /* libplist/src/plist.c in Sources */,
+				094A9FBED56228662D9CE225 /* libplist/src/ptrarray.c in Sources */,
+				ABEA3167FC07A49F9337908A /* libplist/src/time64.c in Sources */,
+				04F17FA284229721132EB75D /* libplist/src/xplist.c in Sources */,
+				8C4689A342C687FA22619A96 /* libplist/libcnary/node.c in Sources */,
+				FCF8B7025CE1AA0B7A0A11D6 /* libplist/libcnary/node_list.c in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		2BBB8557E0E5A8099A95609B /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BB11816C7853D9687911F2F9 /* AudioCookieTests.swift in Sources */,
+				976DE43D06C9ADF1906E8A37 /* DecodeTests.swift in Sources */,
+				535777A04BCC77238A7C2F92 /* Fixtures.swift in Sources */,
+				B7DF6301E14BB9A9F411ABDA /* MirrorProfileTests.swift in Sources */,
+				5E73247FC2FC196CE55BC189 /* NalUnitsTests.swift in Sources */,
+				D6B417A17022AA043A69543A /* NalUnits.swift in Sources */,
+				3BA316D82E5B93655287C37F /* AudioCookie.swift in Sources */,
+				3749B09B9124D7649A9919A2 /* VideoRenderer.swift in Sources */,
+				0B7BD122B11363F827E52DF4 /* MirrorProfile.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		CD3494BED957B1B4044E5F68 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				948589A24A3B6BE91C121474 /* MirrorProfile.swift in Sources */,
+				A53BF7FAEE66386D4884B59C /* Receiver.swift in Sources */,
+				C4CF54C03C1D76FC821C7F7D /* ServiceAdvertiser.swift in Sources */,
+				9CC7EB3AD50447A75332257E /* MangoScreenCastApp.swift in Sources */,
+				88B30A8C5FD4086AFA8AEA44 /* AudioCookie.swift in Sources */,
+				0D8EBD1BBC028891A8A34457 /* AudioPlayer.swift in Sources */,
+				5FC7A95FA9CD59176A3FC56F /* NalUnits.swift in Sources */,
+				0A13737D6F201A5BE0506E60 /* VideoRenderer.swift in Sources */,
+				B08B441909D2F8BDFB3465AB /* Settings.swift in Sources */,
+				0673B64CCBA2426BB75EAC49 /* HomeView.swift in Sources */,
+				6D3E809906C5855DE7ABAA0C /* MirrorView.swift in Sources */,
+				1C275174E235C79E30B17168 /* RootView.swift in Sources */,
+				900A17B1B734EF23CF188E18 /* SettingsView.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		AE395EC95E0003B524BCD3BB /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 0A26C2C5D03B539C572657FD /* MangoCore */;
+			targetProxy = D87959A19C960C82CA1AFF9F /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		0E6793CDF0DAA09A51E18461 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_PREVIEWS = NO;
+				INFOPLIST_FILE = MangoScreenCast/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.mangoscreencast.ios;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "MangoScreenCast/MangoScreenCast-Bridging-Header.h";
+			};
+			name = Release;
+		};
+		1F3AB9157B93ED701734075D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = NO;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		2D4B5087FA24439C5A11C5BB /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.mangoscreencast.ios.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+		4F6D5392095E386CED91601E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = NO;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		4FA972AF00ED187D4A6A6B2A /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = NO;
+				GCC_OPTIMIZATION_LEVEL = s;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					STANDALONE,
+					TARGET_POSIX,
+					_REENTRANT,
+					NOHOLD,
+					PLIST_210,
+					PLIST_230,
+					HAVE_CONFIG_H,
+					LIBPLIST_STATIC,
+					"OPENSSL_API_COMPAT=0x10101000L",
+					__STDC_CONSTANT_MACROS,
+					__STDC_LIMIT_MACROS,
+				);
+				HEADER_SEARCH_PATHS = (
+					"$(SRCROOT)/MangoCore/openssl-shim",
+					"$(SRCROOT)/../android-tv/app/src/main/cpp/android_dnssd",
+					"$(SRCROOT)/../android-tv/app/src/main/cpp/plist_config",
+					"$(SRCROOT)/../android-tv/third_party/libplist/include",
+					"$(SRCROOT)/../android-tv/third_party/libplist/libcnary/include",
+					"$(SRCROOT)/../android-tv/third_party/libplist/src",
+				);
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				USER_HEADER_SEARCH_PATHS = (
+					"$(SRCROOT)/../android-tv/third_party/uxplay/lib",
+					"$(SRCROOT)/../android-tv/third_party/uxplay/lib/playfair",
+					"$(SRCROOT)/../android-tv/third_party/uxplay/lib/llhttp",
+					"$(SRCROOT)/../android-tv/app/src/main/cpp",
+				);
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = (
+					"-Wno-unused-parameter",
+					"-Wno-unused-function",
+					"-Wno-unused-variable",
+					"-Wno-deprecated-declarations",
+					"-Wno-shorten-64-to-32",
+					"-Wno-sign-compare",
+					"-Wno-comma",
+					"-Wno-strict-prototypes",
+					"-Wno-parentheses",
+					"-Wno-incompatible-pointer-types-discards-qualifiers",
+				);
+			};
+			name = Debug;
+		};
+		5FC1C17F993081C6B2D7CA88 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.mangoscreencast.ios.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		7FD933638DFE83DE14D7DB5B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_PREVIEWS = NO;
+				INFOPLIST_FILE = MangoScreenCast/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.mangoscreencast.ios;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_OBJC_BRIDGING_HEADER = "MangoScreenCast/MangoScreenCast-Bridging-Header.h";
+			};
+			name = Debug;
+		};
+		EB00CA297BCB4F41AA982481 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CLANG_ENABLE_MODULES = NO;
+				GCC_OPTIMIZATION_LEVEL = s;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					STANDALONE,
+					TARGET_POSIX,
+					_REENTRANT,
+					NOHOLD,
+					PLIST_210,
+					PLIST_230,
+					HAVE_CONFIG_H,
+					LIBPLIST_STATIC,
+					"OPENSSL_API_COMPAT=0x10101000L",
+					__STDC_CONSTANT_MACROS,
+					__STDC_LIMIT_MACROS,
+				);
+				HEADER_SEARCH_PATHS = (
+					"$(SRCROOT)/MangoCore/openssl-shim",
+					"$(SRCROOT)/../android-tv/app/src/main/cpp/android_dnssd",
+					"$(SRCROOT)/../android-tv/app/src/main/cpp/plist_config",
+					"$(SRCROOT)/../android-tv/third_party/libplist/include",
+					"$(SRCROOT)/../android-tv/third_party/libplist/libcnary/include",
+					"$(SRCROOT)/../android-tv/third_party/libplist/src",
+				);
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				USER_HEADER_SEARCH_PATHS = (
+					"$(SRCROOT)/../android-tv/third_party/uxplay/lib",
+					"$(SRCROOT)/../android-tv/third_party/uxplay/lib/playfair",
+					"$(SRCROOT)/../android-tv/third_party/uxplay/lib/llhttp",
+					"$(SRCROOT)/../android-tv/app/src/main/cpp",
+				);
+				USE_HEADERMAP = NO;
+				WARNING_CFLAGS = (
+					"-Wno-unused-parameter",
+					"-Wno-unused-function",
+					"-Wno-unused-variable",
+					"-Wno-deprecated-declarations",
+					"-Wno-shorten-64-to-32",
+					"-Wno-sign-compare",
+					"-Wno-comma",
+					"-Wno-strict-prototypes",
+					"-Wno-parentheses",
+					"-Wno-incompatible-pointer-types-discards-qualifiers",
+				);
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		5AAE38FE161A15A9D280C10D /* Build configuration list for PBXNativeTarget "MangoScreenCast" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				7FD933638DFE83DE14D7DB5B /* Debug */,
+				0E6793CDF0DAA09A51E18461 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		C60F2AB3E653BC241776A2D7 /* Build configuration list for PBXNativeTarget "MangoScreenCastTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				5FC1C17F993081C6B2D7CA88 /* Debug */,
+				2D4B5087FA24439C5A11C5BB /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		C94A9F9662F64561ACC07B6A /* Build configuration list for PBXProject "MangoScreenCast" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4F6D5392095E386CED91601E /* Debug */,
+				1F3AB9157B93ED701734075D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		E24B4C321F6981FF2B9A5DE0 /* Build configuration list for PBXNativeTarget "MangoCore" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				4FA972AF00ED187D4A6A6B2A /* Debug */,
+				EB00CA297BCB4F41AA982481 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		E0A42FC2F99C4D75B06D9F72 /* XCRemoteSwiftPackageReference "OpenSSL-Package" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/krzyzanowskim/OpenSSL-Package.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 3.6.5000;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		A06CE0A20C761D449A82BE71 /* OpenSSL */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E0A42FC2F99C4D75B06D9F72 /* XCRemoteSwiftPackageReference "OpenSSL-Package" */;
+			productName = OpenSSL;
+		};
+		C75E4CB4C65BE036EEB8553A /* OpenSSL */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E0A42FC2F99C4D75B06D9F72 /* XCRemoteSwiftPackageReference "OpenSSL-Package" */;
+			productName = OpenSSL;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = 34B36BD8C5576B94E8FC1832 /* Project object */;
+}

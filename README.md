@@ -5,6 +5,10 @@ receiver**. Macs, iPhones and iPads find the TV in their built-in **Screen
 Mirroring** menu. You don't install anything on them and there's no code to
 type in.
 
+There's also an **iPad and iPhone app** that does the same on an iPad: put
+your Mac's screen on it, or use it as a second display. See
+[iPad and iPhone](#ipad-and-iphone).
+
 - **Mac:** mirror the screen, or choose **Use As Separate Display** to use the
   TV as a second monitor. The TV offers 4K (3840 × 2160) at 60 fps with HEVC
   whenever its decoder can take it, so the Mac renders for the full panel
@@ -97,6 +101,83 @@ cd Mango-Screen-Cast/android-tv
 | Stay visible after closing the app | Keeps the TV in Screen Mirroring lists while you use other apps, and after the TV restarts. For mirroring to bring the player up by itself, Android also needs *Display over other apps* for the app; on Google TV grant it with the `SYSTEM_ALERT_WINDOW` adb line above. Diagnostics shows whether it's granted. |
 | Updates | *Automatic* (default) installs new releases while nothing is mirroring; *Ask first* shows an Update button on the home screen. |
 
+## iPad and iPhone
+
+The app in `ios/` makes an iPad (or iPhone) an AirPlay receiver, with the same
+AirPlay core as the TV app. Your Mac mirrors to it from Screen Mirroring, or
+uses it as a second display with **Use As Separate Display**. The iPad offers
+its own screen size (for example 2360 × 1640 on an iPad Air) with HEVC, so a
+separate display fills the whole screen at full sharpness. Sound plays on the
+iPad.
+
+It needs iPadOS or iOS 16 or newer, and the Mac and the iPad on the same
+Wi-Fi network.
+
+### Install
+
+Apple only lets you install apps from outside the App Store if they're signed
+with your own Apple ID. A free Apple ID works.
+
+**With Xcode on your Mac:**
+
+1. Get the code with its submodules, and open the project:
+   ```sh
+   git clone --recursive https://github.com/xgamer791/Mango-Screen-Cast
+   open Mango-Screen-Cast/ios/MangoScreenCast.xcodeproj
+   ```
+   Xcode 15 or newer. It downloads OpenSSL by itself the first time.
+2. Click the **MangoScreenCast** project, then the **MangoScreenCast** target →
+   **Signing & Capabilities**, and pick your Apple ID under **Team** (Add an
+   Account… if it isn't there). If Xcode says the bundle identifier isn't
+   available, change `com.mangoscreencast.ios` to something of your own, such
+   as `com.yourname.mango`.
+3. Connect the iPad with a cable, pick it at the top of the Xcode window, and
+   press **Run** (⌘R).
+4. The first time, the iPad asks for two things: turn on **Developer Mode**
+   (Settings → Privacy & Security, then restart), and trust your Apple ID
+   under Settings → General → **VPN & Device Management**.
+
+With a free Apple ID, the app stops opening after 7 days. Press Run in Xcode
+again to renew it. A paid developer account makes it last a year.
+
+**Without Xcode:** each build of the app is attached to the
+[`ios-latest` pre-release](../../releases/tag/ios-latest) as
+`MangoScreenCast-unsigned.ipa`. Install it with
+[Sideloadly](https://sideloadly.io) or [AltStore](https://altstore.io), which
+sign it with your Apple ID.
+
+### Use
+
+1. Open **Mango** on the iPad. The first time, allow **Local Network** access.
+   Without it your Mac can't see the iPad.
+2. On the Mac: Control Center → **Screen Mirroring** → *Mango iPad*. To use the
+   iPad as a second display instead of a copy, choose **Use As Separate
+   Display**. Without Screen Mirroring in Control Center, use System Settings →
+   Displays → **Add Display**.
+3. Tap the iPad's screen while mirroring to show who's mirroring, a **Stop**
+   button and live stats.
+
+Keep Mango open. iOS pauses apps in the background, so the iPad is only in
+Screen Mirroring lists while Mango is on screen. Mango keeps the screen on
+while it waits, because a locked iPad drops out of the list too.
+
+**Settings** (gear button on the home screen):
+
+| Setting | What it does |
+|---|---|
+| Name | What your Mac shows in Screen Mirroring. *Mango iPad* unless you change it. |
+| Resolution | *This screen* offers the iPad's own pixels with HEVC (default). *1080p* offers 1920 × 1080. |
+| Sound | Play the Mac's audio on the iPad. |
+| Show stats while mirroring | Resolution, codec, frame rate and bitrate in a corner. |
+| Keep the screen on while waiting | On by default. It always stays on while mirroring. |
+| Diagnostics | What the iPad offers and the recent AirPlay log, with a Share button. |
+
+**Sidecar:** if your Mac and iPad are signed in to the same Apple ID and both
+support it, macOS's built-in Sidecar also puts the Mac's screen on the iPad
+(it shows up in the same Screen Mirroring menu), with touch and Apple Pencil
+input. Mango works across Apple IDs, on iPads that Sidecar doesn't support,
+and from iPhones and other iPads too.
+
 ## What makes it fast
 
 The app removes as much delay as the TV side can:
@@ -136,6 +217,10 @@ The app removes as much delay as the TV side can:
 - **AirPlay "video" mode** (an app handing the TV a video link) isn't offered,
   so apps fall back to mirroring the screen.
 - Only one device mirrors at a time. A new one takes over the screen.
+- **iPad app:** it only receives while it's open on screen (iOS pauses apps
+  in the background), and like the TV app it hasn't been tried on real
+  hardware yet. CI builds it, and its tests decode real H.264 and HEVC frames
+  in the simulator.
 
 ## How it works
 
@@ -150,7 +235,27 @@ android-tv/
   third_party/uxplay       AirPlay protocol (git submodule)
   third_party/libplist     Apple property lists (git submodule)
   native-test/             host build of the AirPlay core + checks of what it advertises
+ios/
+  MangoScreenCast.xcodeproj   generated by tools/gen_ios_project.py
+  MangoCore/               C bridge to the same AirPlay core (built from android-tv/)
+  MangoScreenCast/         SwiftUI app
+    AirPlay/               Receiver (server lifecycle, status), Bonjour advertising
+    Media/                 VideoRenderer (VideoToolbox), AudioPlayer, NAL parsing
+    Views/                 Home, Mirror (player), Settings
+  MangoScreenCastTests/    unit tests, including decoding real H.264/HEVC frames
 ```
+
+On the iPad the same UxPlay core is built with Xcode against
+[OpenSSL-Package](https://github.com/krzyzanowskim/OpenSSL-Package) (a
+prebuilt OpenSSL for Apple platforms). Video goes to an
+`AVSampleBufferDisplayLayer`, which decodes it in hardware and shows each frame
+as soon as it's ready. The frames since the last keyframe are kept, so if iOS
+interrupts the decoder the picture comes back at once. Audio is decoded with
+Core Audio's AAC-ELD decoder. Service records are published with Bonjour
+(`NetService`).
+
+After adding or removing a source file, run `python3 tools/gen_ios_project.py`
+and commit the regenerated project.
 
 The AirPlay protocol comes from [UxPlay](https://github.com/FDH2/UxPlay), an
 actively maintained open-source AirPlay mirroring server. It handles pairing,
@@ -166,7 +271,8 @@ can decode it. That's what lets Apple devices send more than 1080p.
 **Tests:** `./gradlew testDebugUnitTest` runs the Kotlin unit tests.
 `android-tv/native-test` builds the AirPlay core on Linux. It checks the
 service records and the `/info` reply Apple devices read (display size,
-60 fps, HEVC flag, no password). CI runs both and builds the APKs.
+60 fps, HEVC flag, no password). CI runs both and builds the APKs. For the
+iPad app, CI runs its tests on an iPad simulator and builds the unsigned IPA.
 
 ## License
 
