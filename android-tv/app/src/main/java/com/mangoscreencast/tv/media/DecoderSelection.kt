@@ -50,10 +50,10 @@ object DecoderSelection {
         for (mime in listOf("video/hevc", "video/avc")) {
             for (info in decodersFor(mime)) {
                 val video = info.getCapabilitiesForType(mime).videoCapabilities
-                val uhd = video != null && supports(video, 3840, 2160, 60)
-                val fhd = video != null && supports(video, 1920, 1080, 60)
+                fun rated(width: Int, height: Int, fps: Int) = yesNo(video != null && supports(video, width, height, fps))
                 val kind = if (isSoftware(info)) "software" else "hardware"
-                lines += "$mime ${info.name} ($kind): 4K60 ${yesNo(uhd)}, 1080p60 ${yesNo(fhd)}"
+                lines += "$mime ${info.name} ($kind): 4K60 ${rated(3840, 2160, 60)}, 1080p60 ${rated(1920, 1080, 60)}, " +
+                    "4K120 ${rated(3840, 2160, 120)}, 1440p120 ${rated(2560, 1440, 120)}, 1080p120 ${rated(1920, 1080, 120)}"
             }
         }
         return lines.ifEmpty { listOf("none found") }

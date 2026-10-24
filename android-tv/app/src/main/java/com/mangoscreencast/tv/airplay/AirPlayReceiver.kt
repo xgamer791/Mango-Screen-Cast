@@ -90,6 +90,7 @@ class AirPlayReceiver(private val context: Context, private val settings: Settin
         s.profile?.let { p ->
             appendLine("Offering: ${p.width}x${p.height} @ ${p.maxFps} fps, ${p.codecs} (refresh ${p.refreshRate} Hz)")
             appendLine("Panel: ${p.panel.width}x${p.panel.height}, modes ${p.panel.refreshRates.joinToString { "%.2f".format(it) }} Hz")
+            appendLine("Frame rate setting: ${settings.frameRate.fps} fps${p.note?.let { ", $it" } ?: ""}")
         }
         appendLine("Device: ${Build.MANUFACTURER} ${Build.MODEL}, Android ${Build.VERSION.RELEASE} (API ${Build.VERSION.SDK_INT})")
         appendLine("App: ${com.mangoscreencast.tv.BuildConfig.VERSION_NAME} (${com.mangoscreencast.tv.BuildConfig.VERSION_CODE})")
@@ -149,7 +150,8 @@ class AirPlayReceiver(private val context: Context, private val settings: Settin
     private fun startServer() {
         val name = settings.tvName
         update { Status(state = State.STARTING, tvName = name) }
-        val profile = DisplayCapabilities.profile(context, settings.resolution)
+        val profile = DisplayCapabilities.profile(context, settings.resolution, settings.frameRate)
+        profile.note?.let { log("frame rate: $it") }
         val result = try {
             AirPlayNative.nativeStart(
                 this, name, hardwareAddress(), File(context.filesDir, "airplay.key").absolutePath,

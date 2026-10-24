@@ -1,6 +1,7 @@
 package com.mangoscreencast.tv
 
 import android.content.Context
+import com.mangoscreencast.tv.display.FrameRateSetting
 import com.mangoscreencast.tv.display.ResolutionSetting
 import java.util.UUID
 
@@ -45,6 +46,11 @@ class Settings(private val context: Context) {
             .getOrDefault(ResolutionSetting.AUTO)
         set(value) = prefs.edit().putString(KEY_RESOLUTION, value.name).apply()
 
+    var frameRate: FrameRateSetting
+        get() = runCatching { FrameRateSetting.valueOf(prefs.getString(KEY_FRAME_RATE, null)!!) }
+            .getOrDefault(FrameRateSetting.FPS_60)
+        set(value) = prefs.edit().putString(KEY_FRAME_RATE, value.name).apply()
+
     var latencyMode: LatencyMode
         get() = runCatching { LatencyMode.valueOf(prefs.getString(KEY_LATENCY, null)!!) }
             .getOrDefault(LatencyMode.BALANCED)
@@ -85,6 +91,7 @@ class Settings(private val context: Context) {
         const val KEY_ID = "device_id"
         const val KEY_NAME = "tv_name"
         const val KEY_RESOLUTION = "resolution"
+        const val KEY_FRAME_RATE = "frame_rate"
         const val KEY_LATENCY = "latency_mode"
         const val KEY_SOUND = "sound"
         const val KEY_STATS = "show_stats"

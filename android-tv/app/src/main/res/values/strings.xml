@@ -31,6 +31,9 @@
     <string name="setting_resolution_hint">Apple devices size their picture to this. Auto offers the most the TV can decode, up to 4K.</string>
     <string name="resolution_auto">Auto</string>
     <string name="resolution_auto_value">Auto (%1$s)</string>
+    <string name="setting_frame_rate">Frame rate</string>
+    <string name="setting_frame_rate_hint">The most frames per second Macs and iPhones may send. 120 needs a 120 Hz TV screen, and Apple devices decide what they actually send: turn on Show stats to see it.</string>
+    <string name="fps_value">%1$d fps</string>
     <string name="setting_pacing">Frame pacing</string>
     <string name="pacing_balanced">Balanced</string>
     <string name="pacing_fastest">Fastest</string>

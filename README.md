@@ -88,6 +88,7 @@ cd Mango-Screen-Cast/android-tv
 |---|---|
 | TV name | The name Apple devices show. *Mango Screen Cast* unless you change it. |
 | Resolution | Auto offers the most the TV can decode, up to 4K. You can also pick 4K, 2K (1440p) or 1080p. |
+| Frame rate | The most frames per second Apple devices may send: *60 fps* (default), *120 fps* or *30 fps*. 120 needs a 120 Hz mode on the TV's screen and a decoder rated for it; with Resolution on Auto the picture shrinks (usually to 1440p) until it is. Apple devices treat this as an upper limit and may still send 60; *Show stats* shows what arrives. |
 | Frame pacing | *Balanced* (default) shows each frame right away, one per screen refresh. *Fastest* shows frames the moment they're decoded. *Smoothest* holds one frame back to absorb Wi-Fi jitter. |
 | Sound | Play the device's audio on the TV. |
 | Show stats | Overlay while mirroring: resolution, codec, fps, the bitrate the sender is using, decode time. |

@@ -34,7 +34,7 @@ static void log_message(void *cls, int level, const char *msg) { fprintf(stderr,
 
 int main(int argc, char **argv) {
     if (argc < 6) {
-        fprintf(stderr, "usage: %s KEYFILE SECONDS WIDTH HEIGHT HEVC\n", argv[0]);
+        fprintf(stderr, "usage: %s KEYFILE SECONDS WIDTH HEIGHT HEVC [FPS]\n", argv[0]);
         return 2;
     }
     mango_server_config_t config;
@@ -45,8 +45,9 @@ int main(int argc, char **argv) {
     config.keyfile = argv[1];
     config.width = atoi(argv[3]);
     config.height = atoi(argv[4]);
-    config.refresh_rate = 60;
-    config.max_fps = 60;
+    /* The TV advertises its refresh rate and frame rate as the same number. */
+    config.refresh_rate = argc > 6 ? atoi(argv[6]) : 60;
+    config.max_fps = config.refresh_rate;
     config.h265 = atoi(argv[5]) != 0;
     config.log_level = LOGGER_INFO;
 

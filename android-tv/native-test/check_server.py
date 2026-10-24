@@ -36,10 +36,10 @@ def fetch_info(port):
         return plistlib.loads(body)
 
 
-def run_case(harness, width, height, hevc):
+def run_case(harness, width, height, hevc, fps=60):
     with tempfile.TemporaryDirectory() as tmp:
         keyfile = os.path.join(tmp, "airplay.key")
-        proc = subprocess.Popen([harness, keyfile, "3", str(width), str(height), str(int(hevc))],
+        proc = subprocess.Popen([harness, keyfile, "3", str(width), str(height), str(int(hevc)), str(fps)],
                                 stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True)
         services, txt = {}, {}
         port = None
@@ -70,7 +70,9 @@ def run_case(harness, width, height, hevc):
 
     display = info["displays"][0]
     assert (display["width"], display["height"]) == (width, height), display
-    assert display["maxFPS"] == 60, display
+    assert display["maxFPS"] == fps, display
+    # Sent as a frame period, the way Apple TVs report it.
+    assert abs(display["refreshRate"] - 1 / fps) < 1e-6, display
     assert info["deviceID"] == "02:11:22:33:44:55", info["deviceID"]
     print(f"ok: {width}x{height} @ {display['maxFPS']} fps, HEVC={hevc}, features={features}")
 
@@ -79,6 +81,7 @@ def main():
     harness = os.path.join(sys.argv[1] if len(sys.argv) > 1 else "build", "server_harness")
     run_case(harness, 3840, 2160, True)
     run_case(harness, 1920, 1080, False)
+    run_case(harness, 2560, 1440, True, fps=120)
 
 
 if __name__ == "__main__":

@@ -70,10 +70,14 @@ class MirrorActivity : Activity(), SurfaceHolder.Callback, AirPlayReceiver.Liste
         surfaceView.holder.addCallback(this)
     }
 
+    /** The frame rate the TV offered Apple devices (60 unless Settings > Frame rate got 120). */
+    private val streamFps get() = receiver.status.profile?.maxFps ?: 60
+
     /**
      * Asks the TV for its game mode (no picture processing, which can add
-     * 50-100 ms) and for a 60 Hz native-resolution mode, so 60 fps plays
-     * evenly instead of juddering on a 50 Hz or 24 Hz setting.
+     * 50-100 ms) and for a native-resolution mode at 60 Hz (or 120 Hz for a
+     * 120 fps stream), so frames play evenly instead of juddering on a
+     * 50 Hz or 24 Hz setting.
      */
     private fun configureDisplay() {
         val attributes = window.attributes
@@ -81,8 +85,10 @@ class MirrorActivity : Activity(), SurfaceHolder.Callback, AirPlayReceiver.Liste
         if (Build.VERSION.SDK_INT >= 23) {
             val display = currentDisplay()
             val current = display.mode
-            val best = DisplayCapabilities.preferredMode(display)
-            val currentIsEven = abs(current.refreshRate - 60f) < 1f || abs(current.refreshRate - 120f) < 1f
+            val fps = streamFps
+            val best = DisplayCapabilities.preferredMode(display, fps)
+            val currentIsEven = if (fps > 60) abs(current.refreshRate - fps) < 1.5f
+                else abs(current.refreshRate - 60f) < 1f || abs(current.refreshRate - 120f) < 1f
             val currentIsNative = best == null ||
                 current.physicalWidth.toLong() * current.physicalHeight >=
                 best.physicalWidth.toLong() * best.physicalHeight
@@ -125,7 +131,7 @@ class MirrorActivity : Activity(), SurfaceHolder.Callback, AirPlayReceiver.Liste
     override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
         if (Build.VERSION.SDK_INT >= 30) {
             try {
-                holder.surface.setFrameRate(60f, Surface.FRAME_RATE_COMPATIBILITY_FIXED_SOURCE)
+                holder.surface.setFrameRate(streamFps.toFloat(), Surface.FRAME_RATE_COMPATIBILITY_FIXED_SOURCE)
             } catch (_: Exception) {
             }
         }

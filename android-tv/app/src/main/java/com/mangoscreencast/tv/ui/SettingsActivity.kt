@@ -20,6 +20,8 @@ import com.mangoscreencast.tv.MangoApp
 import com.mangoscreencast.tv.R
 import com.mangoscreencast.tv.ReceiverService
 import com.mangoscreencast.tv.UpdateMode
+import com.mangoscreencast.tv.display.DisplayCapabilities
+import com.mangoscreencast.tv.display.FrameRateSetting
 import com.mangoscreencast.tv.display.ResolutionSetting
 import com.mangoscreencast.tv.update.AppUpdater
 
@@ -59,6 +61,11 @@ class SettingsActivity : Activity(), AppUpdater.Listener {
         row(R.string.setting_resolution, resolutionLabel(), R.string.setting_resolution_hint) {
             val values = ResolutionSetting.entries
             settings.resolution = values[(values.indexOf(settings.resolution) + 1) % values.size]
+            receiver.restart()
+        }
+        row(R.string.setting_frame_rate, getString(R.string.fps_value, settings.frameRate.fps), frameRateHint()) {
+            val values = FrameRateSetting.entries
+            settings.frameRate = values[(values.indexOf(settings.frameRate) + 1) % values.size]
             receiver.restart()
         }
         row(R.string.setting_pacing, pacingLabel(), pacingHint()) {
@@ -216,6 +223,14 @@ class SettingsActivity : Activity(), AppUpdater.Listener {
             ResolutionSetting.QHD_1440 -> "2K / 1440p (2560 × 1440)"
             ResolutionSetting.FHD_1080 -> "1080p (1920 × 1080)"
         }
+    }
+
+    /** What this TV will actually offer at the chosen rate, worked out now rather than after the restart. */
+    private fun frameRateHint(): String {
+        val note = if (settings.frameRate.fps > 60) {
+            DisplayCapabilities.profile(this, settings.resolution, settings.frameRate).note
+        } else null
+        return note ?: getString(R.string.setting_frame_rate_hint)
     }
 
     private fun pacingLabel() = getString(
