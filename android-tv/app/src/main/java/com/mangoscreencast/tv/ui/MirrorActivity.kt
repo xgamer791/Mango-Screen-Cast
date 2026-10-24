@@ -66,6 +66,7 @@ class MirrorActivity : Activity(), SurfaceHolder.Callback, AirPlayReceiver.Liste
         @Suppress("DEPRECATION")
         window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_FULLSCREEN or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
             or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY or View.SYSTEM_UI_FLAG_LAYOUT_STABLE)
+        frame.fillWide = settings.fillWidePictures
         configureDisplay()
         surfaceView.holder.addCallback(this)
     }
@@ -143,7 +144,24 @@ class MirrorActivity : Activity(), SurfaceHolder.Callback, AirPlayReceiver.Liste
     }
 
     override fun onVideoSize(width: Int, height: Int) {
-        runOnUiThread { frame.setAspect(width, height) }
+        runOnUiThread {
+            frame.setAspect(width, height)
+            // An iPhone in landscape is wider than the TV: say once how to fill the screen.
+            val root = frame.parent as View
+            if (!fillHintShown && !frame.fillWide && frame.isWiderThan(root.width, root.height)) {
+                fillHintShown = true
+                showBanner(getString(R.string.fill_hint))
+            }
+        }
+    }
+
+    private var fillHintShown = false
+
+    private fun showBanner(text: String) {
+        bannerView.text = text
+        bannerView.alpha = 1f
+        handler.removeCallbacks(hideBanner)
+        handler.postDelayed(hideBanner, 3500)
     }
 
     // --- Status -----------------------------------------------------------------
@@ -156,12 +174,7 @@ class MirrorActivity : Activity(), SurfaceHolder.Callback, AirPlayReceiver.Liste
         pausedView.visibility = if (status.paused) View.VISIBLE else View.GONE
         val from = status.clientName ?: getString(R.string.a_device)
         val text = getString(R.string.mirroring_banner, from)
-        if (bannerView.text != text) {
-            bannerView.text = text
-            bannerView.alpha = 1f
-            handler.removeCallbacks(hideBanner)
-            handler.postDelayed(hideBanner, 3500)
-        }
+        if (bannerView.text != text && !fillHintShown) showBanner(text)
     }
 
     private fun updateStatsVisibility() {
@@ -198,6 +211,13 @@ class MirrorActivity : Activity(), SurfaceHolder.Callback, AirPlayReceiver.Liste
             KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_ENTER, KeyEvent.KEYCODE_INFO -> {
                 showStats = !showStats
                 updateStatsVisibility()
+                return true
+            }
+            KeyEvent.KEYCODE_DPAD_UP, KeyEvent.KEYCODE_DPAD_DOWN -> {
+                settings.fillWidePictures = !settings.fillWidePictures
+                frame.fillWide = settings.fillWidePictures
+                fillHintShown = true
+                showBanner(getString(if (frame.fillWide) R.string.fill_on else R.string.fill_off))
                 return true
             }
         }

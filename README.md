@@ -90,6 +90,7 @@ cd Mango-Screen-Cast/android-tv
 | Resolution | Auto offers the most the TV can decode, up to 4K. You can also pick 4K, 2K (1440p) or 1080p. |
 | Frame rate | The most frames per second Apple devices may send: *60 fps* (default), *120 fps* or *30 fps*. 120 needs a 120 Hz mode on the TV's screen and a decoder rated for it; with Resolution on Auto the picture shrinks (usually to 1440p) until it is. Apple devices treat this as an upper limit and may still send 60; *Show stats* shows what arrives. |
 | Frame pacing | *Balanced* (default) shows each frame right away, one per screen refresh. *Fastest* shows frames the moment they're decoded. *Smoothest* holds one frame back to absorb Wi-Fi jitter. |
+| iPhone in landscape | *Fit whole picture* (default) or *Fill the screen*. iPhones are wider than a TV, so the whole picture leaves black bars above and below; Fill zooms in to cover the TV and cuts off the left and right edges (a 16:9 video then fills the TV exactly). Mac screens and portrait phones are never cropped. While mirroring, press **Up** or **Down** to switch. |
 | Sound | Play the device's audio on the TV. |
 | Show stats | Overlay while mirroring: resolution, codec, fps, the bitrate the sender is using, decode time. |
 | Diagnostics | What the TV detected (panel, decoders), what it offers Apple devices, and the recent AirPlay and decoder log. Include this when reporting a problem. |

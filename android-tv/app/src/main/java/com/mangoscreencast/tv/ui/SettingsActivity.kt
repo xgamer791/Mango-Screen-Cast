@@ -73,6 +73,10 @@ class SettingsActivity : Activity(), AppUpdater.Listener {
             settings.latencyMode = values[(values.indexOf(settings.latencyMode) + 1) % values.size]
             receiver.video.latencyMode = settings.latencyMode
         }
+        row(R.string.setting_fill, getString(if (settings.fillWidePictures) R.string.fill_value else R.string.fit_value),
+            R.string.setting_fill_hint) {
+            settings.fillWidePictures = !settings.fillWidePictures
+        }
         row(R.string.setting_sound, onOff(settings.soundEnabled), R.string.setting_sound_hint) {
             settings.soundEnabled = !settings.soundEnabled
             receiver.audio.enabled = settings.soundEnabled

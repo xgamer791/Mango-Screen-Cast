@@ -56,6 +56,11 @@ class Settings(private val context: Context) {
             .getOrDefault(LatencyMode.BALANCED)
         set(value) = prefs.edit().putString(KEY_LATENCY, value.name).apply()
 
+    /** Zoom pictures wider than the TV (an iPhone in landscape) to cover it, cutting off the sides. */
+    var fillWidePictures: Boolean
+        get() = prefs.getBoolean(KEY_FILL_WIDE, false)
+        set(value) = prefs.edit().putBoolean(KEY_FILL_WIDE, value).apply()
+
     var soundEnabled: Boolean
         get() = prefs.getBoolean(KEY_SOUND, true)
         set(value) = prefs.edit().putBoolean(KEY_SOUND, value).apply()
@@ -94,6 +99,7 @@ class Settings(private val context: Context) {
         const val KEY_FRAME_RATE = "frame_rate"
         const val KEY_LATENCY = "latency_mode"
         const val KEY_SOUND = "sound"
+        const val KEY_FILL_WIDE = "fill_wide"
         const val KEY_STATS = "show_stats"
         const val KEY_BACKGROUND = "background"
         const val KEY_UPDATES = "updates"
