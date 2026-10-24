@@ -505,8 +505,8 @@ class VideoDecoder internal constructor(
     // --- Helpers ----------------------------------------------------------------
 
     private fun note(message: String) {
-        Log.i(TAG, message)
-        log?.invoke(message)
+        // The receiver's log also goes to logcat; only log here when nobody listens.
+        log?.invoke(message) ?: Log.i(TAG, message)
     }
 
     /** The AirPlay network thread reads the stream; keep it ahead of everything else. */

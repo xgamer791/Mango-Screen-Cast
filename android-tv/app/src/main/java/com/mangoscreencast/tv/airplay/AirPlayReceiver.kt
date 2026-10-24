@@ -70,8 +70,12 @@ class AirPlayReceiver(private val context: Context, private val settings: Settin
         video.log = ::log
     }
 
-    /** Adds a line to the log shown under Settings > Diagnostics. */
+    /**
+     * Adds a line to the log shown under Settings > Diagnostics, and to
+     * logcat (tag MangoAirPlay) so it can be followed with adb.
+     */
     fun log(line: String) {
+        Log.i(TAG, line)
         synchronized(recentLog) {
             recentLog.addLast("${timeFormat.format(Date())} $line")
             while (recentLog.size > MAX_LOG_LINES) recentLog.removeFirst()
@@ -157,7 +161,6 @@ class AirPlayReceiver(private val context: Context, private val settings: Settin
             ERROR_NO_LIBRARY
         }
         if (result > 0) {
-            Log.i(TAG, "ready as \"$name\" on port $result: ${profile.width}x${profile.height} ${profile.codecs}")
             log("server ready on port $result: ${profile.width}x${profile.height} @ ${profile.maxFps} fps, ${profile.codecs}")
             update { it.copy(state = State.READY, profile = profile, message = null) }
         } else {
@@ -219,7 +222,6 @@ class AirPlayReceiver(private val context: Context, private val settings: Settin
     override fun onUnregisterService(type: String) = advertiser.unregister(type)
 
     override fun onClientRequest(deviceId: String, model: String, name: String): Boolean {
-        Log.i(TAG, "connection from $name ($model)")
         log("connection from $name ($model)")
         update {
             it.copy(
@@ -240,11 +242,12 @@ class AirPlayReceiver(private val context: Context, private val settings: Settin
     }
 
     override fun onVideoCodec(h265: Boolean, sourceWidth: Int, sourceHeight: Int, width: Int, height: Int): Int {
-        Log.i(TAG, "mirroring ${if (h265) "HEVC" else "H.264"} ${sourceWidth}x$sourceHeight")
         log("mirroring starts: ${if (h265) "HEVC" else "H.264"} ${sourceWidth}x$sourceHeight")
         if (h265 && status.profile?.h265 == false) return -1
         video.latencyMode = settings.latencyMode
         video.start(h265, sourceWidth, sourceHeight)
+        control.removeCallbacks(statsTicker)
+        control.postDelayed(statsTicker, STATS_INTERVAL_MS)
         acquireWifiLock()
         update { it.copy(state = State.MIRRORING, paused = false) }
         main.post { onMirroringStarted?.invoke() }
@@ -296,6 +299,17 @@ class AirPlayReceiver(private val context: Context, private val settings: Settin
         message.lineSequence().firstOrNull()?.takeIf { it.isNotBlank() }?.let { log(it.trim()) }
     }
 
+    /** While mirroring, logs what the decoder is doing every few seconds. */
+    private val statsTicker = object : Runnable {
+        override fun run() {
+            if (status.state != State.MIRRORING) return
+            val v = video.stats()
+            log("stats: ${v.width}x${v.height} ${v.codec}, ${"%.1f".format(v.fps)} fps, " +
+                "${"%.1f".format(v.megabitsPerSecond)} Mbit/s, ${v.droppedFrames} dropped, ${v.restarts} restarts")
+            control.postDelayed(this, STATS_INTERVAL_MS)
+        }
+    }
+
     // --- Wi-Fi ---------------------------------------------------------------------
 
     /** Keeps the TV's Wi-Fi out of power save while mirroring, which otherwise adds latency spikes. */
@@ -328,5 +342,6 @@ class AirPlayReceiver(private val context: Context, private val settings: Settin
         const val TAG = "MangoAirPlay"
         const val ERROR_NO_LIBRARY = -100
         const val MAX_LOG_LINES = 150
+        const val STATS_INTERVAL_MS = 10_000L
     }
 }
