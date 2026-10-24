@@ -30,7 +30,8 @@ already have AirPlay 2 built in.
 [Android TV app workflow](../../actions/workflows/android.yml) and download the
 `MangoScreenCast-apk` artifact. Then sideload `MangoScreenCast.apk` onto the
 TV, either with `adb install MangoScreenCast.apk` or with an app such as
-*Downloader* (Fire TV, Google TV).
+*Downloader* (Fire TV, Google TV). If a run has no artifact, the account's
+Actions storage was full when it ran; build it yourself as below.
 
 **Build it yourself:**
 
