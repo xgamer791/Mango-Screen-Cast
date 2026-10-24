@@ -28,7 +28,7 @@ public final class ControlConnection {
     }
 
     public static func parameters() -> NWParameters {
-        let tcp = NWProtocolTCPOptions()
+        let tcp = NWProtocolTCP.Options()
         tcp.noDelay = true
         tcp.connectionTimeout = 5
         tcp.enableKeepalive = true

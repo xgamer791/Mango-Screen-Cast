@@ -320,7 +320,7 @@ public final class BeaconService {
                 let flags = Int32(entry.ifa_flags)
                 if flags & IFF_UP != 0, flags & IFF_BROADCAST != 0, flags & IFF_LOOPBACK == 0,
                    let address = entry.ifa_dstaddr, address.pointee.sa_family == sa_family_t(AF_INET) {
-                    address.withMemoryRebound(to: sockaddr_in.self, capacity: 1) {
+                    _ = address.withMemoryRebound(to: sockaddr_in.self, capacity: 1) {
                         targets.insert($0.pointee.sin_addr.s_addr)
                     }
                 }
