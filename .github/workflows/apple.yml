@@ -1,0 +1,26 @@
+name: Apple (macOS + iOS)
+
+on:
+  push:
+    paths: ["apple/**", "protocol/**", ".github/workflows/apple.yml"]
+  pull_request:
+    paths: ["apple/**", "protocol/**", ".github/workflows/apple.yml"]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-15
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Show toolchain
+        run: xcodebuild -version && swift --version
+
+      - name: Protocol tests (Swift package)
+        working-directory: apple
+        run: swift test
+
+      - name: Build MangoKit
+        working-directory: apple
+        run: swift build -c release

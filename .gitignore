@@ -1,0 +1,22 @@
+# Swift / Xcode
+apple/.build/
+apple/.swiftpm/
+apple/*.xcodeproj/
+apple/build/
+xcuserdata/
+DerivedData/
+*.xcuserstate
+
+# Android
+android-tv/.gradle/
+android-tv/build/
+android-tv/app/build/
+android-tv/*/build/
+android-tv/local.properties
+android-tv/.idea/
+android-tv/.kotlin/
+*.iml
+
+# Misc
+.DS_Store
+__pycache__/
