@@ -6,8 +6,9 @@ Mirroring** menu. You don't install anything on them and there's no code to
 type in.
 
 - **Mac:** mirror the screen, or choose **Use As Separate Display** to use the
-  TV as a second monitor. The TV offers its own resolution (up to 4K) at
-  60 fps, so the Mac renders for the panel instead of 1080p.
+  TV as a second monitor. The TV offers 4K (3840 × 2160) at 60 fps with HEVC
+  whenever its decoder can take it, so the Mac renders for the full panel
+  instead of 1080p.
 - **iPhone and iPad:** they send the sharpest picture they're able to. Devices
   that can send HEVC go above 1080p.
 - **Sound** plays on the TV.
@@ -58,17 +59,20 @@ cd Mango-Screen-Cast/android-tv
 | Setting | What it does |
 |---|---|
 | TV name | The name Apple devices show. |
-| Resolution | Auto uses the TV panel's resolution, up to 4K. Pick a lower one on slow Wi-Fi. |
+| Resolution | Auto offers the most the TV can decode, up to 4K. You can also pick 4K, 2K (1440p) or 1080p. |
 | Frame pacing | *Balanced* (default) shows each frame right away, one per screen refresh. *Fastest* shows frames the moment they're decoded. *Smoothest* holds one frame back to absorb Wi-Fi jitter. |
 | Sound | Play the device's audio on the TV. |
-| Show stats | Overlay while mirroring. |
-| Diagnostics | What the TV detected (panel, decoders), what it offers Apple devices, and the recent AirPlay log. Include this when reporting a problem. |
+| Show stats | Overlay while mirroring: resolution, codec, fps, the bitrate the sender is using, decode time. |
+| Diagnostics | What the TV detected (panel, decoders), what it offers Apple devices, and the recent AirPlay and decoder log. Include this when reporting a problem. |
 | Stay visible after closing the app | Keeps the TV in Screen Mirroring lists in the background. To let mirroring open the player on its own, Android also needs *Display over other apps* permission (the app asks for it). |
 
 ## What makes it fast
 
 The app removes as much delay as the TV side can:
 
+- **The network is never kept waiting.** Each frame is handed off to a
+  decoder thread the moment it arrives. Apple devices lower their bitrate
+  when a receiver reads slowly, so this keeps the picture at full quality.
 - **Hardware decoding** straight onto a video overlay surface, with each chip
   vendor's low-latency decoder modes switched on (Android 11 low-latency,
   Qualcomm, MediaTek, Realtek, HiSilicon).
@@ -83,6 +87,9 @@ The app removes as much delay as the TV side can:
 - **No restart on screen changes.** If the player goes to the background, the
   decoder keeps running off-screen, so the picture comes back instantly
   without waiting for a keyframe.
+- **Clean starts.** The decoder always starts on a keyframe and is sized from
+  the stream itself, so rotating an iPhone or changing the Mac's resolution
+  doesn't leave a blocky picture.
 
 ## Limitations
 

@@ -14,8 +14,8 @@ android {
         // need newer Android are switched on at runtime.
         minSdk = 24
         targetSdk = 35
-        versionCode = 1
-        versionName = "1.0.0"
+        versionCode = 2
+        versionName = "1.1.0"
 
         ndk {
             // TVs and streaming sticks are ARM; x86_64 is for the emulator.

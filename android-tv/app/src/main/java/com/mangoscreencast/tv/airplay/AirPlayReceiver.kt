@@ -67,6 +67,7 @@ class AirPlayReceiver(private val context: Context, private val settings: Settin
             update { it.copy(state = State.FAILED, message = "Couldn't announce the TV on the network ($reason).") }
         }
         advertiser.onRegistered = { type, name -> log("advertising $type as \"$name\"") }
+        video.log = ::log
     }
 
     /** Adds a line to the log shown under Settings > Diagnostics. */
@@ -91,7 +92,8 @@ class AirPlayReceiver(private val context: Context, private val settings: Settin
         DecoderSelection.describe().forEach { appendLine("  $it") }
         if (s.state == State.MIRRORING) {
             val v = video.stats()
-            appendLine("Video: ${v.width}x${v.height} ${v.codec} via ${v.decoder}, ${"%.1f".format(v.fps)} fps")
+            appendLine("Video: ${v.width}x${v.height} ${v.codec} via ${v.decoder}, " +
+                "${"%.1f".format(v.fps)} fps, ${"%.1f".format(v.megabitsPerSecond)} Mbit/s, ${v.restarts} restarts")
         }
         appendLine()
         appendLine("Recent log:")

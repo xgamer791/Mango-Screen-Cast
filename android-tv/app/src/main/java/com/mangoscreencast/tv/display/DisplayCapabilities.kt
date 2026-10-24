@@ -69,25 +69,31 @@ object DisplayCapabilities {
     }
 
     /**
-     * The panel's resolution (capped at 4K), as long as a hardware decoder
-     * can keep up at 60 fps. Above 1080p Apple devices only send HEVC, so
-     * those sizes need an HEVC decoder.
+     * The largest size the TV's hardware decoder takes, up to 4K, at 60 fps.
+     * Above 1080p Apple devices only send HEVC, so those sizes need an HEVC
+     * decoder.
+     *
+     * Auto doesn't cap this at the screen mode Android reports: many 4K TVs
+     * run their menus at 1080p and report that, while video still plays on
+     * the full panel. The decoder is the reliable signal. Every TV HEVC
+     * decoder that takes a 4K picture is built for 4K60 streaming apps, so
+     * the size check is enough; the frame-rate tables some vendors publish
+     * are often too conservative.
      */
     fun profile(context: Context, setting: ResolutionSetting): MirrorProfile {
         val panel = panel(context)
         val hevc = MediaFormat.MIMETYPE_VIDEO_HEVC
         val avc = MediaFormat.MIMETYPE_VIDEO_AVC
-        val panelHeight = max(panel.height, 1080)
+        val hevcAvailable = DecoderSelection.hardwareDecoder(hevc) != null
         for ((width, height) in CANDIDATES) {
-            if (height > setting.maxHeight || height > panelHeight) continue
-            val hevcOk = DecoderSelection.canDecode(hevc, width, height, FPS)
+            if (height > setting.maxHeight) continue
+            val hevcOk = DecoderSelection.supportsSize(hevc, width, height)
             if (height > 1080 && !hevcOk) continue
-            if (height <= 1080 && !hevcOk && !DecoderSelection.canDecode(avc, width, height, FPS)) continue
+            if (height <= 1080 && !hevcOk && !DecoderSelection.supportsSize(avc, width, height)) continue
             return MirrorProfile(width, height, refreshFor(panel), FPS, hevcOk, panel)
         }
-        // Nothing reported 1080p60; ask for it anyway and let the decoder try.
-        return MirrorProfile(1920, 1080, refreshFor(panel), FPS,
-            DecoderSelection.hardwareDecoder(hevc) != null, panel)
+        // Nothing reported 1080p; ask for it anyway and let the decoder try.
+        return MirrorProfile(1920, 1080, refreshFor(panel), FPS, hevcAvailable, panel)
     }
 
     /** 60 Hz when the panel has it (as 59.94 or 60), else its fastest rate up to 60. */

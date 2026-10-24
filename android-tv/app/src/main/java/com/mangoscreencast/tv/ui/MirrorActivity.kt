@@ -169,7 +169,7 @@ class MirrorActivity : Activity(), SurfaceHolder.Callback, AirPlayReceiver.Liste
         val profile = receiver.status.profile
         statsView.text = getString(
             R.string.stats_format,
-            s.width, s.height, s.codec, s.fps, s.decodeMs, s.droppedFrames,
+            s.width, s.height, s.codec, s.fps, s.megabitsPerSecond, s.decodeMs, s.droppedFrames, s.restarts,
             profile?.width ?: 0, profile?.height ?: 0, settings.latencyMode.name.lowercase(),
         )
     }

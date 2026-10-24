@@ -162,7 +162,7 @@ class SettingsActivity : Activity() {
             ResolutionSetting.AUTO -> if (auto != null) getString(R.string.resolution_auto_value, auto.sizeName)
                 else getString(R.string.resolution_auto)
             ResolutionSetting.UHD_2160 -> "4K (3840 × 2160)"
-            ResolutionSetting.QHD_1440 -> "1440p (2560 × 1440)"
+            ResolutionSetting.QHD_1440 -> "2K / 1440p (2560 × 1440)"
             ResolutionSetting.FHD_1080 -> "1080p (1920 × 1080)"
         }
     }

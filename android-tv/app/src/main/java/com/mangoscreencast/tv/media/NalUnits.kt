@@ -52,24 +52,38 @@ object NalUnits {
         val hasPicture: Boolean,
     )
 
+    /**
+     * Classifies an access unit by reading NAL headers only up to the first
+     * picture slice, so a multi-megabyte 4K frame costs a few dozen bytes of
+     * scanning instead of all of them.
+     */
     fun inspect(data: ByteArray, length: Int, h265: Boolean): Info {
-        var keyframe = false
         var configEnd = 0
-        var configDone = false
-        var picture = false
-        for (unit in split(data, length, h265)) {
-            when {
-                isParameterSet(unit.type, h265) -> if (!configDone) configEnd = unit.end
-                isPicture(unit.type, h265) -> {
-                    configDone = true
-                    picture = true
-                    if (isKeyframe(unit.type, h265)) keyframe = true
-                }
-                // SEI, AUD and friends may sit between the parameter sets.
-                else -> {}
+        var previousWasConfig = false
+        var i = 0
+        while (i + 3 <= length) {
+            if (data[i].toInt() != 0 || data[i + 1].toInt() != 0) {
+                i++
+                continue
             }
+            val header = when {
+                data[i + 2].toInt() == 1 -> i + 3
+                i + 4 <= length && data[i + 2].toInt() == 0 && data[i + 3].toInt() == 1 -> i + 4
+                else -> {
+                    i++
+                    continue
+                }
+            }
+            if (header >= length) break
+            // The previous NAL unit ends where this start code begins.
+            if (previousWasConfig) configEnd = i
+            val type = type(data[header], h265)
+            if (isPicture(type, h265)) return Info(isKeyframe(type, h265), configEnd, hasPicture = true)
+            previousWasConfig = isParameterSet(type, h265)
+            i = header + 1
         }
-        return Info(keyframe, configEnd, picture)
+        if (previousWasConfig) configEnd = length
+        return Info(keyframe = false, configLength = configEnd, hasPicture = false)
     }
 
     /** Parameter-set NAL units (with start codes) of a keyframe, for MediaFormat csd buffers. */

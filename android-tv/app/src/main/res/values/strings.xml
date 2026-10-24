@@ -22,13 +22,13 @@
     <string name="mirroring_banner">Mirroring %1$s · press Back twice to stop</string>
     <string name="back_again">Press Back again to stop mirroring</string>
     <string name="paused">Paused on the other device</string>
-    <string name="stats_format">%1$d × %2$d %3$s · %4$.0f fps · decode %5$.1f ms · dropped %6$d\nTV offers %7$d × %8$d · pacing: %9$s</string>
+    <string name="stats_format">%1$d × %2$d %3$s · %4$.0f fps · %5$.1f Mbit/s\ndecode %6$.1f ms · dropped %7$d · restarts %8$d\nTV offers %9$d × %10$d · pacing: %11$s</string>
 
     <!-- Settings -->
     <string name="setting_name">TV name</string>
     <string name="setting_name_hint">What Macs and iPhones show in Screen Mirroring</string>
     <string name="setting_resolution">Resolution</string>
-    <string name="setting_resolution_hint">Apple devices size their picture to this. Auto uses the TV’s own resolution, up to 4K.</string>
+    <string name="setting_resolution_hint">Apple devices size their picture to this. Auto offers the most the TV can decode, up to 4K.</string>
     <string name="resolution_auto">Auto</string>
     <string name="resolution_auto_value">Auto (%1$s)</string>
     <string name="setting_pacing">Frame pacing</string>

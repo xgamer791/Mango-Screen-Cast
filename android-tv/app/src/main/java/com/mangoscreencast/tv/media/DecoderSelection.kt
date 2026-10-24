@@ -37,6 +37,13 @@ object DecoderSelection {
         return supports(video, width, height, fps) || supports(video, height, width, fps)
     }
 
+    /** True if a hardware decoder handles `width`x`height` at all (either orientation). */
+    fun supportsSize(mime: String, width: Int, height: Int): Boolean {
+        val info = hardwareDecoder(mime) ?: return false
+        val video = info.getCapabilitiesForType(mime).videoCapabilities ?: return false
+        return video.isSizeSupported(width, height) || video.isSizeSupported(height, width)
+    }
+
     /** One line per video decoder relevant to AirPlay, for diagnostics. */
     fun describe(): List<String> {
         val lines = mutableListOf<String>()
