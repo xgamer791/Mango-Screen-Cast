@@ -1,0 +1,74 @@
+name: Windows sender
+
+on:
+  push:
+    paths:
+      - "windows/**"
+      - "protocol/**"
+      - ".github/workflows/windows.yml"
+  pull_request:
+    paths:
+      - "windows/**"
+      - "protocol/**"
+      - ".github/workflows/windows.yml"
+
+concurrency:
+  group: windows-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  probe:
+    runs-on: windows-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Runner
+        shell: pwsh
+        run: |
+          [Environment]::OSVersion
+          whoami
+          "Interactive: $([Environment]::UserInteractive)"
+          quser 2>&1
+          Get-CimInstance Win32_VideoController | Format-List Name, DriverVersion, CurrentHorizontalResolution, CurrentVerticalResolution, CurrentRefreshRate
+          Get-CimInstance Win32_SoundDevice | Format-List Name, Status
+          Get-Service Audiosrv, AudioEndpointBuilder, Dnscache | Format-Table Name, Status, StartType
+          Get-WindowsFeature Server-Media-Foundation | Format-List Name, InstallState
+          Get-ChildItem C:\Windows\System32\mfh264enc.dll, C:\Windows\System32\mfplat.dll -ErrorAction SilentlyContinue | Format-Table Name, Length
+          python --version
+          Get-ChildItem "C:\Program Files (x86)\Windows Kits\10\Include" | Format-Table Name
+
+      - name: Build probe
+        shell: pwsh
+        run: |
+          cmake -S windows/probe -B build/probe -A x64
+          cmake --build build/probe --config Release
+
+      - name: Probe
+        shell: pwsh
+        run: build/probe/Release/probe.exe
+
+      - name: Probe with something moving on screen
+        shell: pwsh
+        run: |
+          $p = Start-Process powershell -ArgumentList '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', 'windows/tests/moving.ps1', '-Seconds', '60' -PassThru
+          Start-Sleep 5
+          build/probe/Release/probe.exe
+          Stop-Process $p -ErrorAction SilentlyContinue
+
+      - name: Virtual sound device
+        continue-on-error: true
+        uses: LABSN/sound-ci-helpers@v1
+
+      - name: Probe after adding a sound device
+        shell: pwsh
+        run: |
+          Get-CimInstance Win32_SoundDevice | Format-List Name, Status
+          Get-Service Audiosrv | Format-Table Name, Status
+          build/probe/Release/probe.exe
+
+      - name: Python packages
+        shell: pwsh
+        run: |
+          python -m pip install --quiet zeroconf av
+          python -c "import av, zeroconf; print('av', av.__version__, 'zeroconf', zeroconf.__version__); print(sorted(av.codecs_available & {'h264', 'hevc'}))"
