@@ -20,6 +20,7 @@ PROJECT = os.path.join(IOS, "MangoScreenCast.xcodeproj")
 APP = "MangoScreenCast"
 CORE = "MangoCore"
 TESTS = "MangoScreenCastTests"
+UI_TESTS = "MangoScreenCastUITests"
 BUNDLE_ID = "com.mangoscreencast.ios"
 DEPLOYMENT_TARGET = "16.0"
 
@@ -36,7 +37,7 @@ PLIST_SOURCES = ["base64.c", "bplist.c", "bytearray.c", "common.c", "hashtable.c
                  "time64.c", "xplist.c"]
 # App sources the (host-less) unit tests compile too.
 TESTED_APP_SOURCES = ["Media/NalUnits.swift", "Media/AudioCookie.swift", "Media/VideoRenderer.swift",
-                      "AirPlay/MirrorProfile.swift"]
+                      "AirPlay/MirrorProfile.swift", "Updates/ReleaseFeed.swift"]
 
 FILE_TYPES = {
     ".swift": "sourcecode.swift",
@@ -110,6 +111,7 @@ def folder_group(directory, key):
 
 app_group, app_files = folder_group(os.path.join(IOS, APP), APP)
 tests_group, test_files = folder_group(os.path.join(IOS, TESTS), TESTS)
+ui_tests_group, ui_test_files = folder_group(os.path.join(IOS, UI_TESTS), UI_TESTS)
 
 # --- MangoCore: the bridge plus the shared AirPlay core --------------------
 
@@ -147,8 +149,10 @@ core_product = add("PBXFileReference", "product:" + CORE, explicitFileType="arch
                    path="lib" + CORE + ".a", sourceTree="BUILT_PRODUCTS_DIR")
 tests_product = add("PBXFileReference", "product:" + TESTS, explicitFileType="wrapper.cfbundle",
                     includeInIndex="0", path=TESTS + ".xctest", sourceTree="BUILT_PRODUCTS_DIR")
-products_group = group("Products", [app_product, core_product, tests_product], name="Products")
-main_group = group("Main", [app_group, core_group, tests_group, products_group])
+ui_tests_product = add("PBXFileReference", "product:" + UI_TESTS, explicitFileType="wrapper.cfbundle",
+                       includeInIndex="0", path=UI_TESTS + ".xctest", sourceTree="BUILT_PRODUCTS_DIR")
+products_group = group("Products", [app_product, core_product, tests_product, ui_tests_product], name="Products")
+main_group = group("Main", [app_group, core_group, tests_group, ui_tests_group, products_group])
 
 package = add("XCRemoteSwiftPackageReference", "OpenSSL", repositoryURL=OPENSSL_PACKAGE,
               requirement=dict(kind="upToNextMajorVersion", minimumVersion=OPENSSL_VERSION))
@@ -196,6 +200,8 @@ APP_SETTINGS = {
     "ENABLE_PREVIEWS": "NO",
     "INFOPLIST_FILE": APP + "/Info.plist",
     "LD_RUNPATH_SEARCH_PATHS": ["$(inherited)", "@executable_path/Frameworks"],
+    # CI sets these per build (1.0.<run>, <run>, release); see ios.yml.
+    "MANGO_BUILD_CHANNEL": "local",
     "MARKETING_VERSION": "1.0",
     "PRODUCT_BUNDLE_IDENTIFIER": BUNDLE_ID,
     "PRODUCT_NAME": "$(TARGET_NAME)",
@@ -298,11 +304,25 @@ tests_target = target(
      phase("PBXFrameworksBuildPhase", TESTS, []),
      phase("PBXResourcesBuildPhase", TESTS, [])])
 
+# Screenshots of the app's screens on each simulator, for checking layouts
+# (the Screenshots scheme; see ios.yml).
+app_proxy = add("PBXContainerItemProxy", "app", containerPortal=project_id, proxyType="1",
+                remoteGlobalIDString=app_target, remoteInfo=APP)
+app_dependency = add("PBXTargetDependency", "app", target=app_target, targetProxy=app_proxy)
+ui_tests_target = target(
+    UI_TESTS, "com.apple.product-type.bundle.ui-testing", ui_tests_product,
+    dict(TESTS_SETTINGS, PRODUCT_BUNDLE_IDENTIFIER=BUNDLE_ID + ".uitests", TEST_TARGET_NAME=APP),
+    [phase("PBXSourcesBuildPhase", UI_TESTS,
+           [build_file(UI_TESTS, ref) for path, ref in sorted(ui_test_files.items()) if path.endswith(".swift")]),
+     phase("PBXFrameworksBuildPhase", UI_TESTS, []),
+     phase("PBXResourcesBuildPhase", UI_TESTS, [])],
+    dependencies=[app_dependency])
+
 objects[project_id] = dict(
     isa="PBXProject",
     attributes=dict(BuildIndependentTargetsInParallel="1", LastSwiftUpdateCheck="1600", LastUpgradeCheck="1600",
                     TargetAttributes={t: dict(CreatedOnToolsVersion="16.0")
-                                      for t in (app_target, core_target, tests_target)}),
+                                      for t in (app_target, core_target, tests_target, ui_tests_target)}),
     buildConfigurationList=config_list("Project", PROJECT_SETTINGS),
     compatibilityVersion="Xcode 15.0",
     developmentRegion="en",
@@ -313,7 +333,7 @@ objects[project_id] = dict(
     productRefGroup=products_group,
     projectDirPath="",
     projectRoot="",
-    targets=[app_target, core_target, tests_target],
+    targets=[app_target, core_target, tests_target, ui_tests_target],
 )
 
 # --- Serialisation (Xcode's old-style property list) ------------------------
@@ -489,6 +509,59 @@ def write_scheme():
         f.write(scheme)
 
 
+def write_screenshots_scheme():
+    """Builds the app and runs only the UI tests that take screenshots."""
+    app = buildable(app_target, APP, APP + ".app")
+    ui_tests = buildable(ui_tests_target, UI_TESTS, UI_TESTS + ".xctest")
+    scheme = f'''<?xml version="1.0" encoding="UTF-8"?>
+<Scheme
+   LastUpgradeVersion = "1600"
+   version = "1.7">
+   <BuildAction
+      parallelizeBuildables = "YES"
+      buildImplicitDependencies = "YES">
+      <BuildActionEntries>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "NO"
+            buildForArchiving = "NO"
+            buildForAnalyzing = "NO">
+{app}         </BuildActionEntry>
+      </BuildActionEntries>
+   </BuildAction>
+   <TestAction
+      buildConfiguration = "Debug"
+      selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
+      selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
+      shouldUseLaunchSchemeArgsEnv = "YES">
+      <Testables>
+         <TestableReference
+            skipped = "NO">
+{ui_tests}         </TestableReference>
+      </Testables>
+   </TestAction>
+   <LaunchAction
+      buildConfiguration = "Debug"
+      selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
+      selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
+      launchStyle = "0"
+      useCustomWorkingDirectory = "NO"
+      ignoresPersistentStateOnLaunch = "NO"
+      debugDocumentVersioning = "YES"
+      debugServiceExtension = "internal"
+      allowLocationSimulation = "YES">
+      <BuildableProductRunnable
+         runnableDebuggingMode = "0">
+{app}      </BuildableProductRunnable>
+   </LaunchAction>
+</Scheme>
+'''
+    path = os.path.join(PROJECT, "xcshareddata", "xcschemes", "Screenshots.xcscheme")
+    with open(path, "w") as f:
+        f.write(scheme)
+
+
 def write_workspace():
     path = os.path.join(PROJECT, "project.xcworkspace", "contents.xcworkspacedata")
     os.makedirs(os.path.dirname(path), exist_ok=True)
@@ -500,5 +573,6 @@ def write_workspace():
 if __name__ == "__main__":
     write_pbxproj()
     write_scheme()
+    write_screenshots_scheme()
     write_workspace()
     print("wrote", os.path.relpath(PROJECT, ROOT))

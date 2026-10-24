@@ -3,6 +3,7 @@ import SwiftUI
 struct SettingsView: View {
     @EnvironmentObject private var receiver: Receiver
     @EnvironmentObject private var settings: Settings
+    @EnvironmentObject private var updates: UpdateChecker
     @Environment(\.dismiss) private var dismiss
     @State private var draftName = ""
 
@@ -22,11 +23,14 @@ struct SettingsView: View {
 
                 Section {
                     Picker("Resolution", selection: resolution) {
-                        Text("This screen (\(native.width) × \(native.height))").tag(ResolutionSetting.native)
-                        Text("1080p (1920 × 1080)").tag(ResolutionSetting.hd1080)
+                        Text("Automatic (\(best.width) × \(best.height))").tag(ResolutionSetting.native)
+                        Text("Lighter (\(lighter.width) × \(lighter.height))").tag(ResolutionSetting.hd1080)
                     }
+                    Toggle("Fill the screen", isOn: binding(\.fillScreen) { receiver.video.fillsScreen = $0 })
+                } header: {
+                    Text("Picture")
                 } footer: {
-                    Text("Your Mac sizes its picture to this. With Use As Separate Display it becomes the size of the extra display. Changing it disconnects whoever is mirroring.")
+                    Text("Automatic offers this screen’s own pixels, the way it’s held, so with Use As Separate Display your Mac makes a display that fills it exactly. Lighter keeps the same shape with less detail, for a busy Wi-Fi network. Fill the screen zooms a mirrored picture of another shape to cover the screen, cutting off its edges; double-tap while mirroring to switch.")
                 }
 
                 Section {
@@ -34,7 +38,26 @@ struct SettingsView: View {
                     Toggle("Show stats while mirroring", isOn: binding(\.showStats))
                     Toggle("Keep the screen on while waiting", isOn: binding(\.keepAwake))
                 } footer: {
-                    Text("Sound plays the Mac’s audio here. A locked screen drops out of Screen Mirroring, so the screen stays on while Mango waits; it always stays on while mirroring.")
+                    Text("Sound plays the Mac’s audio here. A locked screen drops out of Screen Mirroring, so the screen stays on while Mango Cast waits; it always stays on while mirroring.")
+                }
+
+                Section {
+                    LabeledContent("Version", value: "\(updates.version) (\(updates.build))")
+                    HStack {
+                        Text(updateStatus)
+                            .foregroundColor(.secondary)
+                        Spacer()
+                        if updates.state == .checking { ProgressView() }
+                    }
+                    Button("Check for updates") { updates.check() }
+                        .disabled(updates.state == .checking)
+                    Button(updates.availableUpdate == nil ? "Get updates with AltStore or SideStore" : "Install the update") {
+                        updates.openUpdate()
+                    }
+                } header: {
+                    Text("Updates")
+                } footer: {
+                    Text("iOS only lets the App Store update apps by itself. Add Mango Cast to AltStore or SideStore (the button above does it) and new versions show up there to install with a tap; AltStore also renews the app every week so it keeps opening. Built it in Xcode? Get the latest code and press Run.")
                 }
 
                 Section {
@@ -66,8 +89,24 @@ struct SettingsView: View {
         .onDisappear(perform: commitName)
     }
 
-    private var native: MirrorProfile {
-        MirrorProfile.make(screen: Receiver.screenPixels(), hevc: Receiver.hevcSupported, setting: .native)
+    private var best: MirrorProfile {
+        MirrorProfile.make(screen: Receiver.screenPixels(), landscape: Receiver.isLandscape(),
+                           hevc: Receiver.hevcSupported, setting: .native)
+    }
+
+    private var lighter: MirrorProfile {
+        MirrorProfile.make(screen: Receiver.screenPixels(), landscape: Receiver.isLandscape(),
+                           hevc: Receiver.hevcSupported, setting: .hd1080)
+    }
+
+    private var updateStatus: String {
+        switch updates.state {
+        case .idle: return updates.isReleaseBuild ? "Not checked yet" : "Built in Xcode"
+        case .checking: return "Checking…"
+        case .upToDate: return "Up to date"
+        case .available(let release): return "Version \(release.version) is available"
+        case .failed(let reason): return "Couldn’t check: \(reason)"
+        }
     }
 
     private var resolution: Binding<ResolutionSetting> {
@@ -105,7 +144,7 @@ struct SettingsView: View {
 
     private var about: String {
         let version = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? ""
-        return "Mango Screen Cast \(version). Built on UxPlay (GPL-3.0), libplist (LGPL-2.1) and OpenSSL. AirPlay is a trademark of Apple Inc.; this app isn’t affiliated with Apple."
+        return "Mango Cast \(version). Built on UxPlay (GPL-3.0), libplist (LGPL-2.1) and OpenSSL. AirPlay is a trademark of Apple Inc.; this app isn’t affiliated with Apple."
     }
 }
 

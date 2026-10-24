@@ -8,6 +8,7 @@ on:
       - "android-tv/third_party/**"
       - ".gitmodules"
       - "tools/gen_ios_project.py"
+      - "tools/make_altstore_source.py"
       - ".github/workflows/ios.yml"
   pull_request:
     paths:
@@ -16,6 +17,7 @@ on:
       - "android-tv/third_party/**"
       - ".gitmodules"
       - "tools/gen_ios_project.py"
+      - "tools/make_altstore_source.py"
       - ".github/workflows/ios.yml"
   workflow_dispatch:
 
@@ -44,6 +46,13 @@ jobs:
           python3 tools/gen_ios_project.py
           git diff --exit-code -- ios/MangoScreenCast.xcodeproj
 
+      # Every build gets a higher build number than the one before, which is
+      # how AltStore, SideStore and the app itself spot an update.
+      - name: Version
+        run: |
+          echo "MANGO_VERSION=1.0.$GITHUB_RUN_NUMBER" >> "$GITHUB_ENV"
+          echo "MANGO_BUILD=$GITHUB_RUN_NUMBER" >> "$GITHUB_ENV"
+
       - name: Unit tests (iPad simulator)
         run: |
           udid=$(xcrun simctl list devices available --json | python3 -c '
@@ -63,20 +72,32 @@ jobs:
         run: |
           xcodebuild build -project ios/MangoScreenCast.xcodeproj -scheme MangoScreenCast -configuration Release \
             -destination "generic/platform=iOS" -derivedDataPath build/device \
+            MARKETING_VERSION="$MANGO_VERSION" CURRENT_PROJECT_VERSION="$MANGO_BUILD" MANGO_BUILD_CHANNEL=release \
             CODE_SIGNING_ALLOWED=NO CODE_SIGNING_REQUIRED=NO CODE_SIGN_IDENTITY="" > build.log 2>&1 || status=$?
           grep -E "error:|warning: .*/ios/" build.log | sort -u | head -150
           tail -n 25 build.log
           exit "${status:-0}"
 
-      - name: Package IPA
+      - name: Package IPA and update feed
         run: |
           app=build/device/Build/Products/Release-iphoneos/MangoScreenCast.app
           test -d "$app/Frameworks/OpenSSL.framework" || { echo "OpenSSL.framework isn't embedded"; exit 1; }
           lipo -info "$app/MangoScreenCast"
+          /usr/libexec/PlistBuddy -c "Print :CFBundleShortVersionString" -c "Print :CFBundleVersion" \
+            -c "Print :MangoBuildChannel" "$app/Info.plist"
           mkdir -p dist/Payload
           cp -R "$app" dist/Payload/
-          (cd dist && zip -qry MangoScreenCast-unsigned.ipa Payload)
-          ls -l dist/MangoScreenCast-unsigned.ipa
+          (cd dist && zip -qry MangoScreenCast-unsigned.ipa Payload && rm -rf Payload)
+          # The feed points at a file named for its version, so what AltStore
+          # downloads always matches what the feed announced.
+          cp dist/MangoScreenCast-unsigned.ipa "dist/MangoCast-$MANGO_VERSION.ipa"
+          base="https://github.com/$GITHUB_REPOSITORY/releases/download/ios-latest"
+          python3 tools/make_altstore_source.py --version "$MANGO_VERSION" --build "$MANGO_BUILD" \
+            --ipa-url "$base/MangoCast-$MANGO_VERSION.ipa" \
+            --ipa-size "$(stat -f %z "dist/MangoCast-$MANGO_VERSION.ipa")" \
+            --icon-url "https://raw.githubusercontent.com/$GITHUB_REPOSITORY/$GITHUB_SHA/ios/MangoScreenCast/Assets.xcassets/AppIcon.appiconset/icon-1024.png" \
+            --notes "$(git log -1 --pretty=%s)" > dist/altstore-source.json
+          ls -l dist
 
       # A rolling pre-release, so it never becomes the "latest" release the
       # TV app updates itself from.
@@ -88,12 +109,17 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          notes="Unsigned iPhone/iPad build: $(git log -1 --pretty=%s) (built from ${GITHUB_SHA::7}). See the README to install it."
+          source="https://github.com/$GITHUB_REPOSITORY/releases/download/ios-latest/altstore-source.json"
+          notes="Mango Cast $MANGO_VERSION for iPad and iPhone, unsigned: $(git log -1 --pretty=%s) (built from ${GITHUB_SHA::7}).
+
+          For updates, add this source to AltStore or SideStore: $source
+          See the README for other ways to install it."
           # Replace the previous build, tag included, so the tag points at this commit.
           gh release delete ios-latest --cleanup-tag --yes --repo "$GITHUB_REPOSITORY" 2> /dev/null || true
-          gh release create ios-latest dist/MangoScreenCast-unsigned.ipa --repo "$GITHUB_REPOSITORY" \
+          gh release create ios-latest dist/MangoScreenCast-unsigned.ipa "dist/MangoCast-$MANGO_VERSION.ipa" \
+            dist/altstore-source.json --repo "$GITHUB_REPOSITORY" \
             --target "$GITHUB_SHA" --prerelease --latest=false \
-            --title "Mango Screen Cast for iPad and iPhone" --notes "$notes"
+            --title "Mango Cast $MANGO_VERSION for iPad and iPhone" --notes "$notes"
 
       - uses: actions/upload-artifact@v4
         continue-on-error: true
@@ -101,3 +127,57 @@ jobs:
           name: MangoScreenCast-ios-unsigned
           path: dist/MangoScreenCast-unsigned.ipa
           retention-days: 30
+
+  # Screenshots of the home and Settings screens on every iPad simulator (and
+  # an iPhone), in both orientations, to check the layout on each screen size.
+  screenshots:
+    runs-on: macos-15
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Build for simulators
+        run: |
+          xcodebuild build-for-testing -project ios/MangoScreenCast.xcodeproj -scheme Screenshots \
+            -destination "generic/platform=iOS Simulator" -derivedDataPath build/ui > build.log 2>&1 || status=$?
+          grep -E "error:" build.log | sort -u | head -50
+          tail -n 15 build.log
+          exit "${status:-0}"
+
+      - name: Take screenshots
+        run: |
+          mkdir -p screenshots
+          runtime=$(xcrun simctl list runtimes available --json | python3 -c '
+          import json, sys
+          ios = [r for r in json.load(sys.stdin)["runtimes"] if r.get("platform", r["name"]).startswith("iOS")]
+          print(max(ios, key=lambda r: [int(x) for x in r["version"].split(".")])["identifier"])')
+          # A 4:3 iPad (10.2-inch) too, the shape of many iPads still in use.
+          xcrun simctl create "iPad (9th generation)" com.apple.CoreSimulator.SimDeviceType.iPad-9th-generation \
+            "$runtime" > /dev/null 2>&1 || true
+          xcrun simctl list devices available --json | RUNTIME="$runtime" python3 -c '
+          import json, os, sys
+          devices = json.load(sys.stdin)["devices"].get(os.environ["RUNTIME"], [])
+          ipads = sorted({d["name"]: d["udid"] for d in devices if d["name"].startswith("iPad")}.items())
+          iphones = [(d["name"], d["udid"]) for d in devices if d["name"].startswith("iPhone")][:1]
+          for name, udid in ipads + iphones:
+              print(udid, name)' > devices.txt
+          cat devices.txt
+          while read -r udid name; do
+            echo "::group::$name"
+            TEST_RUNNER_SCREENSHOT_DIR="$PWD/screenshots" xcodebuild test-without-building \
+              -project ios/MangoScreenCast.xcodeproj -scheme Screenshots -destination "id=$udid" \
+              -derivedDataPath build/ui -resultBundlePath "results/$udid.xcresult" < /dev/null > "ui-$udid.log" 2>&1 \
+              || { echo "screenshots failed on $name"; tail -n 30 "ui-$udid.log"; }
+            xcrun simctl shutdown "$udid" < /dev/null > /dev/null 2>&1 || true
+            echo "::endgroup::"
+          done < devices.txt
+          ls -1 screenshots
+
+      - uses: actions/upload-artifact@v4
+        continue-on-error: true
+        with:
+          name: ios-screenshots
+          path: screenshots/
+          retention-days: 14

@@ -12,14 +12,18 @@ final class Settings: ObservableObject {
     }
 
     static var defaultName: String {
-        UIDevice.current.userInterfaceIdiom == .pad ? "Mango iPad" : "Mango iPhone"
+        UIDevice.current.userInterfaceIdiom == .pad ? "Mango Cast iPad" : "Mango Cast iPhone"
     }
+
+    /// Names earlier versions used as the default; they read as unset, so
+    /// those devices take the current default.
+    private static let oldDefaultNames: Set<String> = ["Mango iPad", "Mango iPhone"]
 
     /// What Macs show in Screen Mirroring.
     var receiverName: String {
         get {
             let name = defaults.string(forKey: Keys.name)?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-            return name.isEmpty ? Self.defaultName : name
+            return name.isEmpty || Self.oldDefaultNames.contains(name) ? Self.defaultName : name
         }
         set { change(Keys.name, String(newValue.trimmingCharacters(in: .whitespacesAndNewlines).prefix(60))) }
     }
@@ -27,6 +31,13 @@ final class Settings: ObservableObject {
     var resolution: ResolutionSetting {
         get { defaults.string(forKey: Keys.resolution).flatMap(ResolutionSetting.init) ?? .native }
         set { change(Keys.resolution, newValue.rawValue) }
+    }
+
+    /// Zoom the picture to cover the whole screen when its shape differs
+    /// from the screen's (a mirrored Mac on an iPad), cutting off the edges.
+    var fillScreen: Bool {
+        get { defaults.bool(forKey: Keys.fill) }
+        set { change(Keys.fill, newValue) }
     }
 
     /// Play the Mac's sound on this device.
@@ -68,6 +79,7 @@ final class Settings: ObservableObject {
         static let sound = "sound"
         static let stats = "showStats"
         static let awake = "keepAwake"
+        static let fill = "fillScreen"
         static let deviceId = "deviceId"
     }
 }

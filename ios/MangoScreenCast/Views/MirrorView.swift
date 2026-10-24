@@ -2,7 +2,8 @@ import SwiftUI
 import UIKit
 
 /// The mirrored screen, edge to edge. Tap to show who's mirroring, a Stop
-/// button and live stats; they hide again after a few seconds.
+/// button and live stats; they hide again after a few seconds. Double-tap
+/// switches between showing the whole picture and filling the screen.
 struct MirrorView: View {
     @EnvironmentObject private var receiver: Receiver
     @EnvironmentObject private var settings: Settings
@@ -35,9 +36,11 @@ struct MirrorView: View {
             .padding(16)
         }
         .contentShape(Rectangle())
+        .onTapGesture(count: 2, perform: toggleFill)
         .onTapGesture {
             withAnimation(.easeInOut(duration: 0.2)) { controlsVisible.toggle() }
         }
+        .onAppear { receiver.video.fillsScreen = settings.fillScreen }
         .task(id: controlsVisible) {
             guard controlsVisible else { return }
             try? await Task.sleep(nanoseconds: 4_000_000_000)
@@ -62,6 +65,14 @@ struct MirrorView: View {
                 .font(.headline)
                 .lineLimit(1)
             Spacer(minLength: 12)
+            Button(action: toggleFill) {
+                Label(settings.fillScreen ? "Fit" : "Fill",
+                      systemImage: settings.fillScreen ? "arrow.down.right.and.arrow.up.left"
+                                                       : "arrow.up.left.and.arrow.down.right")
+                    .font(.headline)
+            }
+            .buttonStyle(.bordered)
+            .tint(.white)
             Button(role: .destructive) {
                 receiver.disconnect()
             } label: {
@@ -75,6 +86,13 @@ struct MirrorView: View {
         .padding(.trailing, 10)
         .padding(.vertical, 10)
         .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+    }
+
+    /// Fill zooms in to cover the screen when the picture's shape differs
+    /// from it (a mirrored Mac on an iPad), cutting off the edges.
+    private func toggleFill() {
+        settings.fillScreen.toggle()
+        receiver.video.fillsScreen = settings.fillScreen
     }
 
     private func statsText(_ v: VideoRenderer.Stats) -> some View {

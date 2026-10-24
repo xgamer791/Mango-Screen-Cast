@@ -2,24 +2,39 @@ import CoreGraphics
 import XCTest
 
 final class MirrorProfileTests: XCTestCase {
-    func testNativeOffersTheScreenInLandscape() {
-        // iPad Air 11": nativeBounds are portrait.
-        let air = MirrorProfile.make(screen: CGSize(width: 1640, height: 2360), hevc: true, setting: .native)
-        XCTAssertEqual([air.width, air.height], [2360, 1640])
-        XCTAssertTrue(air.h265)
-        XCTAssertEqual([air.screenWidth, air.screenHeight], [2360, 1640])
-        XCTAssertEqual(air.maxFps, 60)
+    // nativeBounds are always portrait.
+    private let air = CGSize(width: 1640, height: 2360)
+    private let pro13 = CGSize(width: 2064, height: 2752)
 
-        let pro = MirrorProfile.make(screen: CGSize(width: 2064, height: 2752), hevc: true, setting: .native)
+    func testAutomaticOffersTheWholeScreenTheWayItIsHeld() {
+        let landscape = MirrorProfile.make(screen: air, landscape: true, hevc: true, setting: .native)
+        XCTAssertEqual([landscape.width, landscape.height], [2360, 1640])
+        XCTAssertEqual([landscape.screenWidth, landscape.screenHeight], [2360, 1640])
+        XCTAssertTrue(landscape.h265)
+        XCTAssertEqual(landscape.maxFps, 60)
+
+        let portrait = MirrorProfile.make(screen: air, landscape: false, hevc: true, setting: .native)
+        XCTAssertEqual([portrait.width, portrait.height], [1640, 2360])
+        XCTAssertEqual([portrait.screenWidth, portrait.screenHeight], [1640, 2360])
+
+        let pro = MirrorProfile.make(screen: pro13, landscape: true, hevc: true, setting: .native)
         XCTAssertEqual([pro.width, pro.height], [2752, 2064])
     }
 
-    func testFallsBackTo1080p() {
-        let picked = MirrorProfile.make(screen: CGSize(width: 1640, height: 2360), hevc: true, setting: .hd1080)
-        XCTAssertEqual([picked.width, picked.height], [1920, 1080])
-        let noHevc = MirrorProfile.make(screen: CGSize(width: 1640, height: 2360), hevc: false, setting: .native)
-        XCTAssertEqual([noHevc.width, noHevc.height], [1920, 1080])
+    func testSmallerChoicesKeepTheScreensShape() {
+        let lighter = MirrorProfile.make(screen: air, landscape: true, hevc: true, setting: .hd1080)
+        XCTAssertEqual([lighter.width, lighter.height], [1554, 1080])
+        let lighterPortrait = MirrorProfile.make(screen: air, landscape: false, hevc: true, setting: .hd1080)
+        XCTAssertEqual([lighterPortrait.width, lighterPortrait.height], [1080, 1554])
+
+        let noHevc = MirrorProfile.make(screen: air, landscape: true, hevc: false, setting: .native)
+        XCTAssertEqual([noHevc.width, noHevc.height], [1554, 1080])
         XCTAssertFalse(noHevc.h265)
+
+        // A 4:3 iPad (10.2-inch).
+        let classic = MirrorProfile.make(screen: CGSize(width: 1620, height: 2160), landscape: true, hevc: false,
+                                         setting: .native)
+        XCTAssertEqual([classic.width, classic.height], [1440, 1080])
     }
 
     func testFitKeepsTheShapeAndEvenSizes() {

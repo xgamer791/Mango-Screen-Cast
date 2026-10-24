@@ -33,6 +33,7 @@ final class Receiver: ObservableObject {
     private let stateLock = NSLock()
     private var current = Status()
     private var running = false
+    private var shapeChange: DispatchWorkItem?
     private let logLock = NSLock()
     private var recentLog: [String] = []
     private var statsTimer: DispatchSourceTimer?
@@ -63,10 +64,32 @@ final class Receiver: ObservableObject {
         guard !running else { return }
         running = true
         let name = settings.receiverName
-        let profile = MirrorProfile.make(screen: Self.screenPixels(), hevc: Self.hevcSupported,
-                                         setting: settings.resolution)
+        let profile = currentProfile()
         let deviceId = settings.deviceId
         control.async { self.startServer(name: name, profile: profile, deviceId: deviceId) }
+    }
+
+    /// The most this device can show, in the shape of its screen as it's
+    /// held right now.
+    func currentProfile() -> MirrorProfile {
+        MirrorProfile.make(screen: Self.screenPixels(), landscape: Self.isLandscape(), hevc: Self.hevcSupported,
+                           setting: settings.resolution)
+    }
+
+    /// Called when the window changes size. After the device is turned
+    /// (and settles), the server is restarted with the new shape so the next
+    /// Mac to connect fills the screen, but only while nobody is connected.
+    func screenShapeChanged() {
+        shapeChange?.cancel()
+        let work = DispatchWorkItem { [weak self] in
+            guard let self, self.running, self.status.state == .ready else { return }
+            let profile = self.currentProfile()
+            guard profile != self.status.profile else { return }
+            self.log("screen turned; offering \(profile.width)x\(profile.height)")
+            self.restart()
+        }
+        shapeChange = work
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1, execute: work)
     }
 
     /// iOS suspends apps in the background, which would leave Macs listing a
@@ -366,10 +389,19 @@ final class Receiver: ObservableObject {
 
     static let hevcSupported = VTIsHardwareDecodeSupported(kCMVideoCodecType_HEVC)
 
-    /// The screen in pixels. Main thread.
-    static func screenPixels() -> CGSize {
+    private static var windowScene: UIWindowScene? {
         let scenes = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }
-        return scenes.first?.screen.nativeBounds.size ?? CGSize(width: 1920, height: 1080)
+        return scenes.first { $0.activationState == .foregroundActive } ?? scenes.first
+    }
+
+    /// The screen in pixels (portrait). Main thread.
+    static func screenPixels() -> CGSize {
+        windowScene?.screen.nativeBounds.size ?? CGSize(width: 1920, height: 1080)
+    }
+
+    /// Whether the device is held in landscape. Main thread.
+    static func isLandscape() -> Bool {
+        windowScene?.effectiveGeometry.interfaceOrientation.isLandscape ?? true
     }
 
     private static func supportDirectory() -> URL {

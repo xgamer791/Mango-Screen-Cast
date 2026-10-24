@@ -28,6 +28,12 @@ final class VideoRenderer {
 
     let layer = AVSampleBufferDisplayLayer()
 
+    /// Zoom the picture to cover the whole screen, cutting off what doesn't
+    /// fit, instead of showing all of it. Main thread.
+    var fillsScreen = false {
+        didSet { layer.videoGravity = fillsScreen ? .resizeAspectFill : .resizeAspect }
+    }
+
     /// Receives one line per notable event (stream start, format change, recovery).
     var log: ((String) -> Void)?
 

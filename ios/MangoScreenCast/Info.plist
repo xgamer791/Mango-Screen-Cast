@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
 	<key>CFBundleDisplayName</key>
-	<string>Mango</string>
+	<string>Mango Cast</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -22,6 +22,8 @@
 	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
+	<key>MangoBuildChannel</key>
+	<string>$(MANGO_BUILD_CHANNEL)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>NSBonjourServices</key>
@@ -30,7 +32,7 @@
 		<string>_raop._tcp</string>
 	</array>
 	<key>NSLocalNetworkUsageDescription</key>
-	<string>Mango uses your local network so your Mac can find this device in Screen Mirroring and send its screen here.</string>
+	<string>Mango Cast uses your local network so your Mac can find this device in Screen Mirroring and send its screen here.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>
