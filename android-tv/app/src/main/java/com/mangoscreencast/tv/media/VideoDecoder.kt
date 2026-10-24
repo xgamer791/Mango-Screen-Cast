@@ -146,6 +146,12 @@ class VideoDecoder {
         }
     }
 
+    /** The display switched modes (e.g. to 60 Hz after the player asked for it). */
+    fun setRefreshRate(refreshRate: Float) = synchronized(lock) {
+        if (refreshRate > 1f) vsyncPeriodNs = (1_000_000_000.0 / refreshRate).toLong()
+        lastTargetNs = 0
+    }
+
     private fun parking(): Surface =
         parkingSurface ?: Surface(SurfaceTexture(0).also { parkingTexture = it }).also { parkingSurface = it }
 

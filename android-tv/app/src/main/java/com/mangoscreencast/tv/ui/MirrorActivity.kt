@@ -1,6 +1,7 @@
 package com.mangoscreencast.tv.ui
 
 import android.app.Activity
+import android.hardware.display.DisplayManager
 import android.os.Build
 import android.os.Bundle
 import android.os.Handler
@@ -43,6 +44,14 @@ class MirrorActivity : Activity(), SurfaceHolder.Callback, AirPlayReceiver.Liste
         }
     }
     private val hideBanner = Runnable { bannerView.animate().alpha(0f).setDuration(400).start() }
+    private val displayListener = object : DisplayManager.DisplayListener {
+        override fun onDisplayChanged(displayId: Int) {
+            if (displayId == currentDisplay().displayId) receiver.video.setRefreshRate(currentDisplay().refreshRate)
+        }
+
+        override fun onDisplayAdded(displayId: Int) {}
+        override fun onDisplayRemoved(displayId: Int) {}
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -94,6 +103,7 @@ class MirrorActivity : Activity(), SurfaceHolder.Callback, AirPlayReceiver.Liste
         receiver.acquire(this)
         receiver.video.listener = this
         receiver.addListener(this)
+        getSystemService(DisplayManager::class.java).registerDisplayListener(displayListener, handler)
         showStats = settings.showStats
         updateStatsVisibility()
     }
@@ -101,6 +111,7 @@ class MirrorActivity : Activity(), SurfaceHolder.Callback, AirPlayReceiver.Liste
     override fun onStop() {
         handler.removeCallbacks(statsTick)
         handler.removeCallbacks(hideBanner)
+        getSystemService(DisplayManager::class.java).unregisterDisplayListener(displayListener)
         receiver.removeListener(this)
         receiver.video.listener = null
         receiver.release(this)
