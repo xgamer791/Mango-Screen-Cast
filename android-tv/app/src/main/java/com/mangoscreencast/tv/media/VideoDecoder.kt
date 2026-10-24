@@ -1,5 +1,6 @@
 package com.mangoscreencast.tv.media
 
+import android.graphics.SurfaceTexture
 import android.media.MediaCodec
 import android.media.MediaCodecInfo
 import android.media.MediaFormat
@@ -8,16 +9,17 @@ import android.util.Log
 import android.view.Surface
 import com.mangoscreencast.tv.LatencyMode
 import java.nio.ByteBuffer
+import java.util.concurrent.Executors
 
 /**
  * Hardware H.264/HEVC decoding straight onto a Surface, tuned for latency:
  * low-latency decoder modes, no buffering beyond what the decoder needs, and
  * frame pacing that never shows two frames in the same refresh.
  *
- * AirPlay senders can't be asked for a keyframe, so the frames since the
- * last keyframe are kept. That lets the decoder start (or restart, after
- * the screen surface changes or the decoder fails) without waiting for the
- * sender's next keyframe.
+ * AirPlay senders can't be asked for a keyframe, so the decoder is kept
+ * alive while the screen surface comes and goes (its output is parked on an
+ * off-screen surface), and the frames since the last keyframe are kept so it
+ * can start, or restart after a failure, without waiting for the sender.
  *
  * [submit] is called on the AirPlay thread; everything else on any thread.
  */
@@ -61,6 +63,13 @@ class VideoDecoder {
     @Volatile
     private var outputRunning = false
 
+    /** Decoder output goes nowhere (no screen surface) but decoding continues. */
+    @Volatile
+    private var parked = false
+    private var parkingTexture: SurfaceTexture? = null
+    private var parkingSurface: Surface? = null
+    private val starter = Executors.newSingleThreadExecutor { Thread(it, "VideoStart") }
+
     private val gop = GopBuffer(MAX_GOP_BYTES)
     private var scratch = ByteArray(512 * 1024)
 
@@ -96,18 +105,49 @@ class VideoDecoder {
     fun stop() = synchronized(lock) {
         active = false
         releaseCodecLocked()
+        parked = false
         gop.clear()
         config = null
     }
 
-    /** Called by the player screen. `refreshRate` is the display's current rate. */
-    fun setSurface(surface: Surface?, refreshRate: Float) = synchronized(lock) {
-        if (refreshRate > 1f) vsyncPeriodNs = (1_000_000_000.0 / refreshRate).toLong()
-        if (surface === this.surface && codec != null) return@synchronized
-        releaseCodecLocked()
-        this.surface = surface
-        if (surface != null && active) startFromGopLocked()
+    /**
+     * Called by the player screen with its surface (null when it goes away).
+     * `refreshRate` is the display's current rate. Must return quickly: a
+     * null surface is detached before this returns, a new one is started on a
+     * background thread.
+     */
+    fun setSurface(surface: Surface?, refreshRate: Float) {
+        synchronized(lock) {
+            if (refreshRate > 1f) vsyncPeriodNs = (1_000_000_000.0 / refreshRate).toLong()
+            if (surface === this.surface && (surface == null || codec != null)) return
+            val codec = codec
+            if (codec != null && Build.VERSION.SDK_INT >= 23) {
+                try {
+                    // Swap outputs without stopping: no keyframe needed.
+                    codec.setOutputSurface(surface ?: parking())
+                    this.surface = surface
+                    parked = surface == null
+                    lastTargetNs = 0
+                    return
+                } catch (e: Exception) {
+                    Log.w(TAG, "setOutputSurface failed; restarting the decoder", e)
+                }
+            }
+            releaseCodecLocked()
+            this.surface = surface
+            parked = false
+        }
+        if (surface != null) {
+            starter.execute {
+                synchronized(lock) {
+                    if (this.surface === surface && codec == null && active) startFromGopLocked()
+                }
+            }
+        }
     }
+
+    private fun parking(): Surface =
+        parkingSurface ?: Surface(SurfaceTexture(0).also { parkingTexture = it }).also { parkingSurface = it }
 
     fun submit(frame: ByteBuffer, h265: Boolean) {
         val length = frame.remaining()
@@ -132,8 +172,10 @@ class VideoDecoder {
             }
             if (info.keyframe || !gop.isEmpty) gop.add(scratch, length, ptsUs, flags)
 
-            if (surface == null || config == null) return
+            if (config == null) return
             if (needsRestart || codec == null) {
+                // Needs a screen surface to start; until then the GOP buffer keeps frames.
+                if (surface == null) return
                 // The frame is already in the GOP buffer, so a restart replays it.
                 // Don't retry a failing decoder on every frame.
                 val now = System.nanoTime()
@@ -170,6 +212,7 @@ class VideoDecoder {
         codec = created.first
         codecName = created.second
         needsRestart = false
+        parked = false
         lastTargetNs = 0
         // Replay what we have; only the newest of these frames gets shown.
         catchUpUntilUs = gop.lastPtsUs
@@ -318,7 +361,7 @@ class VideoDecoder {
     private fun render(codec: MediaCodec, index: Int, info: MediaCodec.BufferInfo) {
         val now = System.nanoTime()
         try {
-            if (info.presentationTimeUs < catchUpUntilUs) {
+            if (parked || info.presentationTimeUs < catchUpUntilUs) {
                 codec.releaseOutputBuffer(index, false)
                 return
             }

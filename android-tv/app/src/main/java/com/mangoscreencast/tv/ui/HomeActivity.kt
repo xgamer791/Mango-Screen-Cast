@@ -8,6 +8,7 @@ import android.widget.Button
 import android.widget.TextView
 import com.mangoscreencast.tv.MangoApp
 import com.mangoscreencast.tv.R
+import com.mangoscreencast.tv.ReceiverService
 import com.mangoscreencast.tv.airplay.AirPlayReceiver
 import com.mangoscreencast.tv.airplay.AirPlayReceiver.State
 
@@ -35,6 +36,7 @@ class HomeActivity : Activity(), AirPlayReceiver.Listener {
             setOnClickListener { startActivity(Intent(this@HomeActivity, SettingsActivity::class.java)) }
             requestFocus()
         }
+        ReceiverService.sync(this)
     }
 
     override fun onStart() {

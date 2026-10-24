@@ -39,7 +39,6 @@ class MangoApp : Application() {
             override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) {}
             override fun onActivityDestroyed(activity: Activity) {}
         })
-        ReceiverService.sync(this)
     }
 
     /** Brings up the full-screen player when a device starts mirroring. */

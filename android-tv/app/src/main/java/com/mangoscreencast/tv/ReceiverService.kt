@@ -10,6 +10,7 @@ import android.content.Intent
 import android.content.pm.ServiceInfo
 import android.os.Build
 import android.os.IBinder
+import android.util.Log
 import com.mangoscreencast.tv.ui.HomeActivity
 
 /**
@@ -39,29 +40,45 @@ class ReceiverService : Service() {
             .setContentIntent(open)
             .setOngoing(true)
             .build()
-        if (Build.VERSION.SDK_INT >= 29) {
-            startForeground(NOTIFICATION_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE)
-        } else {
-            startForeground(NOTIFICATION_ID, notification)
+        try {
+            if (Build.VERSION.SDK_INT >= 29) {
+                startForeground(NOTIFICATION_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_CONNECTED_DEVICE)
+            } else {
+                startForeground(NOTIFICATION_ID, notification)
+            }
+        } catch (e: RuntimeException) {
+            // Android 12+ refuses foreground services started from the background
+            // (e.g. after the system restarts the process). Next app launch retries.
+            Log.w("ReceiverService", "can't run in the foreground right now", e)
+            stopSelf()
+            return
         }
+        acquired = true
         MangoApp.receiver.acquire(this)
     }
 
     override fun onDestroy() {
-        MangoApp.receiver.release(this)
+        if (acquired) MangoApp.receiver.release(this)
         super.onDestroy()
     }
+
+    private var acquired = false
 
     companion object {
         private const val CHANNEL = "receiver"
         private const val NOTIFICATION_ID = 1
 
+        /** Starts or stops the service to match the setting. Call from a visible screen. */
         fun sync(context: Context) {
             val intent = Intent(context, ReceiverService::class.java)
-            if (MangoApp.settings.receiveInBackground) {
-                if (Build.VERSION.SDK_INT >= 26) context.startForegroundService(intent) else context.startService(intent)
-            } else {
-                context.stopService(intent)
+            try {
+                if (MangoApp.settings.receiveInBackground) {
+                    if (Build.VERSION.SDK_INT >= 26) context.startForegroundService(intent) else context.startService(intent)
+                } else {
+                    context.stopService(intent)
+                }
+            } catch (e: RuntimeException) {
+                Log.w("ReceiverService", "couldn't change the background service", e)
             }
         }
     }
