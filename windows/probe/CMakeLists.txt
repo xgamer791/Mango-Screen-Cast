@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.21)
 project(MangoProbe CXX)
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>")
 add_executable(probe probe.cpp)
 target_compile_options(probe PRIVATE /W3 /EHsc /permissive- /bigobj /utf-8)

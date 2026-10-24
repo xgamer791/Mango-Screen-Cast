@@ -33,7 +33,6 @@ jobs:
           Get-CimInstance Win32_VideoController | Format-List Name, DriverVersion, CurrentHorizontalResolution, CurrentVerticalResolution, CurrentRefreshRate
           Get-CimInstance Win32_SoundDevice | Format-List Name, Status
           Get-Service Audiosrv, AudioEndpointBuilder, Dnscache | Format-Table Name, Status, StartType
-          Get-WindowsFeature Server-Media-Foundation | Format-List Name, InstallState
           Get-ChildItem C:\Windows\System32\mfh264enc.dll, C:\Windows\System32\mfplat.dll -ErrorAction SilentlyContinue | Format-Table Name, Length
           python --version
           Get-ChildItem "C:\Program Files (x86)\Windows Kits\10\Include" | Format-Table Name

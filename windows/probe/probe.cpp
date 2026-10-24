@@ -9,6 +9,7 @@
 #include <mfidl.h>
 #include <mftransform.h>
 #include <mferror.h>
+#include <strmif.h>
 #include <codecapi.h>
 #include <mmdeviceapi.h>
 #include <audioclient.h>
