@@ -58,5 +58,5 @@ find_package(openssl REQUIRED CONFIG)
 target_link_libraries(uxplay PUBLIC plist openssl::crypto)
 
 # --- JNI bridge ------------------------------------------------------------
-add_library(mango_airplay SHARED airplay_jni.c)
+add_library(mango_airplay SHARED airplay_jni.c mango_server.c)
 target_link_libraries(mango_airplay PRIVATE uxplay log)

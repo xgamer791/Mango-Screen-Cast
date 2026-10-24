@@ -15,17 +15,13 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "dns_sd.h"
-#include "dnssd.h"
-#include "global.h"
 #include "logger.h"
-#include "raop.h"
+#include "mango_server.h"
 
 #define TAG "MangoAirPlay"
 
 static JavaVM *g_vm;
 static pthread_key_t g_env_key;
-static pthread_mutex_t g_lock = PTHREAD_MUTEX_INITIALIZER;
 
 static jobject g_callbacks;
 static jmethodID m_register_service;
@@ -44,8 +40,6 @@ static jmethodID m_volume;
 static jmethodID m_connection_reset;
 static jmethodID m_log;
 
-static raop_t *g_raop;
-static dnssd_t *g_dnssd;
 static int g_open_connections;
 /* AirPlay volume in dB: -30 (quietest) .. 0 (full), -144 = mute. */
 static float g_volume_db = 0.0f;
@@ -61,7 +55,6 @@ JNIEXPORT jint JNI_OnLoad(JavaVM *vm, void *reserved) {
     (void) reserved;
     g_vm = vm;
     pthread_key_create(&g_env_key, detach_thread);
-    ntp_global_init();
     return JNI_VERSION_1_6;
 }
 
@@ -352,19 +345,7 @@ static bool lookup_methods(JNIEnv *env, jobject callbacks) {
     return true;
 }
 
-static void stop_locked(JNIEnv *env) {
-    if (g_dnssd) {
-        dnssd_unregister_raop(g_dnssd);
-        dnssd_unregister_airplay(g_dnssd);
-    }
-    if (g_raop) {
-        raop_destroy(g_raop);
-        g_raop = NULL;
-    }
-    if (g_dnssd) {
-        dnssd_destroy(g_dnssd);
-        g_dnssd = NULL;
-    }
+static void release_callbacks(JNIEnv *env) {
     __atomic_store_n(&g_open_connections, 0, __ATOMIC_SEQ_CST);
     if (g_callbacks) {
         jobject old = g_callbacks;
@@ -375,8 +356,8 @@ static void stop_locked(JNIEnv *env) {
 
 /*
  * Starts the AirPlay server and advertises it. Returns the TCP port, or a
- * negative error code. width/height/refresh/maxFps are what the TV tells
- * Apple devices it can show; they size their stream to fit.
+ * negative error code (see mango_server.h). width/height/refresh/maxFps are
+ * what the TV tells Apple devices it can show; they size their stream to fit.
  */
 JNIEXPORT jint JNICALL
 Java_com_mangoscreencast_tv_airplay_AirPlayNative_nativeStart(JNIEnv *env, jclass clazz, jobject callbacks,
@@ -385,40 +366,22 @@ Java_com_mangoscreencast_tv_airplay_AirPlayNative_nativeStart(JNIEnv *env, jclas
                                                               jint refresh_rate, jint max_fps, jboolean h265,
                                                               jint log_level) {
     (void) clazz;
-    pthread_mutex_lock(&g_lock);
-    stop_locked(env);
-
-    if (!lookup_methods(env, callbacks)) {
-        pthread_mutex_unlock(&g_lock);
-        return -1;
-    }
+    mango_server_stop();
+    release_callbacks(env);
+    if (!lookup_methods(env, callbacks)) return -1;
     g_callbacks = (*env)->NewGlobalRef(env, callbacks);
-    mango_dnssd_set_handlers(on_register_service, on_unregister_service);
 
-    const char *name = (*env)->GetStringUTFChars(env, jname, NULL);
-    const char *keyfile = (*env)->GetStringUTFChars(env, jkeyfile, NULL);
-    jbyte hw[MAX_HWADDR_LEN] = {0};
-    (*env)->GetByteArrayRegion(env, jhw_addr, 0, MAX_HWADDR_LEN, hw);
-    char mac[3 * MAX_HWADDR_LEN];
-    snprintf(mac, sizeof(mac), "%02x:%02x:%02x:%02x:%02x:%02x", (unsigned char) hw[0], (unsigned char) hw[1],
-             (unsigned char) hw[2], (unsigned char) hw[3], (unsigned char) hw[4], (unsigned char) hw[5]);
-
-    int result = 0;
-    int error = 0;
-    g_dnssd = dnssd_init(name, (int) strlen(name), (const char *) hw, MAX_HWADDR_LEN, 0, &error);
-    if (!g_dnssd || error) {
-        __android_log_print(ANDROID_LOG_ERROR, TAG, "dnssd_init failed: %d", error);
-        result = -2;
-        goto done;
-    }
-    /* Same feature set as UxPlay's defaults, plus HEVC ("ScreenMultiCodec",
-     * bit 42) when the TV can decode it: that is what lets Macs and recent
-     * iPhones/iPads send 4K. HLS URL playback (bits 0 and 4) stays off so
-     * apps fall back to screen mirroring. */
-    dnssd_set_airplay_features(g_dnssd, 0, 0);
-    dnssd_set_airplay_features(g_dnssd, 4, 0);
-    dnssd_set_airplay_features(g_dnssd, 27, 0);
-    dnssd_set_airplay_features(g_dnssd, 42, h265 ? 1 : 0);
+    mango_server_config_t config;
+    memset(&config, 0, sizeof(config));
+    config.name = (*env)->GetStringUTFChars(env, jname, NULL);
+    config.keyfile = (*env)->GetStringUTFChars(env, jkeyfile, NULL);
+    (*env)->GetByteArrayRegion(env, jhw_addr, 0, (jsize) sizeof(config.hw_addr), (jbyte *) config.hw_addr);
+    config.width = width;
+    config.height = height;
+    config.refresh_rate = refresh_rate;
+    config.max_fps = max_fps;
+    config.h265 = h265 == JNI_TRUE;
+    config.log_level = log_level;
 
     raop_callbacks_t cbs;
     memset(&cbs, 0, sizeof(cbs));
@@ -456,75 +419,36 @@ Java_com_mangoscreencast_tv_airplay_AirPlayNative_nativeStart(JNIEnv *env, jclas
     cbs.on_video_playlist_remove = cb_on_video_playlist_remove;
     cbs.get_custom_profile = cb_get_custom_profile;
 
-    g_raop = raop_init(&cbs);
-    if (!g_raop) {
-        result = -3;
-        goto done;
+    int result = mango_server_start(&config, &cbs, cb_log, on_register_service, on_unregister_service);
+    if (result > 0) {
+        __android_log_print(ANDROID_LOG_INFO, TAG, "AirPlay server '%s' on port %d (%dx%d@%d, max %d fps, %s)",
+                            config.name, result, width, height, refresh_rate, max_fps,
+                            config.h265 ? "H.264+HEVC" : "H.264");
+    } else {
+        __android_log_print(ANDROID_LOG_ERROR, TAG, "AirPlay server failed to start: %d", result);
+        release_callbacks(env);
     }
-    raop_set_log_callback(g_raop, cb_log, NULL);
-    raop_set_log_level(g_raop, log_level);
-    /* nohold = 1: a new device can take over the screen from the current one. */
-    if (raop_init2(g_raop, 1, mac, keyfile)) {
-        free(g_raop);
-        g_raop = NULL;
-        result = -4;
-        goto done;
-    }
-    raop_set_plist(g_raop, "width", width);
-    raop_set_plist(g_raop, "height", height);
-    raop_set_plist(g_raop, "refreshRate", refresh_rate);
-    raop_set_plist(g_raop, "maxFPS", max_fps);
-
-    unsigned short port = raop_get_port(g_raop);
-    if (raop_start_httpd(g_raop, &port) < 0) {
-        result = -5;
-        goto done;
-    }
-    raop_set_port(g_raop, port);
-    raop_set_dnssd(g_raop, g_dnssd);
-
-    int raop_error = dnssd_register_raop(g_dnssd, port);
-    int airplay_error = dnssd_register_airplay(g_dnssd, port);
-    if (raop_error || airplay_error) {
-        __android_log_print(ANDROID_LOG_ERROR, TAG, "service registration failed: raop %d airplay %d",
-                            raop_error, airplay_error);
-        result = -6;
-        goto done;
-    }
-    result = port;
-    __android_log_print(ANDROID_LOG_INFO, TAG, "AirPlay server '%s' on port %d (%dx%d@%d, max %d fps, %s)", name,
-                        port, width, height, refresh_rate, max_fps, h265 ? "H.264+HEVC" : "H.264");
-
-done:
-    if (result < 0) stop_locked(env);
-    (*env)->ReleaseStringUTFChars(env, jname, name);
-    (*env)->ReleaseStringUTFChars(env, jkeyfile, keyfile);
-    pthread_mutex_unlock(&g_lock);
+    (*env)->ReleaseStringUTFChars(env, jname, config.name);
+    (*env)->ReleaseStringUTFChars(env, jkeyfile, config.keyfile);
     return result;
 }
 
 JNIEXPORT void JNICALL
 Java_com_mangoscreencast_tv_airplay_AirPlayNative_nativeStop(JNIEnv *env, jclass clazz) {
     (void) clazz;
-    pthread_mutex_lock(&g_lock);
-    stop_locked(env);
-    pthread_mutex_unlock(&g_lock);
+    mango_server_stop();
+    release_callbacks(env);
 }
 
 JNIEXPORT jboolean JNICALL
 Java_com_mangoscreencast_tv_airplay_AirPlayNative_nativeIsRunning(JNIEnv *env, jclass clazz) {
     (void) env; (void) clazz;
-    pthread_mutex_lock(&g_lock);
-    jboolean running = g_raop && raop_is_running(g_raop) ? JNI_TRUE : JNI_FALSE;
-    pthread_mutex_unlock(&g_lock);
-    return running;
+    return mango_server_is_running() ? JNI_TRUE : JNI_FALSE;
 }
 
 /* Drops any connected device (used when the user presses Back on the TV). */
 JNIEXPORT void JNICALL
 Java_com_mangoscreencast_tv_airplay_AirPlayNative_nativeDisconnectClients(JNIEnv *env, jclass clazz) {
     (void) env; (void) clazz;
-    pthread_mutex_lock(&g_lock);
-    if (g_raop) raop_remove_known_connections(g_raop);
-    pthread_mutex_unlock(&g_lock);
+    mango_server_disconnect_clients();
 }
