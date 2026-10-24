@@ -1,0 +1,57 @@
+name: Android TV app
+
+on:
+  push:
+    paths: ["android-tv/**", ".gitmodules", ".github/workflows/android.yml"]
+  pull_request:
+    paths: ["android-tv/**", ".gitmodules", ".github/workflows/android.yml"]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Install NDK and CMake
+        run: |
+          yes | "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" --licenses > /dev/null || true
+          "$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager" "ndk;27.2.12479018" "cmake;3.22.1" \
+            "platforms;android-35" "build-tools;35.0.0" > /dev/null
+
+      - name: AirPlay server smoke test (host build)
+        working-directory: android-tv/native-test
+        run: |
+          sudo apt-get install -y --no-install-recommends libssl-dev > /dev/null
+          cmake -S . -B build -DCMAKE_BUILD_TYPE=Release
+          cmake --build build -j4
+          python3 check_server.py build
+
+      - name: Unit tests
+        working-directory: android-tv
+        run: ./gradlew --no-daemon testDebugUnitTest
+
+      - name: Build APKs
+        working-directory: android-tv
+        run: ./gradlew --no-daemon assembleDebug assembleRelease
+
+      - name: Collect APKs
+        run: |
+          mkdir -p dist
+          cp android-tv/app/build/outputs/apk/release/app-release.apk dist/MangoScreenCast.apk
+          cp android-tv/app/build/outputs/apk/debug/app-debug.apk dist/MangoScreenCast-debug.apk
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: MangoScreenCast-apk
+          path: dist/
