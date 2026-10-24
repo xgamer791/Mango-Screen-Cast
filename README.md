@@ -61,6 +61,7 @@ cd Mango-Screen-Cast/android-tv
 | Frame pacing | *Balanced* (default) shows each frame right away, one per screen refresh. *Fastest* shows frames the moment they're decoded. *Smoothest* holds one frame back to absorb Wi-Fi jitter. |
 | Sound | Play the device's audio on the TV. |
 | Show stats | Overlay while mirroring. |
+| Diagnostics | What the TV detected (panel, decoders), what it offers Apple devices, and the recent AirPlay log. Include this when reporting a problem. |
 | Stay visible after closing the app | Keeps the TV in Screen Mirroring lists in the background. To let mirroring open the player on its own, Android also needs *Display over other apps* permission (the app asks for it). |
 
 ## What makes it fast

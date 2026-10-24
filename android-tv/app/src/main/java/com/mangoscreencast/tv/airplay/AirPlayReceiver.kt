@@ -12,8 +12,12 @@ import com.mangoscreencast.tv.display.DisplayCapabilities
 import com.mangoscreencast.tv.display.MirrorProfile
 import com.mangoscreencast.tv.media.AudioPlayer
 import com.mangoscreencast.tv.media.VideoDecoder
+import com.mangoscreencast.tv.media.DecoderSelection
 import java.io.File
 import java.nio.ByteBuffer
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 import java.util.UUID
 import java.util.concurrent.CopyOnWriteArrayList
 
@@ -54,11 +58,44 @@ class AirPlayReceiver(private val context: Context, private val settings: Settin
     private val owners = mutableSetOf<Any>()
     private val listeners = CopyOnWriteArrayList<Listener>()
     private var wifiLock: WifiManager.WifiLock? = null
+    private val recentLog = ArrayDeque<String>()
+    private val timeFormat = SimpleDateFormat("HH:mm:ss", Locale.US)
 
     init {
         advertiser.onFailure = { reason ->
+            log("advertising failed: $reason")
             update { it.copy(state = State.FAILED, message = "Couldn't announce the TV on the network ($reason).") }
         }
+        advertiser.onRegistered = { type, name -> log("advertising $type as \"$name\"") }
+    }
+
+    /** Adds a line to the log shown under Settings > Diagnostics. */
+    fun log(line: String) {
+        synchronized(recentLog) {
+            recentLog.addLast("${timeFormat.format(Date())} $line")
+            while (recentLog.size > MAX_LOG_LINES) recentLog.removeFirst()
+        }
+    }
+
+    /** Plain-text report for troubleshooting. */
+    fun diagnostics(): String = buildString {
+        val s = status
+        appendLine("State: ${s.state}${s.message?.let { " ($it)" } ?: ""}")
+        appendLine("TV name: ${s.tvName}")
+        s.profile?.let { p ->
+            appendLine("Offering: ${p.width}x${p.height} @ ${p.maxFps} fps, ${p.codecs} (refresh ${p.refreshRate} Hz)")
+            appendLine("Panel: ${p.panel.width}x${p.panel.height}, modes ${p.panel.refreshRates.joinToString { "%.2f".format(it) }} Hz")
+        }
+        appendLine("Device: ${Build.MANUFACTURER} ${Build.MODEL}, Android ${Build.VERSION.RELEASE} (API ${Build.VERSION.SDK_INT})")
+        appendLine("Decoders:")
+        DecoderSelection.describe().forEach { appendLine("  $it") }
+        if (s.state == State.MIRRORING) {
+            val v = video.stats()
+            appendLine("Video: ${v.width}x${v.height} ${v.codec} via ${v.decoder}, ${"%.1f".format(v.fps)} fps")
+        }
+        appendLine()
+        appendLine("Recent log:")
+        synchronized(recentLog) { recentLog.forEach { appendLine(it) } }
     }
 
     fun addListener(listener: Listener) {
@@ -115,8 +152,10 @@ class AirPlayReceiver(private val context: Context, private val settings: Settin
         }
         if (result > 0) {
             Log.i(TAG, "ready as \"$name\" on port $result: ${profile.width}x${profile.height} ${profile.codecs}")
+            log("server ready on port $result: ${profile.width}x${profile.height} @ ${profile.maxFps} fps, ${profile.codecs}")
             update { it.copy(state = State.READY, profile = profile, message = null) }
         } else {
+            log("server failed to start: $result")
             update { it.copy(state = State.FAILED, profile = profile, message = describeError(result)) }
         }
     }
@@ -175,6 +214,7 @@ class AirPlayReceiver(private val context: Context, private val settings: Settin
 
     override fun onClientRequest(deviceId: String, model: String, name: String): Boolean {
         Log.i(TAG, "connection from $name ($model)")
+        log("connection from $name ($model)")
         update {
             it.copy(
                 state = if (it.state == State.MIRRORING) State.MIRRORING else State.CONNECTED,
@@ -195,6 +235,7 @@ class AirPlayReceiver(private val context: Context, private val settings: Settin
 
     override fun onVideoCodec(h265: Boolean, sourceWidth: Int, sourceHeight: Int, width: Int, height: Int): Int {
         Log.i(TAG, "mirroring ${if (h265) "HEVC" else "H.264"} ${sourceWidth}x$sourceHeight")
+        log("mirroring starts: ${if (h265) "HEVC" else "H.264"} ${sourceWidth}x$sourceHeight")
         if (h265 && status.profile?.h265 == false) return -1
         video.latencyMode = settings.latencyMode
         video.start(h265, sourceWidth, sourceHeight)
@@ -212,6 +253,7 @@ class AirPlayReceiver(private val context: Context, private val settings: Settin
 
     override fun onVideoReset(type: Int) {
         // The sender stopped mirroring (or another device took over).
+        log("mirroring stopped (reset type $type)")
         video.stop()
         releaseWifiLock()
         update {
@@ -220,6 +262,7 @@ class AirPlayReceiver(private val context: Context, private val settings: Settin
     }
 
     override fun onAudioFormat(ct: Int, spf: Int, usingScreen: Boolean, isMedia: Boolean, audioFormat: Long) {
+        log("audio format ct=$ct spf=$spf")
         audio.enabled = settings.soundEnabled
         audio.configure(ct, spf)
     }
@@ -232,6 +275,7 @@ class AirPlayReceiver(private val context: Context, private val settings: Settin
 
     override fun onConnectionReset(reason: Int) {
         val who = status.clientName
+        log("connection reset (reason $reason)")
         endMirroring()
         update {
             it.copy(
@@ -241,7 +285,10 @@ class AirPlayReceiver(private val context: Context, private val settings: Settin
         }
     }
 
-    override fun onLog(level: Int, message: String) {}
+    override fun onLog(level: Int, message: String) {
+        // Info and above from the AirPlay server; skip its multi-line dumps.
+        message.lineSequence().firstOrNull()?.takeIf { it.isNotBlank() }?.let { log(it.trim()) }
+    }
 
     // --- Wi-Fi ---------------------------------------------------------------------
 
@@ -274,5 +321,6 @@ class AirPlayReceiver(private val context: Context, private val settings: Settin
     private companion object {
         const val TAG = "MangoAirPlay"
         const val ERROR_NO_LIBRARY = -100
+        const val MAX_LOG_LINES = 150
     }
 }

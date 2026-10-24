@@ -40,6 +40,9 @@ class ServiceAdvertiser(context: Context) {
     /** Called with a short reason when the platform refuses to advertise. */
     var onFailure: ((String) -> Unit)? = null
 
+    /** Called with the service type and the name the platform settled on. */
+    var onRegistered: ((String, String) -> Unit)? = null
+
     @Synchronized
     fun register(type: String, name: String, port: Int, txt: ByteArray): Int {
         unregister(type)
@@ -58,6 +61,7 @@ class ServiceAdvertiser(context: Context) {
         val listener = object : NsdManager.RegistrationListener {
             override fun onServiceRegistered(info: NsdServiceInfo) {
                 Log.i(TAG, "Advertising ${info.serviceName} ($type) on port $port")
+                onRegistered?.invoke(type, info.serviceName)
             }
 
             override fun onRegistrationFailed(info: NsdServiceInfo, errorCode: Int) {

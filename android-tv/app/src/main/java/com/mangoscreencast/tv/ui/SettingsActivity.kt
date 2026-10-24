@@ -3,6 +3,7 @@ package com.mangoscreencast.tv.ui
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.Intent
+import android.graphics.Typeface
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -12,6 +13,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.widget.EditText
 import android.widget.LinearLayout
+import android.widget.ScrollView
 import android.widget.TextView
 import com.mangoscreencast.tv.BuildConfig
 import com.mangoscreencast.tv.LatencyMode
@@ -70,7 +72,27 @@ class SettingsActivity : Activity() {
             ReceiverService.sync(this)
             if (settings.receiveInBackground) askForOverlayPermission()
         }
+        row(R.string.setting_diagnostics, getString(R.string.view), R.string.setting_diagnostics_hint) {
+            showDiagnostics()
+        }
         list.getChildAt(focusedRow.coerceIn(0, list.childCount - 1))?.requestFocus()
+    }
+
+    private fun showDiagnostics() {
+        val text = TextView(this).apply {
+            text = receiver.diagnostics()
+            setTextIsSelectable(true)
+            typeface = Typeface.MONOSPACE
+            textSize = 14f
+            val pad = (16 * resources.displayMetrics.density).toInt()
+            setPadding(pad, pad, pad, pad)
+            isFocusable = true
+        }
+        AlertDialog.Builder(this)
+            .setTitle(R.string.setting_diagnostics)
+            .setView(ScrollView(this).apply { addView(text) })
+            .setPositiveButton(android.R.string.ok, null)
+            .show()
     }
 
     private fun row(title: Int, value: String, hint: Int, onClick: () -> Unit) =

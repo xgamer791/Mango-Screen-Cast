@@ -37,6 +37,23 @@ object DecoderSelection {
         return supports(video, width, height, fps) || supports(video, height, width, fps)
     }
 
+    /** One line per video decoder relevant to AirPlay, for diagnostics. */
+    fun describe(): List<String> {
+        val lines = mutableListOf<String>()
+        for (mime in listOf("video/hevc", "video/avc")) {
+            for (info in decodersFor(mime)) {
+                val video = info.getCapabilitiesForType(mime).videoCapabilities
+                val uhd = video != null && supports(video, 3840, 2160, 60)
+                val fhd = video != null && supports(video, 1920, 1080, 60)
+                val kind = if (isSoftware(info)) "software" else "hardware"
+                lines += "$mime ${info.name} ($kind): 4K60 ${yesNo(uhd)}, 1080p60 ${yesNo(fhd)}"
+            }
+        }
+        return lines.ifEmpty { listOf("none found") }
+    }
+
+    private fun yesNo(value: Boolean) = if (value) "yes" else "no"
+
     private fun supports(video: MediaCodecInfo.VideoCapabilities, width: Int, height: Int, fps: Int): Boolean {
         if (!video.isSizeSupported(width, height)) return false
         if (Build.VERSION.SDK_INT >= 29) {

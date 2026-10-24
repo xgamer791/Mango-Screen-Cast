@@ -44,6 +44,9 @@
     <string name="setting_stats_hint">You can also press OK on the remote while mirroring</string>
     <string name="setting_background">Stay visible after closing the app</string>
     <string name="setting_background_hint">Keeps the TV in Screen Mirroring lists while you use other apps</string>
+    <string name="setting_diagnostics">Diagnostics</string>
+    <string name="setting_diagnostics_hint">What the TV detected and offers, plus the recent AirPlay log. Useful when reporting a problem.</string>
+    <string name="view">View</string>
     <string name="on">On</string>
     <string name="off">Off</string>
     <string name="overlay_title">Allow the player to open by itself?</string>
