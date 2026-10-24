@@ -3,6 +3,15 @@ plugins {
     id("org.jetbrains.kotlin.android")
 }
 
+// CI sets these: every published build gets a higher version code than any
+// before it, and is signed with the same permanent key so the TV can update
+// itself. Local builds fall back to the debug key.
+val keystorePath: String? = System.getenv("MANGO_KEYSTORE_FILE")
+val buildVersionCode = System.getenv("MANGO_VERSION_CODE")?.toIntOrNull() ?: 3
+val buildVersionName = System.getenv("MANGO_VERSION_NAME") ?: "1.2.0-local"
+// Where the app looks for updates: this repository's latest GitHub Release.
+val updateRepository = System.getenv("GITHUB_REPOSITORY") ?: "xgamer791/Mango-Screen-Cast"
+
 android {
     namespace = "com.mangoscreencast.tv"
     compileSdk = 35
@@ -14,8 +23,12 @@ android {
         // need newer Android are switched on at runtime.
         minSdk = 24
         targetSdk = 35
-        versionCode = 2
-        versionName = "1.1.0"
+        versionCode = buildVersionCode
+        versionName = buildVersionName
+        buildConfigField(
+            "String", "UPDATE_BASE_URL",
+            "\"https://github.com/$updateRepository/releases/latest/download/\"",
+        )
 
         ndk {
             // TVs and streaming sticks are ARM; x86_64 is for the emulator.
@@ -35,14 +48,23 @@ android {
         }
     }
 
+    signingConfigs {
+        if (keystorePath != null) {
+            create("release") {
+                storeFile = file(keystorePath)
+                storePassword = System.getenv("MANGO_KEYSTORE_PASSWORD")
+                keyAlias = System.getenv("MANGO_KEY_ALIAS")
+                keyPassword = System.getenv("MANGO_KEY_PASSWORD")
+            }
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-            // Sideloaded builds: sign with the debug key so the APK installs as-is.
-            // Use your own key before publishing to a store.
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.getByName(if (keystorePath != null) "release" else "debug")
         }
     }
 
@@ -77,4 +99,6 @@ dependencies {
     implementation("com.android.ndk.thirdparty:openssl:1.1.1q-beta-1")
 
     testImplementation("junit:junit:4.13.2")
+    // Real org.json for JVM tests (android.jar only has stubs).
+    testImplementation("org.json:json:20240303")
 }

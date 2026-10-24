@@ -1,8 +1,6 @@
 package com.mangoscreencast.tv
 
 import android.content.Context
-import android.os.Build
-import android.provider.Settings as SystemSettings
 import com.mangoscreencast.tv.display.ResolutionSetting
 import java.util.UUID
 
@@ -17,6 +15,16 @@ enum class LatencyMode {
     SMOOTHEST,
 }
 
+enum class UpdateMode {
+    /** Install new versions on its own while nothing is mirroring. */
+    AUTOMATIC,
+
+    /** Show "Update available" and wait for the user. */
+    ASK,
+
+    OFF,
+}
+
 /** App preferences. Reads and writes go straight to SharedPreferences. */
 class Settings(private val context: Context) {
     private val prefs = context.getSharedPreferences("mango", Context.MODE_PRIVATE)
@@ -27,9 +35,9 @@ class Settings(private val context: Context) {
             prefs.edit().putString(KEY_ID, it).apply()
         }
 
-    /** The name Macs and iPhones show for this TV. Defaults to the TV's own device name. */
+    /** The name Macs and iPhones show for this TV. */
     var tvName: String
-        get() = prefs.getString(KEY_NAME, null)?.takeIf { it.isNotBlank() } ?: systemName()
+        get() = prefs.getString(KEY_NAME, null)?.takeIf { it.isNotBlank() } ?: DEFAULT_NAME
         set(value) = prefs.edit().putString(KEY_NAME, value.trim()).apply()
 
     var resolution: ResolutionSetting
@@ -55,14 +63,25 @@ class Settings(private val context: Context) {
         get() = prefs.getBoolean(KEY_BACKGROUND, false)
         set(value) = prefs.edit().putBoolean(KEY_BACKGROUND, value).apply()
 
-    private fun systemName(): String {
-        val name = runCatching {
-            SystemSettings.Global.getString(context.contentResolver, SystemSettings.Global.DEVICE_NAME)
-        }.getOrNull()
-        return name?.takeIf { it.isNotBlank() } ?: Build.MODEL?.takeIf { it.isNotBlank() } ?: "Android TV"
-    }
+    var updateMode: UpdateMode
+        get() = runCatching { UpdateMode.valueOf(prefs.getString(KEY_UPDATES, null)!!) }
+            .getOrDefault(UpdateMode.AUTOMATIC)
+        set(value) = prefs.edit().putString(KEY_UPDATES, value.name).apply()
+
+    var lastUpdateCheckMs: Long
+        get() = prefs.getLong(KEY_UPDATE_CHECK, 0L)
+        set(value) = prefs.edit().putLong(KEY_UPDATE_CHECK, value).apply()
+
+    /** Set just before the app installs its own update, so it comes back up afterwards. */
+    var reopenAfterUpdate: Boolean
+        get() = prefs.getBoolean(KEY_REOPEN, false)
+        set(value) {
+            // Written synchronously: the installer stops the process right after.
+            prefs.edit().putBoolean(KEY_REOPEN, value).commit()
+        }
 
     private companion object {
+        const val DEFAULT_NAME = "Mango Screen Cast"
         const val KEY_ID = "device_id"
         const val KEY_NAME = "tv_name"
         const val KEY_RESOLUTION = "resolution"
@@ -70,5 +89,8 @@ class Settings(private val context: Context) {
         const val KEY_SOUND = "sound"
         const val KEY_STATS = "show_stats"
         const val KEY_BACKGROUND = "background"
+        const val KEY_UPDATES = "updates"
+        const val KEY_UPDATE_CHECK = "update_check"
+        const val KEY_REOPEN = "reopen_after_update"
     }
 }

@@ -9,11 +9,14 @@ import android.provider.Settings as SystemSettings
 import android.util.Log
 import com.mangoscreencast.tv.airplay.AirPlayReceiver
 import com.mangoscreencast.tv.ui.MirrorActivity
+import com.mangoscreencast.tv.update.AppUpdater
 
 class MangoApp : Application() {
     lateinit var settings: Settings
         private set
     lateinit var receiver: AirPlayReceiver
+        private set
+    lateinit var updater: AppUpdater
         private set
 
     private var startedActivities = 0
@@ -24,6 +27,14 @@ class MangoApp : Application() {
         settings = Settings(this)
         receiver = AirPlayReceiver(this, settings)
         receiver.onMirroringStarted = ::showPlayer
+        updater = AppUpdater(this, settings, receiver::log)
+        // Install on our own only while the app is on screen and nothing is
+        // using the TV, so an update never cuts off mirroring.
+        updater.isIdle = {
+            startedActivities > 0 && receiver.status.state !in setOf(
+                AirPlayReceiver.State.CONNECTED, AirPlayReceiver.State.MIRRORING,
+            )
+        }
         registerActivityLifecycleCallbacks(object : ActivityLifecycleCallbacks {
             override fun onActivityStarted(activity: Activity) {
                 startedActivities++
@@ -43,19 +54,23 @@ class MangoApp : Application() {
 
     /** Brings up the full-screen player when a device starts mirroring. */
     private fun showPlayer() {
-        // From the background, Android only lets apps open a screen if they may
-        // draw over other apps (Settings > Apps > Special access).
-        val allowed = startedActivities > 0 || Build.VERSION.SDK_INT < 29 ||
-            SystemSettings.canDrawOverlays(this)
-        if (!allowed) {
-            Log.w("MangoApp", "mirroring started in the background but the player can't be opened")
-            return
+        if (startedActivities == 0 && !canOpenFromBackground()) {
+            // Android drops this start silently; say why in Diagnostics.
+            receiver.log("mirroring started while the app was closed, but Android only lets the player " +
+                "open by itself with \"Display over other apps\" allowed")
         }
-        startActivity(
-            Intent(this, MirrorActivity::class.java)
-                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
-        )
+        try {
+            startActivity(
+                Intent(this, MirrorActivity::class.java)
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_REORDER_TO_FRONT)
+            )
+        } catch (e: Exception) {
+            Log.w("MangoApp", "couldn't open the player", e)
+        }
     }
+
+    /** From the background, Android only lets an app open a screen if it may draw over other apps. */
+    fun canOpenFromBackground(): Boolean = Build.VERSION.SDK_INT < 29 || SystemSettings.canDrawOverlays(this)
 
     companion object {
         lateinit var instance: MangoApp

@@ -50,10 +50,28 @@
     <string name="on">On</string>
     <string name="off">Off</string>
     <string name="overlay_title">Allow the player to open by itself?</string>
-    <string name="overlay_message">To start mirroring while another app is open, Android needs Mango Screen Cast to have “Display over other apps” permission.</string>
+    <string name="setting_background_needs_overlay">Visible, but Android won’t let the player open by itself while another app is on screen. Run this once from your Mac: %1$s</string>
+    <string name="overlay_message">To start mirroring while another app is open, Android needs Mango Screen Cast to have “Display over other apps” permission. If this TV has no settings screen for it, run this once from your Mac:\n\n%1$s</string>
     <string name="overlay_open">Open settings</string>
     <string name="overlay_later">Not now</string>
     <string name="about">Mango Screen Cast %1$s. Built on UxPlay (GPL-3.0), libplist (LGPL-2.1) and OpenSSL. AirPlay is a trademark of Apple Inc.</string>
+
+    <!-- Updates -->
+    <string name="version_label">Version %1$s</string>
+    <string name="update_available">Version %1$s is available</string>
+    <string name="update_now">Update</string>
+    <string name="update_needs_permission">To update itself, the app needs “Install unknown apps” allowed</string>
+    <string name="update_allow">Allow</string>
+    <string name="update_downloading">Downloading update… %1$d%%</string>
+    <string name="update_installing">Installing update… the app restarts by itself</string>
+    <string name="update_retry">Try again</string>
+    <string name="setting_updates">Updates</string>
+    <string name="setting_updates_hint">Automatic installs new versions while nothing is mirroring. Ask first shows an Update button on the home screen.</string>
+    <string name="updates_automatic">Automatic</string>
+    <string name="updates_ask">Ask first</string>
+    <string name="setting_check_updates">Check for updates now</string>
+    <string name="setting_check_updates_hint">Current version. New versions come from the project’s GitHub releases.</string>
+    <string name="checking_updates">Checking for updates…</string>
 
     <!-- Background service -->
     <string name="background_notice">“%1$s” is visible to Macs, iPhones and iPads</string>

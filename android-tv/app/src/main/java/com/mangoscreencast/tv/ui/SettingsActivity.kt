@@ -5,7 +5,6 @@ import android.app.AlertDialog
 import android.content.Intent
 import android.graphics.Typeface
 import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import android.provider.Settings as SystemSettings
 import android.text.InputType
@@ -15,11 +14,13 @@ import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
+import android.widget.Toast
 import com.mangoscreencast.tv.BuildConfig
 import com.mangoscreencast.tv.LatencyMode
 import com.mangoscreencast.tv.MangoApp
 import com.mangoscreencast.tv.R
 import com.mangoscreencast.tv.ReceiverService
+import com.mangoscreencast.tv.UpdateMode
 import com.mangoscreencast.tv.display.ResolutionSetting
 
 /** A short list of rows; OK on a row changes it. */
@@ -67,10 +68,18 @@ class SettingsActivity : Activity() {
         row(R.string.setting_stats, onOff(settings.showStats), R.string.setting_stats_hint) {
             settings.showStats = !settings.showStats
         }
-        row(R.string.setting_background, onOff(settings.receiveInBackground), R.string.setting_background_hint) {
+        row(R.string.setting_background, onOff(settings.receiveInBackground), backgroundHint()) {
             settings.receiveInBackground = !settings.receiveInBackground
             ReceiverService.sync(this)
             if (settings.receiveInBackground) askForOverlayPermission()
+        }
+        row(R.string.setting_updates, updateModeLabel(), R.string.setting_updates_hint) {
+            val values = listOf(UpdateMode.AUTOMATIC, UpdateMode.ASK, UpdateMode.OFF)
+            settings.updateMode = values[(values.indexOf(settings.updateMode) + 1) % values.size]
+        }
+        row(R.string.setting_check_updates, BuildConfig.VERSION_NAME, R.string.setting_check_updates_hint) {
+            MangoApp.instance.updater.checkNow()
+            Toast.makeText(this, R.string.checking_updates, Toast.LENGTH_SHORT).show()
         }
         row(R.string.setting_diagnostics, getString(R.string.view), R.string.setting_diagnostics_hint) {
             showDiagnostics()
@@ -137,24 +146,38 @@ class SettingsActivity : Activity() {
             .show()
     }
 
-    /** From the background, the player can only open itself with "display over other apps". */
+    /**
+     * From the background, the player can only open itself with "display over
+     * other apps". Google TV has no screen for it, so also give the adb command.
+     */
     private fun askForOverlayPermission() {
-        if (Build.VERSION.SDK_INT < 29 || SystemSettings.canDrawOverlays(this)) return
-        AlertDialog.Builder(this)
+        if (MangoApp.instance.canOpenFromBackground()) return
+        val intent = Intent(SystemSettings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:$packageName"))
+        val dialog = AlertDialog.Builder(this)
             .setTitle(R.string.overlay_title)
-            .setMessage(R.string.overlay_message)
-            .setPositiveButton(R.string.overlay_open) { _, _ ->
+            .setMessage(getString(R.string.overlay_message, overlayCommand()))
+        if (intent.resolveActivity(packageManager) != null) {
+            dialog.setPositiveButton(R.string.overlay_open) { _, _ ->
                 try {
-                    startActivity(
-                        Intent(SystemSettings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:$packageName"))
-                    )
+                    startActivity(intent)
                 } catch (_: Exception) {
-                    // Some TV builds hide this screen; the setting is under Apps > Special app access.
                 }
             }
-            .setNegativeButton(R.string.overlay_later, null)
-            .show()
+            dialog.setNegativeButton(R.string.overlay_later, null)
+        } else {
+            dialog.setPositiveButton(android.R.string.ok, null)
+        }
+        dialog.show()
     }
+
+    private fun backgroundHint(): String =
+        if (settings.receiveInBackground && !MangoApp.instance.canOpenFromBackground()) {
+            getString(R.string.setting_background_needs_overlay, overlayCommand())
+        } else {
+            getString(R.string.setting_background_hint)
+        }
+
+    private fun overlayCommand() = "adb shell appops set $packageName SYSTEM_ALERT_WINDOW allow"
 
     private fun resolutionLabel(): String {
         val auto = receiver.status.profile?.takeIf { settings.resolution == ResolutionSetting.AUTO }
@@ -184,4 +207,12 @@ class SettingsActivity : Activity() {
     )
 
     private fun onOff(value: Boolean) = getString(if (value) R.string.on else R.string.off)
+
+    private fun updateModeLabel() = getString(
+        when (settings.updateMode) {
+            UpdateMode.AUTOMATIC -> R.string.updates_automatic
+            UpdateMode.ASK -> R.string.updates_ask
+            UpdateMode.OFF -> R.string.off
+        }
+    )
 }

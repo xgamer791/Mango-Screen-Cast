@@ -11,17 +11,21 @@ import com.mangoscreencast.tv.R
 import com.mangoscreencast.tv.ReceiverService
 import com.mangoscreencast.tv.airplay.AirPlayReceiver
 import com.mangoscreencast.tv.airplay.AirPlayReceiver.State
+import com.mangoscreencast.tv.update.AppUpdater
 
 /** The "ready" screen: shows the name to pick on a Mac or iPhone, and what the TV can take. */
-class HomeActivity : Activity(), AirPlayReceiver.Listener {
+class HomeActivity : Activity(), AirPlayReceiver.Listener, AppUpdater.Listener {
     private lateinit var statusView: TextView
     private lateinit var detailView: TextView
     private lateinit var macSteps: TextView
     private lateinit var iosSteps: TextView
     private lateinit var capabilityView: TextView
     private lateinit var statusDot: View
+    private lateinit var updateStatus: TextView
+    private lateinit var updateButton: Button
 
     private val receiver get() = MangoApp.receiver
+    private val updater get() = MangoApp.instance.updater
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -32,6 +36,14 @@ class HomeActivity : Activity(), AirPlayReceiver.Listener {
         iosSteps = findViewById(R.id.ios_steps)
         capabilityView = findViewById(R.id.capability)
         statusDot = findViewById(R.id.status_dot)
+        updateStatus = findViewById(R.id.update_status)
+        updateButton = findViewById(R.id.update_button)
+        updateButton.setOnClickListener {
+            when (updater.state) {
+                is AppUpdater.State.Failed -> updater.checkNow()
+                else -> updater.install()
+            }
+        }
         findViewById<Button>(R.id.settings_button).apply {
             setOnClickListener { startActivity(Intent(this@HomeActivity, SettingsActivity::class.java)) }
             requestFocus()
@@ -43,9 +55,12 @@ class HomeActivity : Activity(), AirPlayReceiver.Listener {
         super.onStart()
         receiver.acquire(this)
         receiver.addListener(this)
+        updater.addListener(this)
+        updater.checkIfDue()
     }
 
     override fun onStop() {
+        updater.removeListener(this)
         receiver.removeListener(this)
         receiver.release(this)
         super.onStop()
@@ -75,10 +90,30 @@ class HomeActivity : Activity(), AirPlayReceiver.Listener {
         detailView.visibility = if (detailView.text.isNullOrBlank()) View.GONE else View.VISIBLE
         statusDot.background.mutate().setTint(getColor(color))
 
+        // Something that waited for the TV to be free can go ahead now.
+        if (status.state == State.READY) updater.checkIfDue()
+
         val profile = status.profile
         capabilityView.text = if (profile == null) "" else getString(
             R.string.capability, profile.sizeName, profile.width, profile.height, profile.maxFps, profile.codecs,
             profile.panel.width, profile.panel.height,
         )
+    }
+
+    override fun onUpdateState(state: AppUpdater.State) {
+        val (text, button) = when (state) {
+            AppUpdater.State.Idle, AppUpdater.State.Checking, AppUpdater.State.UpToDate ->
+                getString(R.string.version_label, com.mangoscreencast.tv.BuildConfig.VERSION_NAME) to null
+            is AppUpdater.State.Available -> getString(R.string.update_available, state.release.versionName) to
+                getString(R.string.update_now)
+            is AppUpdater.State.NeedsPermission -> getString(R.string.update_needs_permission) to
+                getString(R.string.update_allow)
+            is AppUpdater.State.Downloading -> getString(R.string.update_downloading, state.percent) to null
+            is AppUpdater.State.Installing -> getString(R.string.update_installing) to null
+            is AppUpdater.State.Failed -> state.message to getString(R.string.update_retry)
+        }
+        updateStatus.text = text
+        updateButton.visibility = if (button == null) View.GONE else View.VISIBLE
+        button?.let { updateButton.text = it }
     }
 }

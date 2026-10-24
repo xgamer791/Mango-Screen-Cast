@@ -54,10 +54,18 @@ class ReceiverService : Service() {
             return
         }
         acquired = true
+        running = true
         MangoApp.receiver.acquire(this)
+        MangoApp.receiver.log("background receiver started")
+    }
+
+    override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        // If Android stops the process, bring the receiver back.
+        return START_STICKY
     }
 
     override fun onDestroy() {
+        running = false
         if (acquired) MangoApp.receiver.release(this)
         super.onDestroy()
     }
@@ -65,6 +73,11 @@ class ReceiverService : Service() {
     private var acquired = false
 
     companion object {
+        /** True while the service is up, for Diagnostics. */
+        @Volatile
+        var running = false
+            private set
+
         private const val CHANNEL = "receiver"
         private const val NOTIFICATION_ID = 1
 

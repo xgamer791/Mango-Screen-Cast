@@ -27,12 +27,36 @@ already have AirPlay 2 built in.
 
 ## Install
 
-**Download:** open the latest run of the
-[Android TV app workflow](../../actions/workflows/android.yml) and download the
-`MangoScreenCast-apk` artifact. Then sideload `MangoScreenCast.apk` onto the
-TV, either with `adb install MangoScreenCast.apk` or with an app such as
-*Downloader* (Fire TV, Google TV). If a run has no artifact, the account's
-Actions storage was full when it ran; build it yourself as below.
+**Download:** get `MangoScreenCast.apk` from the
+[latest release](../../releases/latest) (or, before the first release, from
+the `MangoScreenCast-apk` artifact of the latest
+[Android TV app workflow](../../actions/workflows/android.yml) run). Then
+sideload it from a computer on the same network with
+[adb](https://developer.android.com/tools/adb) (turn on *Developer options →
+Network debugging* on the TV first):
+
+```sh
+adb connect <tv-ip-address>
+adb install -r MangoScreenCast.apk
+# Lets the player open by itself when mirroring starts while another app is
+# on screen (Google TV has no settings screen for this):
+adb shell appops set com.mangoscreencast.tv SYSTEM_ALERT_WINDOW allow
+# Lets the app install its own updates without asking:
+adb shell appops set com.mangoscreencast.tv REQUEST_INSTALL_PACKAGES allow
+```
+
+Apps such as *Downloader* also work for the install itself; the two `appops`
+lines need adb.
+
+**Updates:** the app checks this repository's latest GitHub Release every few
+hours and installs newer versions by itself while it's on screen and nothing
+is mirroring (Settings → Updates: *Automatic*, *Ask first* or *Off*). CI
+publishes a release for every push to `main` or the development branch once
+the `MANGO_KEYSTORE_BASE64` Actions secret holds the signing key (a base64'd
+keystore; optional `MANGO_KEYSTORE_PASSWORD`, `MANGO_KEY_ALIAS` and
+`MANGO_KEY_PASSWORD` default to `android`, `androiddebugkey`, `android`).
+Every release must be signed with the same key as the copy on the TV, or
+Android refuses the update.
 
 **Build it yourself:**
 
@@ -58,13 +82,14 @@ cd Mango-Screen-Cast/android-tv
 
 | Setting | What it does |
 |---|---|
-| TV name | The name Apple devices show. |
+| TV name | The name Apple devices show. *Mango Screen Cast* unless you change it. |
 | Resolution | Auto offers the most the TV can decode, up to 4K. You can also pick 4K, 2K (1440p) or 1080p. |
 | Frame pacing | *Balanced* (default) shows each frame right away, one per screen refresh. *Fastest* shows frames the moment they're decoded. *Smoothest* holds one frame back to absorb Wi-Fi jitter. |
 | Sound | Play the device's audio on the TV. |
 | Show stats | Overlay while mirroring: resolution, codec, fps, the bitrate the sender is using, decode time. |
 | Diagnostics | What the TV detected (panel, decoders), what it offers Apple devices, and the recent AirPlay and decoder log. Include this when reporting a problem. |
-| Stay visible after closing the app | Keeps the TV in Screen Mirroring lists in the background. To let mirroring open the player on its own, Android also needs *Display over other apps* permission (the app asks for it). |
+| Stay visible after closing the app | Keeps the TV in Screen Mirroring lists while you use other apps, and after the TV restarts. For mirroring to bring the player up by itself, Android also needs *Display over other apps* for the app; on Google TV grant it with the `SYSTEM_ALERT_WINDOW` adb line above. Diagnostics shows whether it's granted. |
+| Updates | *Automatic* (default) installs new releases while nothing is mirroring; *Ask first* shows an Update button on the home screen. |
 
 ## What makes it fast
 

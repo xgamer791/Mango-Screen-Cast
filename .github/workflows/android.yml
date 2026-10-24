@@ -7,6 +7,15 @@ on:
     paths: ["android-tv/**", ".gitmodules", ".github/workflows/android.yml"]
   workflow_dispatch:
 
+# Publishing a release needs write access to the repository's contents.
+permissions:
+  contents: write
+
+# One run per branch at a time, so releases come out in order.
+concurrency:
+  group: android-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -41,6 +50,31 @@ jobs:
         working-directory: android-tv
         run: ./gradlew --no-daemon testDebugUnitTest
 
+      # Every build gets a higher version code than the one before. With the
+      # MANGO_KEYSTORE_BASE64 secret set, the release APK is signed with the
+      # same permanent key as the copy on the TV, so the TV can update itself.
+      - name: Version and signing
+        env:
+          KEYSTORE_BASE64: ${{ secrets.MANGO_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.MANGO_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.MANGO_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.MANGO_KEY_PASSWORD }}
+        run: |
+          echo "MANGO_VERSION_CODE=$((1000 + GITHUB_RUN_NUMBER))" >> "$GITHUB_ENV"
+          echo "MANGO_VERSION_NAME=1.2.$GITHUB_RUN_NUMBER" >> "$GITHUB_ENV"
+          if [ -z "$KEYSTORE_BASE64" ]; then
+            echo "::notice::MANGO_KEYSTORE_BASE64 isn't set, so this build won't be published as a TV update."
+            exit 0
+          fi
+          printf '%s' "$KEYSTORE_BASE64" | tr -d ' \r\n' | base64 -d > "$RUNNER_TEMP/mango.keystore"
+          {
+            echo "MANGO_KEYSTORE_FILE=$RUNNER_TEMP/mango.keystore"
+            echo "MANGO_KEYSTORE_PASSWORD=${KEYSTORE_PASSWORD:-android}"
+            echo "MANGO_KEY_ALIAS=${KEY_ALIAS:-androiddebugkey}"
+            echo "MANGO_KEY_PASSWORD=${KEY_PASSWORD:-android}"
+            echo "MANGO_SIGNED=true"
+          } >> "$GITHUB_ENV"
+
       - name: Build APKs
         working-directory: android-tv
         run: ./gradlew --no-daemon assembleDebug assembleRelease
@@ -49,6 +83,27 @@ jobs:
         run: |
           mkdir -p dist
           cp android-tv/app/build/outputs/apk/release/app-release.apk dist/MangoScreenCast.apk
+          "$ANDROID_HOME/build-tools/35.0.0/apksigner" verify --print-certs dist/MangoScreenCast.apk | grep -i "sha-256"
+
+      # TVs check releases/latest/download/version.json and install the APK
+      # next to it when its version code is higher than their own.
+      - name: Publish TV update
+        if: >-
+          env.MANGO_SIGNED == 'true' && github.event_name != 'pull_request' &&
+          (github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main' ||
+           github.ref == 'refs/heads/claude/mango-screencast-app-r33dwn')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          sha=$(sha256sum dist/MangoScreenCast.apk | cut -d' ' -f1)
+          size=$(stat -c %s dist/MangoScreenCast.apk)
+          printf '{"versionCode": %s, "versionName": "%s", "apk": "MangoScreenCast.apk", "sha256": "%s", "size": %s}\n' \
+            "$MANGO_VERSION_CODE" "$MANGO_VERSION_NAME" "$sha" "$size" > dist/version.json
+          cat dist/version.json
+          gh release create "v$MANGO_VERSION_NAME" dist/MangoScreenCast.apk dist/version.json \
+            --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --latest \
+            --title "Mango Screen Cast $MANGO_VERSION_NAME" \
+            --notes "$(git log -1 --pretty=%s) (built from ${GITHUB_SHA::7})"
 
       # Uploading can fail when the account's Actions storage quota is full;
       # that says nothing about the build, so don't fail the run for it.

@@ -88,6 +88,10 @@ class AirPlayReceiver(private val context: Context, private val settings: Settin
             appendLine("Panel: ${p.panel.width}x${p.panel.height}, modes ${p.panel.refreshRates.joinToString { "%.2f".format(it) }} Hz")
         }
         appendLine("Device: ${Build.MANUFACTURER} ${Build.MODEL}, Android ${Build.VERSION.RELEASE} (API ${Build.VERSION.SDK_INT})")
+        appendLine("App: ${com.mangoscreencast.tv.BuildConfig.VERSION_NAME} (${com.mangoscreencast.tv.BuildConfig.VERSION_CODE})")
+        appendLine("Stay visible when closed: ${if (settings.receiveInBackground) "on" else "off"}, " +
+            "background receiver ${if (com.mangoscreencast.tv.ReceiverService.running) "running" else "not running"}, " +
+            "player can open by itself: ${if (com.mangoscreencast.tv.MangoApp.instance.canOpenFromBackground()) "yes" else "no (needs Display over other apps)"}")
         appendLine("Decoders:")
         DecoderSelection.describe().forEach { appendLine("  $it") }
         if (s.state == State.MIRRORING) {
