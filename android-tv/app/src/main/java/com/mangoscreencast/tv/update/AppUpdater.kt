@@ -108,8 +108,12 @@ class AppUpdater(
                 } else {
                     State.UpToDate
                 }
+            } catch (e: NotPublished) {
+                log("update check: no release visible at ${BuildConfig.UPDATE_BASE_URL}")
+                State.Failed(NOT_PUBLISHED_MESSAGE)
             } catch (e: Exception) {
                 Log.w(TAG, "update check failed", e)
+                log("update check failed: ${e.message ?: e.javaClass.simpleName}")
                 State.Failed("Couldn't check for updates (${e.message ?: e.javaClass.simpleName})")
             }
             set(result)
@@ -163,13 +167,17 @@ class AppUpdater(
 
     // --- Worker thread -----------------------------------------------------------
 
+    private class NotPublished : Exception()
+
     private fun fetchLatest(): Release? {
         val base = BuildConfig.UPDATE_BASE_URL
         val connection = open(base + VERSION_FILE)
         try {
             when (connection.responseCode) {
                 HttpURLConnection.HTTP_OK -> Unit
-                HttpURLConnection.HTTP_NOT_FOUND -> return null // no release published yet
+                // No release yet, or one the TV can't see: GitHub answers the
+                // same for a private repository's releases.
+                HttpURLConnection.HTTP_NOT_FOUND -> throw NotPublished()
                 else -> throw IllegalStateException("HTTP ${connection.responseCode}")
             }
             val body = connection.inputStream.bufferedReader().use { it.readText() }
@@ -293,6 +301,8 @@ class AppUpdater(
         const val VERSION_FILE = "version.json"
         const val CHECK_INTERVAL_MS = 6 * 60 * 60 * 1000L
         const val RETRY_INTERVAL_MS = 10 * 60 * 1000L
+        const val NOT_PUBLISHED_MESSAGE =
+            "GitHub shows this TV no releases. If the repository is private, the TV can't see them."
 
         /** Reads a release's version.json. Relative APK names resolve against `baseUrl`. */
         fun parse(json: String, baseUrl: String): Release? {

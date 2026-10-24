@@ -102,8 +102,10 @@ class HomeActivity : Activity(), AirPlayReceiver.Listener, AppUpdater.Listener {
 
     override fun onUpdateState(state: AppUpdater.State) {
         val (text, button) = when (state) {
-            AppUpdater.State.Idle, AppUpdater.State.Checking, AppUpdater.State.UpToDate ->
+            AppUpdater.State.Idle, AppUpdater.State.Checking ->
                 getString(R.string.version_label, com.mangoscreencast.tv.BuildConfig.VERSION_NAME) to null
+            AppUpdater.State.UpToDate ->
+                getString(R.string.version_up_to_date, com.mangoscreencast.tv.BuildConfig.VERSION_NAME) to null
             is AppUpdater.State.Available -> getString(R.string.update_available, state.release.versionName) to
                 getString(R.string.update_now)
             is AppUpdater.State.NeedsPermission -> getString(R.string.update_needs_permission) to

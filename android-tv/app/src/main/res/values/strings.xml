@@ -58,6 +58,7 @@
 
     <!-- Updates -->
     <string name="version_label">Version %1$s</string>
+    <string name="version_up_to_date">Version %1$s · up to date</string>
     <string name="update_available">Version %1$s is available</string>
     <string name="update_now">Update</string>
     <string name="update_needs_permission">To update itself, the app needs “Install unknown apps” allowed</string>
@@ -72,6 +73,9 @@
     <string name="setting_check_updates">Check for updates now</string>
     <string name="setting_check_updates_hint">Current version. New versions come from the project’s GitHub releases.</string>
     <string name="checking_updates">Checking for updates…</string>
+    <string name="update_up_to_date">You have the latest version.</string>
+    <string name="update_press_ok">%1$s Press OK to install it.</string>
+    <string name="update_press_ok_retry">%1$s Press OK to try again.</string>
 
     <!-- Background service -->
     <string name="background_notice">“%1$s” is visible to Macs, iPhones and iPads</string>

@@ -14,7 +14,6 @@ import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
-import android.widget.Toast
 import com.mangoscreencast.tv.BuildConfig
 import com.mangoscreencast.tv.LatencyMode
 import com.mangoscreencast.tv.MangoApp
@@ -22,13 +21,17 @@ import com.mangoscreencast.tv.R
 import com.mangoscreencast.tv.ReceiverService
 import com.mangoscreencast.tv.UpdateMode
 import com.mangoscreencast.tv.display.ResolutionSetting
+import com.mangoscreencast.tv.update.AppUpdater
 
 /** A short list of rows; OK on a row changes it. */
-class SettingsActivity : Activity() {
+class SettingsActivity : Activity(), AppUpdater.Listener {
     private lateinit var list: LinearLayout
     private val settings get() = MangoApp.settings
     private val receiver get() = MangoApp.receiver
+    private val updater get() = MangoApp.instance.updater
     private var focusedRow = 0
+    /** The "Check for updates now" row's second line, which follows the updater. */
+    private var updateHint: TextView? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -41,9 +44,11 @@ class SettingsActivity : Activity() {
         super.onStart()
         receiver.acquire(this)
         build()
+        updater.addListener(this)
     }
 
     override fun onStop() {
+        updater.removeListener(this)
         receiver.release(this)
         super.onStop()
     }
@@ -77,10 +82,13 @@ class SettingsActivity : Activity() {
             val values = listOf(UpdateMode.AUTOMATIC, UpdateMode.ASK, UpdateMode.OFF)
             settings.updateMode = values[(values.indexOf(settings.updateMode) + 1) % values.size]
         }
-        row(R.string.setting_check_updates, BuildConfig.VERSION_NAME, R.string.setting_check_updates_hint) {
-            MangoApp.instance.updater.checkNow()
-            Toast.makeText(this, R.string.checking_updates, Toast.LENGTH_SHORT).show()
-        }
+        updateHint = row(R.string.setting_check_updates, BuildConfig.VERSION_NAME, updateHintText(updater.state)) {
+            when (updater.state) {
+                is AppUpdater.State.Available, is AppUpdater.State.NeedsPermission -> updater.install()
+                is AppUpdater.State.Checking, is AppUpdater.State.Downloading, is AppUpdater.State.Installing -> Unit
+                else -> updater.checkNow()
+            }
+        }.findViewById(R.id.setting_hint)
         row(R.string.setting_diagnostics, getString(R.string.view), R.string.setting_diagnostics_hint) {
             showDiagnostics()
         }
@@ -104,10 +112,29 @@ class SettingsActivity : Activity() {
             .show()
     }
 
+    override fun onUpdateState(state: AppUpdater.State) {
+        updateHint?.apply {
+            text = updateHintText(state)
+            visibility = View.VISIBLE
+        }
+    }
+
+    private fun updateHintText(state: AppUpdater.State): String = when (state) {
+        AppUpdater.State.Idle -> getString(R.string.setting_check_updates_hint)
+        AppUpdater.State.Checking -> getString(R.string.checking_updates)
+        AppUpdater.State.UpToDate -> getString(R.string.update_up_to_date)
+        is AppUpdater.State.Available ->
+            getString(R.string.update_press_ok, getString(R.string.update_available, state.release.versionName) + ".")
+        is AppUpdater.State.NeedsPermission -> getString(R.string.update_needs_permission)
+        is AppUpdater.State.Downloading -> getString(R.string.update_downloading, state.percent)
+        is AppUpdater.State.Installing -> getString(R.string.update_installing)
+        is AppUpdater.State.Failed -> getString(R.string.update_press_ok_retry, state.message)
+    }
+
     private fun row(title: Int, value: String, hint: Int, onClick: () -> Unit) =
         row(title, value, getString(hint), onClick)
 
-    private fun row(title: Int, value: String, hint: String, onClick: () -> Unit) {
+    private fun row(title: Int, value: String, hint: String, onClick: () -> Unit): View {
         val view = LayoutInflater.from(this).inflate(R.layout.item_setting, list, false)
         view.findViewById<TextView>(R.id.setting_title).setText(title)
         view.findViewById<TextView>(R.id.setting_value).text = value
@@ -122,6 +149,7 @@ class SettingsActivity : Activity() {
             build()
         }
         list.addView(view)
+        return view
     }
 
     private fun editName() {
