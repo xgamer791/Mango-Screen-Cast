@@ -135,6 +135,10 @@
 			isa = PBXBuildFile;
 			fileRef = DFC88DCC451C7DF57D4F5C3A /* libplist/src/oplist.c */;
 		};
+		75EA853A696133E28041F151 /* MangoCastServer.swift in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = 16F6E8EF03EFBD9195A7D2E2 /* MangoCastServer.swift */;
+		};
 		774F398DFEBF17EDAAAE724C /* uxplay/http_request.c in Sources */ = {
 			isa = PBXBuildFile;
 			fileRef = 7DB1D6ED6783A6417F26163D /* uxplay/http_request.c */;
@@ -146,6 +150,10 @@
 		79AD3B53505DBF16131343C7 /* Assets.xcassets in Resources */ = {
 			isa = PBXBuildFile;
 			fileRef = CB9299A3A63F89FD4A5A1C26 /* Assets.xcassets */;
+		};
+		7EA9805C7B754AE2CBACBF42 /* MangoCastServerTests.swift in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = 19368874A370CC1DA407CDD9 /* MangoCastServerTests.swift */;
 		};
 		7EFA1B6D6ACCE1DFFC07A1A3 /* uxplay/logger.c in Sources */ = {
 			isa = PBXBuildFile;
@@ -167,6 +175,10 @@
 			isa = PBXBuildFile;
 			fileRef = A2A2BB23688EC0D0F6AABB1B /* libplist/libcnary/node.c */;
 		};
+		8CF4398BACC79BD00CF39CDE /* MangoCast.swift in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = 1667D3D52C293ECB29090040 /* MangoCast.swift */;
+		};
 		900A17B1B734EF23CF188E18 /* SettingsView.swift in Sources */ = {
 			isa = PBXBuildFile;
 			fileRef = 8C9E47845C19CD4203A878C0 /* SettingsView.swift */;
@@ -186,6 +198,10 @@
 		976DE43D06C9ADF1906E8A37 /* DecodeTests.swift in Sources */ = {
 			isa = PBXBuildFile;
 			fileRef = BE649C1CFBD2DD43C088B14F /* DecodeTests.swift */;
+		};
+		99D229D30CEE738D39C0AE9B /* MangoCastTests.swift in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = 67D8955CAFD05E3A9645257D /* MangoCastTests.swift */;
 		};
 		9CC7EB3AD50447A75332257E /* MangoScreenCastApp.swift in Sources */ = {
 			isa = PBXBuildFile;
@@ -295,6 +311,14 @@
 			isa = PBXBuildFile;
 			fileRef = 9E5A80970E3888F06CD95BAD /* libplist/src/jsmn.c */;
 		};
+		F74E79B30A38A231B79E16B1 /* MangoCastServer.swift in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = 16F6E8EF03EFBD9195A7D2E2 /* MangoCastServer.swift */;
+		};
+		F8D60F64A1892A6C6AEA397F /* MangoCast.swift in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = 1667D3D52C293ECB29090040 /* MangoCast.swift */;
+		};
 		FC84570015A004435ED16CE0 /* uxplay/http_response.c in Sources */ = {
 			isa = PBXBuildFile;
 			fileRef = 3EBF570842216F1ABE31E2C4 /* uxplay/http_response.c */;
@@ -326,10 +350,28 @@
 			path = AudioPlayer.swift;
 			sourceTree = "<group>";
 		};
+		1667D3D52C293ECB29090040 /* MangoCast.swift */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			path = MangoCast.swift;
+			sourceTree = "<group>";
+		};
+		16F6E8EF03EFBD9195A7D2E2 /* MangoCastServer.swift */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			path = MangoCastServer.swift;
+			sourceTree = "<group>";
+		};
 		1922E7E812951706B566A5ED /* Receiver.swift */ = {
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.swift;
 			path = Receiver.swift;
+			sourceTree = "<group>";
+		};
+		19368874A370CC1DA407CDD9 /* MangoCastServerTests.swift */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			path = MangoCastServerTests.swift;
 			sourceTree = "<group>";
 		};
 		19697854A2D2EF592B36936C /* uxplay/mirror_buffer.c */ = {
@@ -474,6 +516,12 @@
 			includeInIndex = 0;
 			path = MangoScreenCastTests.xctest;
 			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		67D8955CAFD05E3A9645257D /* MangoCastTests.swift */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			path = MangoCastTests.swift;
+			sourceTree = "<group>";
 		};
 		6957053C717BBEA0CE827742 /* libplist/src/bytearray.c */ = {
 			isa = PBXFileReference;
@@ -941,6 +989,15 @@
 			path = Views;
 			sourceTree = "<group>";
 		};
+		92797CAE0CEB3F94C7761CD0 /* MangoCast */ = {
+			isa = PBXGroup;
+			children = (
+				1667D3D52C293ECB29090040 /* MangoCast.swift */,
+				16F6E8EF03EFBD9195A7D2E2 /* MangoCastServer.swift */,
+			);
+			path = MangoCast;
+			sourceTree = "<group>";
+		};
 		B4063EC772534333C810DCCE /* MangoCore */ = {
 			isa = PBXGroup;
 			children = (
@@ -957,6 +1014,7 @@
 				2CAB67E4894A013F8A3495E3 /* AirPlay */,
 				CB9299A3A63F89FD4A5A1C26 /* Assets.xcassets */,
 				9147B23F269CC003917866AE /* Info.plist */,
+				92797CAE0CEB3F94C7761CD0 /* MangoCast */,
 				C712C402730B996CC807C64D /* MangoScreenCast-Bridging-Header.h */,
 				26ED4D03850022678A5CB0E7 /* MangoScreenCastApp.swift */,
 				DF681E0BF6ABCF58F4B4B443 /* Media */,
@@ -972,6 +1030,8 @@
 				34E566E0AC688DC5B489B5B1 /* AudioCookieTests.swift */,
 				BE649C1CFBD2DD43C088B14F /* DecodeTests.swift */,
 				1EE1C3DD4B75A85EAB818FDE /* Fixtures.swift */,
+				19368874A370CC1DA407CDD9 /* MangoCastServerTests.swift */,
+				67D8955CAFD05E3A9645257D /* MangoCastTests.swift */,
 				8312D0C41899E2431E3C58D1 /* MirrorProfileTests.swift */,
 				A71B8DB044EDCC3196DD75C8 /* NalUnitsTests.swift */,
 			);
@@ -1175,12 +1235,16 @@
 				BB11816C7853D9687911F2F9 /* AudioCookieTests.swift in Sources */,
 				976DE43D06C9ADF1906E8A37 /* DecodeTests.swift in Sources */,
 				535777A04BCC77238A7C2F92 /* Fixtures.swift in Sources */,
+				7EA9805C7B754AE2CBACBF42 /* MangoCastServerTests.swift in Sources */,
+				99D229D30CEE738D39C0AE9B /* MangoCastTests.swift in Sources */,
 				B7DF6301E14BB9A9F411ABDA /* MirrorProfileTests.swift in Sources */,
 				5E73247FC2FC196CE55BC189 /* NalUnitsTests.swift in Sources */,
 				D6B417A17022AA043A69543A /* NalUnits.swift in Sources */,
 				3BA316D82E5B93655287C37F /* AudioCookie.swift in Sources */,
 				3749B09B9124D7649A9919A2 /* VideoRenderer.swift in Sources */,
 				0B7BD122B11363F827E52DF4 /* MirrorProfile.swift in Sources */,
+				8CF4398BACC79BD00CF39CDE /* MangoCast.swift in Sources */,
+				F74E79B30A38A231B79E16B1 /* MangoCastServer.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1191,6 +1255,8 @@
 				948589A24A3B6BE91C121474 /* MirrorProfile.swift in Sources */,
 				A53BF7FAEE66386D4884B59C /* Receiver.swift in Sources */,
 				C4CF54C03C1D76FC821C7F7D /* ServiceAdvertiser.swift in Sources */,
+				F8D60F64A1892A6C6AEA397F /* MangoCast.swift in Sources */,
+				75EA853A696133E28041F151 /* MangoCastServer.swift in Sources */,
 				9CC7EB3AD50447A75332257E /* MangoScreenCastApp.swift in Sources */,
 				88B30A8C5FD4086AFA8AEA44 /* AudioCookie.swift in Sources */,
 				0D8EBD1BBC028891A8A34457 /* AudioPlayer.swift in Sources */,

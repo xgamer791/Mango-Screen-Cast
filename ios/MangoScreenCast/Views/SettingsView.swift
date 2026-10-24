@@ -38,6 +38,12 @@ struct SettingsView: View {
                 }
 
                 Section {
+                    Toggle("Windows computers", isOn: binding(\.windowsEnabled) { _ in receiver.applyWindowsSetting() })
+                } footer: {
+                    Text("Lets PCs show their screen and play their sound here with Mango Cast for Windows. They find this device on the same Wi-Fi network, by its name.")
+                }
+
+                Section {
                     NavigationLink("Diagnostics") {
                         DiagnosticsView()
                     }

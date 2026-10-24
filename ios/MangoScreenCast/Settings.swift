@@ -35,6 +35,12 @@ final class Settings: ObservableObject {
         set { change(Keys.sound, newValue) }
     }
 
+    /// Windows computers can show their screen here with Mango Cast for Windows (protocol/mango-cast.md).
+    var windowsEnabled: Bool {
+        get { defaults.object(forKey: Keys.windows) as? Bool ?? true }
+        set { change(Keys.windows, newValue) }
+    }
+
     var showStats: Bool {
         get { defaults.bool(forKey: Keys.stats) }
         set { change(Keys.stats, newValue) }
@@ -66,6 +72,7 @@ final class Settings: ObservableObject {
         static let name = "receiverName"
         static let resolution = "resolution"
         static let sound = "sound"
+        static let windows = "windows"
         static let stats = "showStats"
         static let awake = "keepAwake"
         static let deviceId = "deviceId"

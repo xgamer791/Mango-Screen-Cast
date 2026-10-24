@@ -5,6 +5,12 @@ import VideoToolbox
 /// Runs the AirPlay server while the app is on screen, and routes what it
 /// receives to the video and audio players.
 ///
+/// Next to it, Windows computers (Mango Cast, protocol/mango-cast.md) can
+/// show their screen through the same players. One device has the screen at
+/// a time: a Windows computer is refused while an Apple device mirrors, and
+/// gives way when one starts. While no Windows computer is connected,
+/// everything here works exactly as it did without them.
+///
 /// The server calls back on its own threads; `status` is only changed on
 /// the main thread, where SwiftUI reads it.
 final class Receiver: ObservableObject {
@@ -28,6 +34,15 @@ final class Receiver: ObservableObject {
     let audio = AudioPlayer()
 
     private let advertiser = ServiceAdvertiser()
+
+    /// Windows computers: their own listener and announcement, so neither can upset AirPlay's.
+    private let windows = MangoCastServer()
+    private let windowsLock = NSLock()
+    /// A Windows computer has the screen (and which). Under `windowsLock`.
+    private var windowsActive = false
+    private weak var windowsSession: MangoCastServer.Session?
+    /// The Apple device connected over AirPlay, for when a Windows computer is done. Under `stateLock`.
+    private var appleClient: String?
     private let control = DispatchQueue(label: "com.mangoscreencast.control")
     /// The server's threads read the state through this copy.
     private let stateLock = NSLock()
@@ -54,7 +69,12 @@ final class Receiver: ObservableObject {
         advertiser.onPublished = { [weak self] type, name in self?.log("advertising \(type) as “\(name)”") }
         video.log = { [weak self] in self?.log($0) }
         audio.log = { [weak self] in self?.log($0) }
+        windows.sink = self
+        windows.log = { [weak self] in self?.log($0) }
     }
+
+    /// Whether a Windows computer has the screen. Any thread.
+    private var windowsHasScreen: Bool { windowsLock.withLock { windowsActive } }
 
     // MARK: - Control (main thread)
 
@@ -84,9 +104,21 @@ final class Receiver: ObservableObject {
         start()
     }
 
+    /// Applies the Windows computers setting, leaving AirPlay as it is.
+    func applyWindowsSetting() {
+        guard running else { return }
+        control.async {
+            self.windows.stop(reason: "Windows computers were turned off on \(self.settings.receiverName).")
+            if let profile = self.snapshot().profile {
+                self.startWindows(name: self.settings.receiverName, profile: profile, deviceId: self.settings.deviceId)
+            }
+        }
+    }
+
     /// Drops the connected device and returns to the home screen.
     func disconnect() {
         control.async {
+            self.windows.disconnect("Disconnected on \(self.settings.receiverName).")
             mango_bridge_disconnect_clients()
             self.endMirroring()
             self.update {
@@ -140,19 +172,26 @@ final class Receiver: ObservableObject {
         callbacks.video_stop = { context, reason in
             Receiver.from(context).videoStop(reason: Int(reason))
         }
+        // While a Windows computer has the screen, its sound plays, not an Apple device's.
         callbacks.audio_format = { context, type, samplesPerFrame in
-            Receiver.from(context).audio.configure(compressionType: Int(type), samplesPerFrame: Int(samplesPerFrame))
+            let receiver = Receiver.from(context)
+            guard !receiver.windowsHasScreen else { return }
+            receiver.audio.configure(compressionType: Int(type), samplesPerFrame: Int(samplesPerFrame))
         }
         callbacks.audio_frame = { context, data, length, type in
-            guard let data else { return }
-            Receiver.from(context).audio.submit(UnsafeRawBufferPointer(start: data, count: Int(length)),
-                                                compressionType: Int(type))
+            let receiver = Receiver.from(context)
+            guard let data, !receiver.windowsHasScreen else { return }
+            receiver.audio.submit(UnsafeRawBufferPointer(start: data, count: Int(length)), compressionType: Int(type))
         }
         callbacks.audio_flush = { context in
-            Receiver.from(context).audio.flush()
+            let receiver = Receiver.from(context)
+            guard !receiver.windowsHasScreen else { return }
+            receiver.audio.flush()
         }
         callbacks.volume = { context, db in
-            Receiver.from(context).audio.setVolume(decibels: db)
+            let receiver = Receiver.from(context)
+            guard !receiver.windowsHasScreen else { return }
+            receiver.audio.setVolume(decibels: db)
         }
         callbacks.log = { context, level, message in
             guard level <= Int32(MANGO_LOG_INFO), let message else { return }
@@ -191,9 +230,26 @@ final class Receiver: ObservableObject {
                 $0.message = Self.describeError(Int(result))
             }
         }
+        startWindows(name: name, profile: profile, deviceId: deviceId)
+    }
+
+    /// Listens for Windows computers and announces this device to them. Never affects AirPlay.
+    private func startWindows(name: String, profile: MirrorProfile, deviceId: [UInt8]) {
+        guard settings.windowsEnabled else { return }
+        let id = deviceId.map { String(format: "%02x", $0) }.joined()
+        windows.start(name: name, txt: offer(profile).txtRecord(id: id, model: Self.modelIdentifier())) { [weak self] port in
+            self?.log(port.map { "Windows: listening on port \($0)" } ?? "Windows: couldn't listen for Windows computers")
+        }
+    }
+
+    /// What this device takes from a Windows computer: what it offers Apple devices.
+    private func offer(_ profile: MirrorProfile) -> Offer {
+        Offer(name: settings.receiverName, maxWidth: profile.width, maxHeight: profile.height, fps: profile.maxFps,
+              h265: profile.h265, audio: settings.soundEnabled)
     }
 
     private func stopServer() {
+        windows.stop(reason: "Mango stopped receiving.")
         mango_bridge_stop()
         endMirroring()
         DispatchQueue.main.async { self.advertiser.unregisterAll() }
@@ -235,6 +291,9 @@ final class Receiver: ObservableObject {
 
     private func clientRequest(model: String, name: String) -> Bool {
         log("connection from \(name.isEmpty ? model : name) (\(model))")
+        stateLock.withLock { appleClient = name.isEmpty ? model : name }
+        // A Windows computer has the screen until this device starts mirroring.
+        if windowsHasScreen { return true }
         update {
             if $0.state != .mirroring { $0.state = .connected }
             $0.clientName = name.isEmpty ? model : name
@@ -245,6 +304,8 @@ final class Receiver: ObservableObject {
 
     private func connectionsChanged(_ open: Int) {
         guard open == 0 else { return }
+        stateLock.withLock { appleClient = nil }
+        if windowsHasScreen { return }
         endMirroring()
         update {
             if $0.state != .stopped { $0.state = .ready }
@@ -256,6 +317,8 @@ final class Receiver: ObservableObject {
     private func connectionReset(_ reason: Int) {
         let who = snapshot().clientName
         log("connection reset (reason \(reason))")
+        stateLock.withLock { appleClient = nil }
+        if windowsHasScreen { return }
         endMirroring()
         update {
             if $0.state != .stopped { $0.state = .ready }
@@ -268,6 +331,8 @@ final class Receiver: ObservableObject {
     private func videoStart(h265: Bool, width: Int, height: Int) -> Int32 {
         log("mirroring starts: \(h265 ? "HEVC" : "H.264") \(width)x\(height)")
         if h265 && snapshot().profile?.h265 == false { return -1 }
+        // The Apple device takes the screen from a Windows computer.
+        if windowsHasScreen { windows.disconnect("An Apple device started mirroring to \(settings.receiverName).") }
         video.start(h265: h265)
         startStatsTimer()
         update {
@@ -280,6 +345,7 @@ final class Receiver: ObservableObject {
     private func videoStop(reason: Int) {
         // The sender stopped mirroring, or another device took over.
         log("mirroring stopped (reset type \(reason))")
+        if windowsHasScreen { return }
         stopStatsTimer()
         video.stop()
         update {
@@ -350,6 +416,10 @@ final class Receiver: ObservableObject {
         let info = Bundle.main.infoDictionary
         lines.append("App: \(info?["CFBundleShortVersionString"] as? String ?? "?") (\(info?["CFBundleVersion"] as? String ?? "?"))")
         lines.append("Hardware HEVC decoding: \(Self.hevcSupported ? "yes" : "no")")
+        let windowsSession = windows.session
+        lines.append("Windows computers: " + (!settings.windowsEnabled ? "off"
+            : windows.port.map { "listening on port \($0)" + (windowsSession.map { ", \($0.hello.name) (\($0.address)) connected" } ?? "") }
+            ?? "not listening"))
         if s.state == .mirroring {
             let v = video.stats()
             lines.append(String(format: "Video: %ldx%ld %@, %.1f fps, %.1f Mbit/s, %ld frames, %ld dropped, %ld recoveries",
@@ -383,6 +453,93 @@ final class Receiver: ObservableObject {
         uname(&info)
         return withUnsafeBytes(of: &info.machine) { raw in
             String(decoding: raw.prefix { $0 != 0 }, as: UTF8.self)
+        }
+    }
+}
+
+// MARK: - Windows computers (Mango Cast queue)
+
+extension Receiver: MangoCastSink {
+    func mangoCastHello(_ hello: Hello) -> Decision {
+        let s = snapshot()
+        guard settings.windowsEnabled else {
+            return .refuse(reason: "off", message: "Windows computers are turned off in Mango’s settings on \(s.receiverName).")
+        }
+        guard let profile = s.profile, s.state != .stopped, s.state != .starting else {
+            return .refuse(reason: "off", message: "\(s.receiverName) is starting. Try again in a moment.")
+        }
+        if s.state == .mirroring {
+            return .refuse(reason: "busy",
+                           message: "\(s.clientName ?? "An Apple device") is mirroring to \(s.receiverName) right now.")
+        }
+        return .accept(offer(profile))
+    }
+
+    func mangoCastStarted(_ session: MangoCastServer.Session) {
+        windowsLock.withLock {
+            windowsActive = true
+            windowsSession = session
+        }
+        log("Windows: \(session.hello.name) is showing its screen: \(session.h265 ? "HEVC" : "H.264") "
+            + "\(session.width)x\(session.height), sound \(session.audio ? "on" : "off")")
+        video.onKeyframeNeeded = { [weak session] in session?.requestKeyframe() }
+        video.start(h265: session.h265)
+        if session.audio {
+            audio.enabled = settings.soundEnabled
+            audio.configure(compressionType: AudioPlayer.Codec.pcm.rawValue, samplesPerFrame: 0,
+                            sampleRate: Double(MangoCast.audioRate))
+            // An Apple device's volume doesn't carry over.
+            audio.setVolume(decibels: 0)
+        } else {
+            audio.stop()
+        }
+        startStatsTimer()
+        update {
+            $0.state = .mirroring
+            $0.clientName = session.hello.name
+            $0.paused = false
+            $0.message = nil
+        }
+    }
+
+    func mangoCastVideo(_ session: MangoCastServer.Session, _ frame: UnsafeRawBufferPointer) {
+        // Under the lock, so no Windows picture lands in an Apple device's stream as it takes over.
+        windowsLock.withLock {
+            if windowsActive && windowsSession === session { video.submit(frame, h265: session.h265) }
+        }
+    }
+
+    func mangoCastAudio(_ session: MangoCastServer.Session, _ pcm: UnsafeRawBufferPointer) {
+        windowsLock.withLock {
+            if windowsActive && windowsSession === session {
+                audio.submit(pcm, compressionType: AudioPlayer.Codec.pcm.rawValue)
+            }
+        }
+    }
+
+    func mangoCastEnded(_ session: MangoCastServer.Session, reason: String, lost: Bool) {
+        let was: Bool = windowsLock.withLock {
+            defer {
+                windowsActive = false
+                windowsSession = nil
+            }
+            return windowsActive
+        }
+        guard was else { return }
+        video.onKeyframeNeeded = nil
+        endMirroring()
+        let apple = stateLock.withLock { appleClient }
+        update {
+            if let apple {
+                $0.state = .connected
+                $0.clientName = apple
+                $0.message = nil
+            } else {
+                if $0.state != .stopped { $0.state = .ready }
+                $0.clientName = nil
+                $0.message = lost ? reason : nil
+            }
+            $0.paused = false
         }
     }
 }

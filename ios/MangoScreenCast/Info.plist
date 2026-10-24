@@ -28,9 +28,10 @@
 	<array>
 		<string>_airplay._tcp</string>
 		<string>_raop._tcp</string>
+		<string>_mangocast._tcp</string>
 	</array>
 	<key>NSLocalNetworkUsageDescription</key>
-	<string>Mango uses your local network so your Mac can find this device in Screen Mirroring and send its screen here.</string>
+	<string>Mango uses your local network so your Mac can find this device in Screen Mirroring, and Windows PCs in Mango Cast, and send their screen here.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

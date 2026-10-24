@@ -36,7 +36,7 @@ PLIST_SOURCES = ["base64.c", "bplist.c", "bytearray.c", "common.c", "hashtable.c
                  "time64.c", "xplist.c"]
 # App sources the (host-less) unit tests compile too.
 TESTED_APP_SOURCES = ["Media/NalUnits.swift", "Media/AudioCookie.swift", "Media/VideoRenderer.swift",
-                      "AirPlay/MirrorProfile.swift"]
+                      "AirPlay/MirrorProfile.swift", "MangoCast/MangoCast.swift", "MangoCast/MangoCastServer.swift"]
 
 FILE_TYPES = {
     ".swift": "sourcecode.swift",

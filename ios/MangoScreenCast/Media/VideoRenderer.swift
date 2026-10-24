@@ -31,6 +31,15 @@ final class VideoRenderer {
     /// Receives one line per notable event (stream start, format change, recovery).
     var log: ((String) -> Void)?
 
+    /// Asks the sender for a keyframe when the picture needs one it doesn't
+    /// have. A Windows computer (Mango Cast) can be asked; AirPlay senders
+    /// can't, and leave this nil. Called with the lock held: it must only
+    /// hand the request on.
+    var onKeyframeNeeded: (() -> Void)? {
+        get { lock.withLock { keyframeNeeded } }
+        set { lock.withLock { keyframeNeeded = newValue } }
+    }
+
     private struct Stored {
         let block: CMBlockBuffer
         let length: Int
@@ -41,6 +50,7 @@ final class VideoRenderer {
     private static let maxGopFrames = 600
 
     private let lock = NSLock()
+    private var keyframeNeeded: (() -> Void)?
     private var active = false
     private var h265 = false
     private var format: CMVideoFormatDescription?
@@ -202,6 +212,7 @@ final class VideoRenderer {
         guard gopComplete, !gop.isEmpty else {
             log?("display failed\(reason); waiting for the next keyframe")
             waitingForKeyframe = true
+            keyframeNeeded?()
             return
         }
         log?("display failed\(reason); restarting from the last keyframe (\(gop.count) frames)")

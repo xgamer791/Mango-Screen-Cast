@@ -1,7 +1,7 @@
 import SwiftUI
 
 /// What's shown while nothing is mirroring: whether the device is ready,
-/// the name to pick, and how to start from a Mac.
+/// the name to pick, and how to start from a Mac or a Windows PC.
 struct HomeView: View {
     @EnvironmentObject private var receiver: Receiver
     @EnvironmentObject private var settings: Settings
@@ -97,7 +97,9 @@ struct HomeView: View {
         case .stopped, .starting:
             return "Getting ready for Screen Mirroring."
         case .ready:
-            let ready = "Pick “\(name)” in Screen Mirroring on your Mac."
+            let ready = settings.windowsEnabled
+                ? "Pick “\(name)” in Screen Mirroring on your Mac, or in Mango Cast on a Windows PC."
+                : "Pick “\(name)” in Screen Mirroring on your Mac."
             return status.message.map { "\($0) \(ready)" } ?? ready
         case .connected:
             return "Start Screen Mirroring on it to show its screen here."
@@ -118,15 +120,18 @@ struct HomeView: View {
 
     @ViewBuilder
     private func cards(wide: Bool) -> some View {
-        if wide {
-            HStack(alignment: .top, spacing: 20) {
-                macCard.layoutPriority(1)
-                keepOpenCard
-            }
-        } else {
-            VStack(alignment: .leading, spacing: 20) {
+        VStack(alignment: .leading, spacing: 20) {
+            if wide {
+                HStack(alignment: .top, spacing: 20) {
+                    macCard.layoutPriority(1)
+                    keepOpenCard
+                }
+            } else {
                 macCard
                 keepOpenCard
+            }
+            if settings.windowsEnabled {
+                windowsCard
             }
         }
     }
@@ -137,6 +142,17 @@ struct HomeView: View {
             Step(number: 2, text: "Pick “\(name)”.")
             Step(number: 3, text: "To use this screen as a second display instead of a copy, choose Use As Separate Display.")
             Text("No Screen Mirroring in Control Center? Use System Settings → Displays → Add Display.")
+                .font(.subheadline)
+                .foregroundColor(Theme.textSecondary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+    }
+
+    private var windowsCard: some View {
+        Card(title: "From a Windows PC", systemImage: "pc") {
+            Step(number: 1, text: "On the PC, open Mango Cast for Windows.")
+            Step(number: 2, text: "Pick “\(name)” and click Connect. Its screen and sound play here.")
+            Text("Get Mango Cast for Windows from the Mango Screen Cast releases on GitHub. The PC and this device need to be on the same network.")
                 .font(.subheadline)
                 .foregroundColor(Theme.textSecondary)
                 .fixedSize(horizontal: false, vertical: true)

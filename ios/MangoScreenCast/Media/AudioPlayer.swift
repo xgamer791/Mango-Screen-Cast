@@ -6,6 +6,7 @@ import QuartzCore
 ///
 /// Mirroring sends AAC-ELD; audio-only AirPlay may send AAC-LC or PCM.
 /// ALAC (Apple Lossless, used for music-only AirPlay) isn't supported yet.
+/// A Windows computer (Mango Cast) sends 48 kHz PCM.
 /// Frames are decoded on the AirPlay audio thread with Core Audio's AAC
 /// decoder and scheduled on an AVAudioEngine player.
 final class AudioPlayer {
@@ -19,7 +20,8 @@ final class AudioPlayer {
     private let lock = NSLock()
     private let engine = AVAudioEngine()
     private let player = AVAudioPlayerNode()
-    private let output = AVAudioFormat(standardFormatWithSampleRate: 44_100, channels: 2)!
+    /// What the player is connected with: AirPlay's 44.1 kHz, or a Windows computer's 48 kHz.
+    private var output = AVAudioFormat(standardFormatWithSampleRate: 44_100, channels: 2)!
     private var converter: AudioConverterRef?
     private var codec: Codec?
     private var framesPerPacket: AVAudioFrameCount = 480
@@ -58,14 +60,16 @@ final class AudioPlayer {
         }
     }
 
-    /// The sender announced its audio format.
-    func configure(compressionType: Int, samplesPerFrame: Int) {
+    /// The sender announced its audio format. `sampleRate` applies to PCM;
+    /// AAC always decodes to 44.1 kHz.
+    func configure(compressionType: Int, samplesPerFrame: Int, sampleRate: Double = 44_100) {
         lock.lock()
         defer { lock.unlock() }
         resetPlayback()
         disposeConverter()
         warned = false
         codec = Codec(rawValue: compressionType)
+        connect(rate: codec == .pcm ? sampleRate : 44_100)
         switch codec {
         case .aacEld:
             makeConverter(kAudioFormatMPEG4AAC_ELD, framesPerPacket: samplesPerFrame > 0 ? samplesPerFrame : 480,
@@ -122,6 +126,17 @@ final class AudioPlayer {
         codec = nil
         if engine.isRunning { engine.stop() }
         try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
+    }
+
+    /// Connects the player at `rate` if it isn't already. The engine has to
+    /// stop for that; it starts again with the next sound. Lock held.
+    private func connect(rate: Double) {
+        guard output.sampleRate != rate,
+              let format = AVAudioFormat(standardFormatWithSampleRate: rate, channels: 2) else { return }
+        if engine.isRunning { engine.stop() }
+        engine.disconnectNodeOutput(player)
+        engine.connect(player, to: engine.mainMixerNode, format: format)
+        output = format
     }
 
     // MARK: - Decoding (lock held)
@@ -209,7 +224,7 @@ final class AudioPlayer {
         return frames > 0 ? buffer : nil
     }
 
-    /// 16-bit little-endian interleaved stereo, as UxPlay passes PCM on.
+    /// 16-bit little-endian interleaved stereo, as UxPlay and Mango Cast pass PCM on.
     private func convertPcm(_ data: UnsafeRawBufferPointer) -> AVAudioPCMBuffer? {
         let frames = data.count / 4
         guard frames > 0, let buffer = AVAudioPCMBuffer(pcmFormat: output, frameCapacity: AVAudioFrameCount(frames)),
