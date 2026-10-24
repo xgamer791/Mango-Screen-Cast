@@ -20,7 +20,11 @@ interface AirPlayCallbacks {
     fun onConnectionsChanged(open: Int)
 
     /** Mirroring is about to start. Return 0 if the codec can be decoded, -1 to refuse. */
-    fun onVideoCodec(h265: Boolean, sourceWidth: Int, sourceHeight: Int, width: Int, height: Int): Int
+    /**
+     * The frame is `sourceWidth` x `sourceHeight`; the sender's picture fills
+     * `width` x `height` at (`x`, `y`) inside it.
+     */
+    fun onVideoCodec(h265: Boolean, sourceWidth: Int, sourceHeight: Int, x: Int, y: Int, width: Int, height: Int): Int
 
     /** One access unit, Annex B. Keyframes carry their parameter sets in front. */
     fun onVideoFrame(frame: ByteBuffer, localTimeNs: Long, h265: Boolean)

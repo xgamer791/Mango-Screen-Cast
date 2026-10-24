@@ -146,16 +146,31 @@ class MirrorActivity : Activity(), SurfaceHolder.Callback, AirPlayReceiver.Liste
     override fun onVideoSize(width: Int, height: Int) {
         runOnUiThread {
             frame.setAspect(width, height)
-            // An iPhone in landscape is wider than the TV: say once how to fill the screen.
             val root = frame.parent as View
-            if (!fillHintShown && !frame.fillWide && frame.isWiderThan(root.width, root.height)) {
+            logLayout(width, height)
+            // An iPhone in landscape is wider than the TV: say once how to fill the screen.
+            if (!fillHintShown && frame.isWiderThan(root.width, root.height)) {
                 fillHintShown = true
-                showBanner(getString(R.string.fill_hint))
+                showBanner(getString(if (frame.fillWide) R.string.fill_on else R.string.fill_hint))
             }
         }
     }
 
     private var fillHintShown = false
+
+    /** For Diagnostics: how the picture sits on the screen, and whether that leaves bars. */
+    private fun logLayout(width: Int, height: Int) {
+        val root = frame.parent as View
+        if (root.width == 0 || root.height == 0) return
+        val wide = frame.isWiderThan(root.width, root.height)
+        val how = when {
+            wide && frame.fillWide -> "filling the screen, sides cut off"
+            wide -> "fit, bars above and below"
+            width.toLong() * root.height == height.toLong() * root.width -> "fills the screen"
+            else -> "fit, bars at the sides"
+        }
+        receiver.log("player: ${width}x$height picture on a ${root.width}x${root.height} screen, $how")
+    }
 
     private fun showBanner(text: String) {
         bannerView.text = text
@@ -218,6 +233,7 @@ class MirrorActivity : Activity(), SurfaceHolder.Callback, AirPlayReceiver.Liste
                 frame.fillWide = settings.fillWidePictures
                 fillHintShown = true
                 showBanner(getString(if (frame.fillWide) R.string.fill_on else R.string.fill_off))
+                receiver.video.stats().let { logLayout(it.width, it.height) }
                 return true
             }
         }

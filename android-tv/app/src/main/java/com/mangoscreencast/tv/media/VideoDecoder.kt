@@ -497,6 +497,7 @@ class VideoDecoder internal constructor(
 
     private fun reportSize(codec: VideoCodec) {
         val (width, height) = codec.outputSize() ?: return
+        if (width != outputWidth || height != outputHeight) note("decoded picture ${width}x$height")
         outputWidth = width
         outputHeight = height
         listener?.onVideoSize(width, height)

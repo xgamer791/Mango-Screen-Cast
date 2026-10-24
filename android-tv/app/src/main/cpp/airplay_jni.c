@@ -161,11 +161,14 @@ static void cb_report_client_request(void *cls, char *deviceid, char *model, cha
 static int cb_video_set_codec_and_size(void *cls, video_codec_t codec, unsigned short width_source,
                                        unsigned short height_source, unsigned short x_offset,
                                        unsigned short y_offset, unsigned short width, unsigned short height) {
-    (void) cls; (void) x_offset; (void) y_offset;
+    (void) cls;
     JNIEnv *env = jni_env();
     if (!env || !g_callbacks) return -1;
+    /* The frame is width_source x height_source; the sender's picture fills
+     * the width x height rectangle at (x_offset, y_offset) inside it. */
     jint result = (*env)->CallIntMethod(env, g_callbacks, m_video_codec, (jboolean) (codec == VIDEO_CODEC_H265),
-                                        (jint) width_source, (jint) height_source, (jint) width, (jint) height);
+                                        (jint) width_source, (jint) height_source, (jint) x_offset,
+                                        (jint) y_offset, (jint) width, (jint) height);
     if (check_exception(env)) return -1;
     return result;
 }
@@ -329,7 +332,7 @@ static bool lookup_methods(JNIEnv *env, jobject callbacks) {
     METHOD(m_unregister_service, "onUnregisterService", "(Ljava/lang/String;)V");
     METHOD(m_client_request, "onClientRequest", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Z");
     METHOD(m_connections_changed, "onConnectionsChanged", "(I)V");
-    METHOD(m_video_codec, "onVideoCodec", "(ZIIII)I");
+    METHOD(m_video_codec, "onVideoCodec", "(ZIIIIII)I");
     METHOD(m_video_frame, "onVideoFrame", "(Ljava/nio/ByteBuffer;JZ)V");
     METHOD(m_video_paused, "onVideoPaused", "(Z)V");
     METHOD(m_video_flush, "onVideoFlush", "()V");

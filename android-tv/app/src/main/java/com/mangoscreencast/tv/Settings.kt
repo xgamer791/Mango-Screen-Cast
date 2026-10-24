@@ -56,9 +56,12 @@ class Settings(private val context: Context) {
             .getOrDefault(LatencyMode.BALANCED)
         set(value) = prefs.edit().putString(KEY_LATENCY, value.name).apply()
 
-    /** Zoom pictures wider than the TV (an iPhone in landscape) to cover it, cutting off the sides. */
+    /**
+     * Zoom pictures wider than the TV (an iPhone in landscape) to cover it,
+     * cutting off the sides. On unless turned off: black bars read as a fault.
+     */
     var fillWidePictures: Boolean
-        get() = prefs.getBoolean(KEY_FILL_WIDE, false)
+        get() = prefs.getBoolean(KEY_FILL_WIDE, true)
         set(value) = prefs.edit().putBoolean(KEY_FILL_WIDE, value).apply()
 
     var soundEnabled: Boolean

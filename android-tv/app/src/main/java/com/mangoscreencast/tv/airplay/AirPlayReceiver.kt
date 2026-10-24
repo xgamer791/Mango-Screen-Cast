@@ -243,8 +243,11 @@ class AirPlayReceiver(private val context: Context, private val settings: Settin
         }
     }
 
-    override fun onVideoCodec(h265: Boolean, sourceWidth: Int, sourceHeight: Int, width: Int, height: Int): Int {
-        log("mirroring starts: ${if (h265) "HEVC" else "H.264"} ${sourceWidth}x$sourceHeight")
+    override fun onVideoCodec(
+        h265: Boolean, sourceWidth: Int, sourceHeight: Int, x: Int, y: Int, width: Int, height: Int,
+    ): Int {
+        log("mirroring starts: ${if (h265) "HEVC" else "H.264"} ${sourceWidth}x$sourceHeight, " +
+            "picture ${width}x$height at ($x, $y)")
         if (h265 && status.profile?.h265 == false) return -1
         video.latencyMode = settings.latencyMode
         video.start(h265, sourceWidth, sourceHeight)
