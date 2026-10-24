@@ -13,14 +13,12 @@ import com.mangoscreencast.tv.airplay.AirPlayReceiver
 import com.mangoscreencast.tv.airplay.AirPlayReceiver.State
 import com.mangoscreencast.tv.update.AppUpdater
 
-/** The "ready" screen: shows the name to pick on a Mac, iPhone or Windows PC, and what the TV can take. */
+/** The "ready" screen: shows the name to pick on a Mac or iPhone, and what the TV can take. */
 class HomeActivity : Activity(), AirPlayReceiver.Listener, AppUpdater.Listener {
     private lateinit var statusView: TextView
     private lateinit var detailView: TextView
     private lateinit var macSteps: TextView
     private lateinit var iosSteps: TextView
-    private lateinit var windowsSteps: TextView
-    private lateinit var windowsCard: View
     private lateinit var capabilityView: TextView
     private lateinit var statusDot: View
     private lateinit var updateStatus: TextView
@@ -36,8 +34,6 @@ class HomeActivity : Activity(), AirPlayReceiver.Listener, AppUpdater.Listener {
         detailView = findViewById(R.id.status_detail)
         macSteps = findViewById(R.id.mac_steps)
         iosSteps = findViewById(R.id.ios_steps)
-        windowsSteps = findViewById(R.id.windows_steps)
-        windowsCard = findViewById(R.id.windows_card)
         capabilityView = findViewById(R.id.capability)
         statusDot = findViewById(R.id.status_dot)
         updateStatus = findViewById(R.id.update_status)
@@ -74,8 +70,6 @@ class HomeActivity : Activity(), AirPlayReceiver.Listener, AppUpdater.Listener {
         val name = status.tvName.ifBlank { MangoApp.settings.tvName }
         macSteps.text = getString(R.string.mac_steps, name)
         iosSteps.text = getString(R.string.ios_steps, name)
-        windowsSteps.text = getString(R.string.windows_steps, name)
-        windowsCard.visibility = if (MangoApp.settings.windowsEnabled) View.VISIBLE else View.GONE
 
         val (title, detail, color) = when (status.state) {
             State.STOPPED, State.STARTING ->

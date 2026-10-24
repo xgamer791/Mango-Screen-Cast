@@ -67,7 +67,6 @@ class HomeLayoutTest {
         root.text(R.id.status_detail, c.getString(R.string.status_ready_detail, name))
         root.text(R.id.mac_steps, c.getString(R.string.mac_steps, name))
         root.text(R.id.ios_steps, c.getString(R.string.ios_steps, name))
-        root.text(R.id.windows_steps, c.getString(R.string.windows_steps, name))
         root.text(R.id.capability, c.getString(R.string.capability, "4K", 3840, 2160, 60, "HEVC + H.264", 3840, 2160))
     }
 
