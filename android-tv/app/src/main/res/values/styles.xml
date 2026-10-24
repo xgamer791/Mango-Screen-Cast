@@ -14,7 +14,7 @@
     <style name="Mango.Card" parent="">
         <item name="android:background">@drawable/card_bg</item>
         <item name="android:orientation">vertical</item>
-        <item name="android:padding">28dp</item>
+        <item name="android:padding">24dp</item>
     </style>
 
     <style name="Mango.CardTitle" parent="">
@@ -24,7 +24,7 @@
     </style>
 
     <style name="Mango.CardBody" parent="">
-        <item name="android:layout_marginTop">10dp</item>
+        <item name="android:layout_marginTop">8dp</item>
         <item name="android:textColor">@color/text_primary</item>
         <item name="android:textSize">20sp</item>
         <item name="android:lineSpacingMultiplier">1.15</item>

@@ -12,7 +12,7 @@
     <string name="status_mirroring">Mirroring %1$s</string>
     <string name="status_failed">AirPlay isn’t running</string>
     <string name="mac_title">Mac</string>
-    <string name="mac_steps">Click Control Center in the menu bar, then Screen Mirroring, then “%1$s”. To use the TV as a second monitor, choose Use As Separate Display.</string>
+    <string name="mac_steps">Control Center → Screen Mirroring → “%1$s”. Choose Use As Separate Display to extend instead of mirror. Not in Control Center? System Settings → Displays → Add Display.</string>
     <string name="ios_title">iPhone and iPad</string>
     <string name="ios_steps">Open Control Center, tap Screen Mirroring, then “%1$s”.</string>
     <string name="capability">Up to %1$s · %2$d × %3$d · %4$d fps · %5$s   ·   TV screen %6$d × %7$d</string>

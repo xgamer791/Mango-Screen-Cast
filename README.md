@@ -72,7 +72,11 @@ cd Mango-Screen-Cast/android-tv
 1. Open **Mango Screen Cast** on the TV. It shows *Ready to mirror* and the
    name to look for.
 2. On a **Mac**: Control Center → Screen Mirroring → your TV. To extend the
-   desktop instead of mirroring it, choose **Use As Separate Display**.
+   desktop instead of mirroring it, choose **Use As Separate Display**. No
+   code is needed. On macOS 26, Screen Mirroring can be removed from Control
+   Center; add it back with Control Center → **Edit Controls**, or show it in
+   the menu bar under System Settings → **Menu Bar**. Without it, use System
+   Settings → Displays → **Add Display** and pick the TV.
 3. On an **iPhone or iPad**: Control Center → Screen Mirroring → your TV.
 4. To stop: stop mirroring on the Apple device, or press **Back twice** on the
    TV remote. Press **OK** while mirroring to show live stats (resolution,

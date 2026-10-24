@@ -52,7 +52,9 @@ int mango_server_start(const mango_server_config_t *config, const raop_callbacks
     /* UxPlay's default features, plus HEVC ("ScreenMultiCodec", bit 42) when
      * the TV can decode it: that is what lets Macs and recent iPhones/iPads
      * send more than 1080p. HLS URL playback (bits 0 and 4) stays off so
-     * apps fall back to screen mirroring. Bit 27 off: AirPlay 2 pairing. */
+     * apps fall back to screen mirroring. Bit 27 ("supports legacy pairing")
+     * off, as UxPlay ships it: Macs and iPhones skip pairing entirely, so
+     * there is no PIN to enter and no 5 s pairing delay. */
     dnssd_set_airplay_features(g_dnssd, 0, 0);
     dnssd_set_airplay_features(g_dnssd, 4, 0);
     dnssd_set_airplay_features(g_dnssd, 27, 0);

@@ -89,6 +89,8 @@ android {
 
     testOptions {
         unitTests.isReturnDefaultValues = true
+        // Layout tests (Robolectric) read the app's real resources.
+        unitTests.isIncludeAndroidResources = true
     }
 }
 
@@ -101,4 +103,5 @@ dependencies {
     testImplementation("junit:junit:4.13.2")
     // Real org.json for JVM tests (android.jar only has stubs).
     testImplementation("org.json:json:20240303")
+    testImplementation("org.robolectric:robolectric:4.14.1")
 }
