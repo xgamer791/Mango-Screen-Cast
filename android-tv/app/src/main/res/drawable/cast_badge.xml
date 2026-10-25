@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Solid blue disc with two translucent rings around it. Drawn in a 213 x 213 dp box. -->
+<!-- A white disc for the logo, with two translucent blue rings around it. Drawn in a 213 x 213 dp box. -->
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
     <item>
         <shape android:shape="oval">
@@ -21,13 +21,7 @@
         android:right="37dp"
         android:top="37dp">
         <shape android:shape="oval">
-            <gradient
-                android:type="radial"
-                android:gradientRadius="60%p"
-                android:centerX="0.38"
-                android:centerY="0.30"
-                android:startColor="#3B73FB"
-                android:endColor="#356CF6" />
+            <solid android:color="#FFFFFF" />
         </shape>
     </item>
 </layer-list>
