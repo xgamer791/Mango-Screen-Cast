@@ -110,7 +110,7 @@ class Settings(private val context: Context) {
         }
 
     private companion object {
-        const val DEFAULT_NAME = "Mango Screen Cast"
+        const val DEFAULT_NAME = "Mango Screen Cast For macOS/iOS"
         const val KEY_ID = "device_id"
         const val KEY_NAME = "tv_name"
         const val KEY_RESOLUTION = "resolution"

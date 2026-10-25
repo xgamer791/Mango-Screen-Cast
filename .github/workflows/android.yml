@@ -102,7 +102,7 @@ jobs:
           cat dist/version.json
           gh release create "v$MANGO_VERSION_NAME" dist/MangoScreenCast.apk dist/version.json \
             --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --latest \
-            --title "Mango Screen Cast $MANGO_VERSION_NAME" \
+            --title "Mango Screen Cast For macOS/iOS $MANGO_VERSION_NAME" \
             --notes "$(git log -1 --pretty=%s) (built from ${GITHUB_SHA::7})"
 
       # Uploading can fail when the account's Actions storage quota is full;

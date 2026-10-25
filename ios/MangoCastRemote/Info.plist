@@ -37,6 +37,6 @@
 	<key>NSLocalNetworkUsageDescription</key>
 	<string>Mango Cast Remote uses your local network so your iPad can find this Mac and control it.</string>
 	<key>NSHumanReadableCopyright</key>
-	<string>GPL-3.0. Part of Mango Screen Cast.</string>
+	<string>GPL-3.0. Part of Mango Screen Cast For macOS/iOS.</string>
 </dict>
 </plist>

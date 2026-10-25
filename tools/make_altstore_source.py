@@ -28,7 +28,7 @@ def source(version, build, ipa_url, ipa_size, icon_url, notes, website, date=Non
     privacy = {k: v for k, v in info.items() if k.startswith("NS") and k.endswith("UsageDescription")}
     date = date or datetime.datetime.now(datetime.timezone.utc).replace(microsecond=0)
     return {
-        "name": "Mango Screen Cast",
+        "name": "Mango Screen Cast For macOS/iOS",
         "identifier": BUNDLE_ID + ".source",
         "subtitle": "AirPlay receiver for iPad and iPhone",
         "description": "Mango Cast puts your Mac's screen on your iPad: mirror it, or use the iPad as a second display.",

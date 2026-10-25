@@ -29,7 +29,7 @@ import java.io.File
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 @Config(sdk = [34], qualifiers = "w960dp-h540dp-land-television-xhdpi", application = Application::class)
 class HomeLayoutTest {
-    private val name = "Mango Screen Cast"
+    private val name = "Mango Screen Cast For macOS/iOS"
 
     @Test
     fun ready() = check("ready") { root ->

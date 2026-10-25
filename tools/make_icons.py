@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Draws the Mango Screen Cast logo, launcher icons and Android TV banner,
+"""Draws the Mango Screen Cast For macOS/iOS logo, launcher icons and Android TV banner,
 the iOS app icon and logo, and the Mac remote app's icon.
 
     python3 tools/make_icons.py [android] [ios] [mac]   (all by default)
@@ -92,9 +92,12 @@ def banner(width, height):
             break
     big = ImageFont.truetype(font_path, int(height * 0.21 * s)) if font_path else ImageFont.load_default()
     small = ImageFont.truetype(font_path, int(height * 0.115 * s)) if font_path else ImageFont.load_default()
+    platform = ImageFont.truetype(font_path, int(height * 0.085 * s)) if font_path else ImageFont.load_default()
     x = int(height * 0.78 * s)
-    d.text((x, int(height * 0.27 * s)), "Mango", font=big, fill=(255, 164, 27, 255))
-    d.text((x, int(height * 0.54 * s)), "Screen Cast", font=small, fill=(244, 242, 247, 255))
+    d.text((x, int(height * 0.20 * s)), "Mango", font=big, fill=(255, 164, 27, 255))
+    d.text((x, int(height * 0.47 * s)), "Screen Cast", font=small, fill=(244, 242, 247, 255))
+    # Which devices it's for, so it isn't mistaken for Mango Screen Cast For Windows on the same TV.
+    d.text((x, int(height * 0.66 * s)), "for macOS/iOS", font=platform, fill=(169, 164, 181, 255))
     return img.resize((width, height), Image.LANCZOS)
 
 

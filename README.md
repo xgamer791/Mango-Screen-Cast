@@ -1,9 +1,11 @@
-# Mango Screen Cast
+# Mango Screen Cast For macOS/iOS
 
 Turns an Android TV, Google TV or Fire TV into an **AirPlay screen-mirroring
 receiver**. Macs, iPhones and iPads find the TV in their built-in **Screen
 Mirroring** menu. You don't install anything on them and there's no code to
 type in.
+
+For Windows PCs there's a separate app, [Mango Screen Cast For Windows](https://github.com/xgamer791/Mango-Screen-Cast-For-Windows), with its own TV app. The two can be installed side by side on the same TV and don't share anything.
 
 There's also an **iPad and iPhone app, Mango Cast**, that does the same on an
 iPad: put your Mac's screen on it, or use it as a second display. See
@@ -74,7 +76,7 @@ cd Mango-Screen-Cast/android-tv
 
 ## Use
 
-1. Open **Mango Screen Cast** on the TV. It shows *Ready to mirror* and the
+1. Open **Mango Screen Cast For macOS/iOS** on the TV. It shows *Ready to mirror* and the
    name to look for.
 2. On a **Mac**: Control Center → Screen Mirroring → your TV. To extend the
    desktop instead of mirroring it, choose **Use As Separate Display**. No
@@ -91,7 +93,7 @@ cd Mango-Screen-Cast/android-tv
 
 | Setting | What it does |
 |---|---|
-| TV name | The name Apple devices show. *Mango Screen Cast* unless you change it. |
+| TV name | The name Apple devices show. *Mango Screen Cast For macOS/iOS* unless you change it. |
 | Resolution | *720p* (1280 × 720, default), *Auto* (the most the TV can decode, up to 4K), *4K*, *2K* (1440p) or *1080p*. |
 | Frame rate | The most frames per second Apple devices may send: *120 fps* (default), *60 fps* or *30 fps*. 120 needs a 120 Hz mode on the TV's screen and a decoder rated for it; a TV without them offers 60. With Resolution on Auto the picture shrinks (usually to 1440p) until the decoder is rated for 120; choose *60 fps* to keep 4K on such a TV. Apple devices treat this as an upper limit and may still send 60; *Show stats* shows what arrives. |
 | Frame pacing | *Balanced* (default) shows each frame right away, one per screen refresh. *Fastest* shows frames the moment they're decoded. *Smoothest* holds one frame back to absorb Wi-Fi jitter. |
