@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Draws the Mango Screen Cast logo, launcher icons and Android TV banner,
-and the iOS app icon and logo.
+the iOS app icon and logo, and the Windows sender's icon.
 
-    python3 tools/make_icons.py [android] [ios]   (both by default)
+    python3 tools/make_icons.py [android] [ios] [windows]   (all by default)
 """
 import json
 import math
@@ -143,9 +143,21 @@ def ios():
         "LaunchBackground.colorset", "Contents.json")
 
 
+def windows():
+    """MangoCast.exe's icon: the launcher drawn at each size Windows uses."""
+    sizes = (16, 20, 24, 32, 40, 48, 64, 256)
+    images = [launcher(px) for px in sizes]
+    path = os.path.join(ROOT, "windows", "res", "mango.ico")
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    images[-1].save(path, format="ICO", sizes=[(px, px) for px in sizes], append_images=images[:-1])
+    print("wrote", os.path.relpath(path, ROOT))
+
+
 if __name__ == "__main__":
-    targets = sys.argv[1:] or ["android", "ios"]
+    targets = sys.argv[1:] or ["android", "ios", "windows"]
     if "android" in targets:
         android()
     if "ios" in targets:
         ios()
+    if "windows" in targets:
+        windows()
