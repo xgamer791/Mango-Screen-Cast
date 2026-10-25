@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The home screen's base: deep navy, slightly lighter at the top. The wallpaper layer goes over it. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <gradient
+        android:angle="270"
+        android:startColor="#1A2E6B"
+        android:centerColor="#172D68"
+        android:endColor="#152A63" />
+</shape>

@@ -15,14 +15,12 @@ import com.mangoscreencast.tv.airplay.AirPlayReceiver
 import com.mangoscreencast.tv.airplay.AirPlayReceiver.State
 import com.mangoscreencast.tv.update.AppUpdater
 
-/** The "ready" screen: shows the name to pick on a Mac or iPhone, and what the TV can take. */
+/** The "Ready to Cast" screen: the name to pick on a Mac or iPhone, the three steps, and what the TV can take. */
 class HomeActivity : Activity(), AirPlayReceiver.Listener, AppUpdater.Listener {
     private lateinit var statusView: TextView
+    private lateinit var subtitleView: TextView
     private lateinit var detailView: TextView
-    private lateinit var macSteps: TextView
-    private lateinit var iosSteps: TextView
     private lateinit var capabilityView: TextView
-    private lateinit var statusDot: View
     private lateinit var updateStatus: TextView
     private lateinit var updateButton: Button
 
@@ -42,11 +40,9 @@ class HomeActivity : Activity(), AirPlayReceiver.Listener, AppUpdater.Listener {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_home)
         statusView = findViewById(R.id.status)
+        subtitleView = findViewById(R.id.subtitle)
         detailView = findViewById(R.id.status_detail)
-        macSteps = findViewById(R.id.mac_steps)
-        iosSteps = findViewById(R.id.ios_steps)
         capabilityView = findViewById(R.id.capability)
-        statusDot = findViewById(R.id.status_dot)
         updateStatus = findViewById(R.id.update_status)
         updateButton = findViewById(R.id.update_button)
         updateButton.setOnClickListener {
@@ -81,32 +77,30 @@ class HomeActivity : Activity(), AirPlayReceiver.Listener, AppUpdater.Listener {
 
     override fun onStatus(status: AirPlayReceiver.Status) {
         val name = status.tvName.ifBlank { MangoApp.settings.tvName }
-        macSteps.text = getString(R.string.mac_steps, name)
-        iosSteps.text = getString(R.string.ios_steps, name)
+        val client = status.clientName ?: getString(R.string.a_device)
 
-        val (title, detail, color) = when (status.state) {
-            State.STOPPED, State.STARTING ->
-                Triple(getString(R.string.status_starting), "", R.color.status_waiting)
+        // Headline, the big line under it, and the small line under that.
+        val (title, subtitle, detail) = when (status.state) {
+            State.STOPPED, State.STARTING -> Triple(getString(R.string.status_starting), "", "")
             State.READY -> Triple(
                 getString(R.string.status_ready),
+                getString(R.string.ready_subtitle),
                 // Next to the TV's own AirPlay, say which of the two names is this one.
                 status.otherReceiver?.let { getString(R.string.status_ready_detail_other, name, it.name) }
                     ?: getString(R.string.status_ready_detail, name),
-                R.color.status_ready,
             )
-            State.CONNECTED ->
-                Triple(getString(R.string.status_connected, status.clientName ?: getString(R.string.a_device)),
-                    getString(R.string.status_connected_detail), R.color.status_ready)
-            State.MIRRORING ->
-                Triple(getString(R.string.status_mirroring, status.clientName ?: getString(R.string.a_device)),
-                    "", R.color.status_ready)
-            State.FAILED ->
-                Triple(getString(R.string.status_failed), status.message ?: "", R.color.status_error)
+            State.CONNECTED -> Triple(
+                getString(R.string.status_connected, client), getString(R.string.status_connected_detail), "",
+            )
+            State.MIRRORING -> Triple(getString(R.string.status_mirroring, client), "", "")
+            // The reason is a sentence or two: it goes in the small line, where it fits.
+            State.FAILED -> Triple(getString(R.string.status_failed), "", status.message ?: "")
         }
         statusView.text = title
+        subtitleView.text = subtitle
+        subtitleView.visibility = if (subtitle.isBlank()) View.GONE else View.VISIBLE
         detailView.text = status.message?.takeIf { status.state != State.FAILED } ?: detail
         detailView.visibility = if (detailView.text.isNullOrBlank()) View.GONE else View.VISIBLE
-        statusDot.background.mutate().setTint(getColor(color))
 
         // Something that waited for the TV to be free can go ahead now.
         if (status.state == State.READY) updater.checkIfDue()

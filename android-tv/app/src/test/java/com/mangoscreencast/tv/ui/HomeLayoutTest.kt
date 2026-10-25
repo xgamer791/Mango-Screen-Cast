@@ -23,7 +23,8 @@ import java.io.File
 /**
  * Lays the home screen out on a 1080p TV (960 × 540 dp, how Android TV sizes
  * its UI even on 4K panels) with real fonts, and checks that no text is cut
- * off. Also writes what it laid out to build/layout-previews.
+ * off and nothing runs past the screen. Also writes what it laid out to
+ * build/layout-previews.
  */
 @RunWith(RobolectricTestRunner::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
@@ -55,11 +56,20 @@ class HomeLayoutTest {
     }
 
     @Test
+    fun connected() = check("connected") { root ->
+        ready(root)
+        root.text(R.id.status, root.context.getString(R.string.status_connected, "Christopher’s MacBook Air"))
+        root.text(R.id.subtitle, root.context.getString(R.string.status_connected_detail))
+        root.findViewById<TextView>(R.id.status_detail).visibility = View.GONE
+        root.text(R.id.update_status, root.context.getString(R.string.version_up_to_date, "1.2.31"))
+    }
+
+    @Test
     fun failedUpdateCheckAndTwoLineStatus() = check("errors") { root ->
         ready(root)
         root.text(R.id.status, root.context.getString(R.string.status_failed))
-        root.text(R.id.status_detail,
-            "Couldn't announce the TV on the network. Check that the TV is on Wi-Fi or Ethernet.")
+        root.findViewById<TextView>(R.id.subtitle).visibility = View.GONE
+        root.text(R.id.status_detail, "Couldn't announce the TV on the network. Check that the TV is on Wi-Fi or Ethernet.")
         root.text(R.id.update_status,
             "Couldn't check for updates (Unable to resolve host \"github.com\": No address associated with hostname)")
         root.findViewById<Button>(R.id.update_button).apply {
@@ -71,9 +81,8 @@ class HomeLayoutTest {
     private fun ready(root: View) {
         val c = root.context
         root.text(R.id.status, c.getString(R.string.status_ready))
+        root.text(R.id.subtitle, c.getString(R.string.ready_subtitle))
         root.text(R.id.status_detail, c.getString(R.string.status_ready_detail, name))
-        root.text(R.id.mac_steps, c.getString(R.string.mac_steps, name))
-        root.text(R.id.ios_steps, c.getString(R.string.ios_steps, name))
         root.text(R.id.capability, c.getString(R.string.capability, "4K", 3840, 2160, 60, "HEVC + H.264", 3840, 2160))
     }
 
@@ -104,15 +113,17 @@ class HomeLayoutTest {
             val id = view.resources.getResourceEntryName(view.id.takeIf { it != View.NO_ID } ?: return@visit)
             val needed = view.layout.height + view.compoundPaddingTop + view.compoundPaddingBottom
             if (needed > view.height) problems += "$id needs ${needed}px but has ${view.height}px"
-            // Also not hidden by a parent that is too small.
+            if (view.layout.lineCount > view.maxLines) problems += "$id wraps to ${view.layout.lineCount} lines"
+            // Also not hidden by a parent that is too small, or off the screen.
             var bottom = view.bottom
+            var right = view.right
             var parent = view.parent as? ViewGroup
-            var child: View = view
             while (parent != null) {
                 val limit = parent.height - if (parent.clipToPadding) parent.paddingBottom else 0
                 if (bottom > limit) problems += "$id is cut off by ${parent.javaClass.simpleName} (${bottom - limit}px)"
+                if (right > parent.width) problems += "$id runs past the right edge (${right - parent.width}px)"
                 bottom += parent.top
-                child = parent
+                right += parent.left
                 parent = parent.parent as? ViewGroup
             }
         }

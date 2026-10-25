@@ -1,185 +1,298 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<!--
+  The "Ready to Cast" home screen. Android TV lays its UI out on a 960 x 540 dp
+  canvas whatever the panel (1080p or 4K), so every position below is a dp
+  value measured from the 2560 x 1440 reference and divided by 2.667.
+-->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/background"
-    android:orientation="vertical"
-    android:paddingStart="64dp"
-    android:paddingTop="32dp"
-    android:paddingEnd="64dp"
-    android:paddingBottom="27dp">
+    android:background="@drawable/home_background">
 
-    <LinearLayout
+    <!-- Wallpaper slot: blank on purpose until there is art for it. -->
+    <ImageView
+        android:id="@+id/wallpaper"
         android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:contentDescription="@null"
+        android:scaleType="centerCrop" />
+
+    <!-- Soft light behind the cast badge. -->
+    <View
+        android:layout_width="760dp"
+        android:layout_height="760dp"
+        android:layout_marginStart="353.5dp"
+        android:layout_marginTop="-248dp"
+        android:background="@drawable/home_glow" />
+
+    <TextView
+        android:id="@+id/status"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:gravity="center_vertical"
-        android:orientation="horizontal">
+        android:layout_marginStart="60dp"
+        android:layout_marginTop="67dp"
+        android:fontFamily="sans-serif"
+        android:includeFontPadding="false"
+        android:maxLines="1"
+        android:textColor="#FFFFFF"
+        android:textSize="44sp"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/subtitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="59dp"
+        android:layout_marginTop="135.5dp"
+        android:fontFamily="sans-serif"
+        android:includeFontPadding="false"
+        android:lineSpacingExtra="4dp"
+        android:maxLines="2"
+        android:maxWidth="560dp"
+        android:textColor="#FFFFFF"
+        android:textSize="31sp" />
+
+    <!-- Which name to pick, or what a connected device is doing. -->
+    <TextView
+        android:id="@+id/status_detail"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="60dp"
+        android:layout_marginTop="222dp"
+        android:fontFamily="sans-serif"
+        android:includeFontPadding="false"
+        android:lineSpacingExtra="2dp"
+        android:maxLines="2"
+        android:maxWidth="540dp"
+        android:textColor="#D9FFFFFF"
+        android:textSize="15sp" />
+
+    <FrameLayout
+        android:id="@+id/badge"
+        android:layout_width="213dp"
+        android:layout_height="213dp"
+        android:layout_marginStart="627dp"
+        android:layout_marginTop="25.5dp"
+        android:background="@drawable/cast_badge">
 
         <ImageView
-            android:layout_width="64dp"
-            android:layout_height="64dp"
+            android:layout_width="90dp"
+            android:layout_height="85dp"
+            android:layout_gravity="center"
+            android:layout_marginTop="4.5dp"
             android:contentDescription="@null"
-            android:src="@drawable/logo" />
+            android:src="@drawable/ic_cast_badge" />
+    </FrameLayout>
 
-        <LinearLayout
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="20dp"
-            android:layout_weight="1"
-            android:orientation="vertical">
+    <!-- The glass strip with the three steps. -->
+    <FrameLayout
+        android:id="@+id/steps"
+        android:layout_width="844.5dp"
+        android:layout_height="128.75dp"
+        android:layout_marginStart="57.75dp"
+        android:layout_marginTop="262dp"
+        android:background="@drawable/glass_strip">
 
-            <TextView
-                android:id="@+id/brand_name"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:maxLines="1"
-                android:text="@string/brand_name"
-                android:textColor="@color/text_primary"
-                android:textSize="32sp"
-                android:textStyle="bold" />
+        <View
+            android:layout_width="1dp"
+            android:layout_height="87.75dp"
+            android:layout_marginStart="262.85dp"
+            android:layout_marginTop="24.9dp"
+            android:background="#1FFFFFFF" />
 
-            <!-- Which devices this app is for. -->
-            <TextView
-                android:id="@+id/brand_platform"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:maxLines="1"
-                android:text="@string/brand_platform"
-                android:textColor="@color/mango"
-                android:textSize="18sp"
-                android:textStyle="bold" />
-        </LinearLayout>
+        <View
+            android:layout_width="1dp"
+            android:layout_height="87.75dp"
+            android:layout_marginStart="546.35dp"
+            android:layout_marginTop="24.9dp"
+            android:background="#1FFFFFFF" />
 
-        <!-- Up here rather than in the bottom row, so it never takes space from the cards. -->
-        <Button
-            android:id="@+id/update_button"
-            style="@style/Mango.Button"
+        <ImageView
+            android:layout_width="54dp"
+            android:layout_height="54dp"
+            android:layout_marginStart="3dp"
+            android:layout_marginTop="27.5dp"
+            android:background="@drawable/step_tile_indigo"
+            android:contentDescription="@null"
+            android:src="@drawable/ic_step_wifi" />
+
+        <TextView
+            android:id="@+id/step_connect"
+            style="@style/Mango.StepTitle"
+            android:layout_marginStart="80.25dp"
+            android:text="@string/step_connect" />
+
+        <TextView
+            style="@style/Mango.StepBody"
+            android:layout_marginStart="80.25dp"
+            android:text="@string/step_connect_body" />
+
+        <ImageView
+            android:layout_width="54dp"
+            android:layout_height="54dp"
+            android:layout_marginStart="287.25dp"
+            android:layout_marginTop="27.5dp"
+            android:background="@drawable/step_tile_blue"
+            android:contentDescription="@null"
+            android:src="@drawable/ic_step_search" />
+
+        <TextView
+            android:id="@+id/step_detect"
+            style="@style/Mango.StepTitle"
+            android:layout_marginStart="364.5dp"
+            android:text="@string/step_detect" />
+
+        <TextView
+            style="@style/Mango.StepBody"
+            android:layout_marginStart="364.5dp"
+            android:text="@string/step_detect_body" />
+
+        <ImageView
+            android:layout_width="54dp"
+            android:layout_height="54dp"
+            android:layout_marginStart="569.25dp"
+            android:layout_marginTop="27.5dp"
+            android:background="@drawable/step_tile_blue"
+            android:contentDescription="@null"
+            android:src="@drawable/ic_step_tv" />
+
+        <TextView
+            android:id="@+id/step_cast"
+            style="@style/Mango.StepTitle"
+            android:layout_marginStart="646.5dp"
+            android:text="@string/step_cast" />
+
+        <TextView
+            style="@style/Mango.StepBody"
+            android:layout_marginStart="646.5dp"
+            android:text="@string/step_cast_body" />
+    </FrameLayout>
+
+    <TextView
+        android:id="@+id/devices_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="60dp"
+        android:layout_marginTop="415dp"
+        android:fontFamily="sans-serif-medium"
+        android:includeFontPadding="false"
+        android:text="@string/supported_devices"
+        android:textColor="#FFFFFF"
+        android:textSize="20sp" />
+
+    <!-- Five white tiles, 148 dp each, 26.25 dp apart. -->
+    <FrameLayout
+        style="@style/Mango.DeviceTile"
+        android:layout_marginStart="57.75dp">
+
+        <ImageView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="16dp"
+            android:layout_gravity="center"
+            android:contentDescription="Samsung"
+            android:src="@drawable/brand_samsung" />
+    </FrameLayout>
+
+    <FrameLayout
+        style="@style/Mango.DeviceTile"
+        android:layout_marginStart="232dp">
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:contentDescription="LG"
+            android:src="@drawable/brand_lg" />
+    </FrameLayout>
+
+    <FrameLayout
+        style="@style/Mango.DeviceTile"
+        android:layout_marginStart="406.25dp">
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:contentDescription="Sony"
+            android:src="@drawable/brand_sony" />
+    </FrameLayout>
+
+    <FrameLayout
+        style="@style/Mango.DeviceTile"
+        android:layout_marginStart="580.5dp">
+
+        <ImageView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:contentDescription="TCL"
+            android:src="@drawable/brand_tcl" />
+    </FrameLayout>
+
+    <FrameLayout
+        style="@style/Mango.DeviceTile"
+        android:layout_marginStart="754.75dp">
+
+        <TextView
+            android:id="@+id/more_devices"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:fontFamily="sans-serif-medium"
+            android:includeFontPadding="false"
+            android:text="@string/more_devices"
+            android:textColor="#000000"
+            android:textSize="22sp" />
+    </FrameLayout>
+
+    <!-- The band under the tiles: what the TV offers, and the app version. -->
+    <TextView
+        android:id="@+id/capability"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="58dp"
+        android:layout_marginTop="516dp"
+        android:ellipsize="end"
+        android:fontFamily="sans-serif"
+        android:includeFontPadding="false"
+        android:maxLines="1"
+        android:maxWidth="560dp"
+        android:textColor="#B3FFFFFF"
+        android:textSize="14sp" />
+
+    <TextView
+        android:id="@+id/update_status"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|end"
+        android:layout_marginTop="516dp"
+        android:layout_marginEnd="58dp"
+        android:ellipsize="end"
+        android:fontFamily="sans-serif"
+        android:includeFontPadding="false"
+        android:maxLines="1"
+        android:maxWidth="300dp"
+        android:textColor="#B3FFFFFF"
+        android:textSize="14sp" />
+
+    <!-- Top-right corner, clear of the badge's rings. -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|end"
+        android:layout_marginTop="18dp"
+        android:layout_marginEnd="58dp"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/update_button"
+            style="@style/Mango.HomeButton"
+            android:layout_marginEnd="12dp"
             android:visibility="gone" />
 
         <Button
             android:id="@+id/settings_button"
-            style="@style/Mango.Button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            style="@style/Mango.HomeButton"
             android:text="@string/settings" />
     </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:gravity="center_vertical"
-        android:orientation="vertical">
-
-        <LinearLayout
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:gravity="center_vertical"
-            android:orientation="horizontal">
-
-            <View
-                android:id="@+id/status_dot"
-                android:layout_width="18dp"
-                android:layout_height="18dp"
-                android:background="@drawable/dot" />
-
-            <TextView
-                android:id="@+id/status"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
-                android:textColor="@color/text_primary"
-                android:textSize="38sp"
-                android:textStyle="bold" />
-        </LinearLayout>
-
-        <TextView
-            android:id="@+id/status_detail"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="34dp"
-            android:layout_marginTop="8dp"
-            android:maxWidth="900dp"
-            android:textColor="@color/text_secondary"
-            android:textSize="20sp" />
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            android:baselineAligned="false"
-            android:orientation="horizontal">
-
-            <LinearLayout
-                style="@style/Mango.Card"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_marginEnd="12dp"
-                android:layout_weight="1.3">
-
-                <TextView
-                    style="@style/Mango.CardTitle"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/mac_title" />
-
-                <TextView
-                    android:id="@+id/mac_steps"
-                    style="@style/Mango.CardBody"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
-            </LinearLayout>
-
-            <LinearLayout
-                style="@style/Mango.Card"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_marginStart="12dp"
-                android:layout_weight="1">
-
-                <TextView
-                    style="@style/Mango.CardTitle"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/ios_title" />
-
-                <TextView
-                    android:id="@+id/ios_steps"
-                    style="@style/Mango.CardBody"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" />
-            </LinearLayout>
-        </LinearLayout>
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center_vertical"
-        android:orientation="horizontal">
-
-        <TextView
-            android:id="@+id/capability"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:ellipsize="end"
-            android:maxLines="1"
-            android:textColor="@color/text_secondary"
-            android:textSize="18sp" />
-
-        <TextView
-            android:id="@+id/update_status"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="24dp"
-            android:ellipsize="end"
-            android:maxLines="1"
-            android:maxWidth="420dp"
-            android:textColor="@color/text_secondary"
-            android:textSize="18sp" />
-    </LinearLayout>
-</LinearLayout>
+</FrameLayout>

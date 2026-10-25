@@ -11,22 +11,52 @@
         <item name="android:focusable">true</item>
     </style>
 
-    <style name="Mango.Card" parent="">
-        <item name="android:background">@drawable/card_bg</item>
-        <item name="android:orientation">vertical</item>
-        <item name="android:padding">24dp</item>
-    </style>
-
-    <style name="Mango.CardTitle" parent="">
-        <item name="android:textColor">@color/mango</item>
+    <!-- Home screen: the three steps in the glass strip. -->
+    <style name="Mango.StepTitle" parent="">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">25.7dp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:includeFontPadding">false</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:textColor">#FFFFFF</item>
         <item name="android:textSize">24sp</item>
-        <item name="android:textStyle">bold</item>
     </style>
 
-    <style name="Mango.CardBody" parent="">
-        <item name="android:layout_marginTop">8dp</item>
-        <item name="android:textColor">@color/text_primary</item>
-        <item name="android:textSize">20sp</item>
-        <item name="android:lineSpacingMultiplier">1.15</item>
+    <style name="Mango.StepBody" parent="">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginTop">59.9dp</item>
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:includeFontPadding">false</item>
+        <item name="android:lineSpacingExtra">5dp</item>
+        <item name="android:maxLines">2</item>
+        <item name="android:textColor">#FFFFFF</item>
+        <item name="android:textSize">18sp</item>
+    </style>
+
+    <!-- Home screen: a white Supported Devices tile. -->
+    <style name="Mango.DeviceTile" parent="">
+        <item name="android:layout_width">148dp</item>
+        <item name="android:layout_height">57.75dp</item>
+        <item name="android:layout_marginTop">453dp</item>
+        <item name="android:background">@drawable/device_tile</item>
+    </style>
+
+    <!-- Home screen: the small corner buttons (Settings, Update). -->
+    <style name="Mango.HomeButton" parent="@android:style/Widget.DeviceDefault.Button.Borderless">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:background">@drawable/home_button_bg</item>
+        <item name="android:textColor">@color/home_button_text</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:minWidth">0dp</item>
+        <item name="android:minHeight">34dp</item>
+        <item name="android:paddingStart">14dp</item>
+        <item name="android:paddingEnd">14dp</item>
+        <item name="android:paddingTop">0dp</item>
+        <item name="android:paddingBottom">0dp</item>
+        <item name="android:focusable">true</item>
     </style>
 </resources>
