@@ -100,7 +100,7 @@
                     style="@style/Mango.StepIcon"
                     android:background="@drawable/step_tile_indigo"
                     android:contentDescription="@null"
-                    android:src="@drawable/ic_step_wifi" />
+                    android:src="@drawable/ic_step_connect" />
 
                 <LinearLayout style="@style/Mango.StepText">
 
@@ -126,7 +126,7 @@
                     style="@style/Mango.StepIcon"
                     android:background="@drawable/step_tile_blue"
                     android:contentDescription="@null"
-                    android:src="@drawable/ic_step_search" />
+                    android:src="@drawable/ic_step_detect" />
 
                 <LinearLayout style="@style/Mango.StepText">
 
@@ -152,7 +152,7 @@
                     style="@style/Mango.StepIcon"
                     android:background="@drawable/step_tile_blue"
                     android:contentDescription="@null"
-                    android:src="@drawable/ic_step_tv" />
+                    android:src="@drawable/ic_step_cast" />
 
                 <LinearLayout style="@style/Mango.StepText">
 

@@ -417,7 +417,8 @@ an iPhone), sideways (the `ios-screenshots` artifact).
 The app links UxPlay, which is GPL-3.0, so if you distribute the app it must
 be under GPL-3.0. libplist is LGPL-2.1. OpenSSL 1.1.1 is under the OpenSSL
 license. AirPlay is a trademark of Apple Inc. This project isn't affiliated
-with Apple. The streaming apps' names and logos (Netflix, YouTube, HBO Max,
+with Apple. The home screen's step icons are [Lucide](https://lucide.dev)'s
+(ISC; see `android-tv/third_party/lucide/LICENSE`). The streaming apps' names and logos (Netflix, YouTube, HBO Max,
 Paramount+, Peacock, Prime Video, Hulu, Disney+, Tubi) are trademarks of
 their owners, shown only to name and open their apps; this project isn't
 affiliated with them either. The logo files come from each service's
