@@ -2,25 +2,49 @@ import SwiftUI
 
 /// What's shown while nothing is mirroring: whether the device is ready,
 /// the name to pick, and how to start from a Mac or a Windows PC.
+///
+/// Laid out from the space the window actually has, so it works on every
+/// iPad in either orientation, in Split View and Stage Manager windows, and
+/// on iPhones: the two cards sit side by side only when each gets a
+/// comfortable width, and stack otherwise. The Windows card goes under them.
 struct HomeView: View {
     @EnvironmentObject private var receiver: Receiver
     @EnvironmentObject private var settings: Settings
+    @EnvironmentObject private var updates: UpdateChecker
     @State private var showSettings = false
+
+    /// Below this width (iPhones, narrow Split View panes) everything gets smaller.
+    private static let compactWidth: CGFloat = 600
+    /// Content never gets wider than this, so lines stay readable on a 13-inch iPad.
+    private static let maxContentWidth: CGFloat = 1040
+    /// Each card needs about this much to read well side by side.
+    private static let sideBySideWidth: CGFloat = 860
 
     var body: some View {
         GeometryReader { geometry in
+            let compact = geometry.size.width < Self.compactWidth
+            let horizontalPadding: CGFloat = compact ? 20 : 48
+            let verticalPadding: CGFloat = compact ? 16 : 32
+            let contentWidth = max(0, min(geometry.size.width - horizontalPadding * 2, Self.maxContentWidth))
+            let contentHeight = max(0, geometry.size.height - verticalPadding * 2)
+
             ScrollView {
-                VStack(alignment: .leading, spacing: 32) {
-                    header
+                VStack(alignment: .leading, spacing: compact ? 24 : 36) {
+                    header(compact: compact)
+                    if updates.isReleaseBuild, let update = updates.availableUpdate {
+                        updateBanner(update)
+                    }
                     Spacer(minLength: 0)
-                    statusBlock
-                    cards(wide: geometry.size.width >= 760)
+                    statusBlock(compact: compact)
+                    cards(sideBySide: contentWidth >= Self.sideBySideWidth)
                     Spacer(minLength: 0)
                     footer
                 }
-                .frame(maxWidth: 880, minHeight: max(0, geometry.size.height - 56), alignment: .leading)
-                .padding(.horizontal, 32)
-                .padding(.vertical, 28)
+                // As tall as the window when the content fits, so the
+                // status sits in the middle; taller (and scrolling) when not.
+                .frame(width: contentWidth, alignment: .leading)
+                .frame(minHeight: contentHeight, idealHeight: contentHeight, alignment: .top)
+                .padding(.vertical, verticalPadding)
                 .frame(maxWidth: .infinity)
             }
         }
@@ -28,21 +52,26 @@ struct HomeView: View {
         .foregroundColor(Theme.textPrimary)
         .sheet(isPresented: $showSettings) {
             SettingsView()
+                .environmentObject(receiver)
+                .environmentObject(settings)
+                .environmentObject(updates)
         }
     }
 
     private var status: Receiver.Status { receiver.status }
     private var name: String { status.receiverName.isEmpty ? settings.receiverName : status.receiverName }
 
-    private var header: some View {
-        HStack(spacing: 16) {
+    private func header(compact: Bool) -> some View {
+        HStack(spacing: compact ? 12 : 16) {
             Image("Logo")
                 .resizable()
-                .frame(width: 52, height: 52)
+                .frame(width: compact ? 40 : 52, height: compact ? 40 : 52)
                 .accessibilityHidden(true)
-            Text("Mango Screen Cast")
-                .font(.system(size: 28, weight: .bold))
-            Spacer()
+            Text("Mango Cast")
+                .font(.system(size: compact ? 22 : 28, weight: .bold))
+                .lineLimit(1)
+                .minimumScaleFactor(0.8)
+            Spacer(minLength: 12)
             Button {
                 showSettings = true
             } label: {
@@ -54,29 +83,51 @@ struct HomeView: View {
         }
     }
 
-    private var statusBlock: some View {
-        VStack(alignment: .leading, spacing: 10) {
+    private func updateBanner(_ update: ReleaseFeed.Release) -> some View {
+        HStack(spacing: 14) {
+            Image(systemName: "arrow.down.circle.fill")
+                .font(.title2)
+                .foregroundColor(Theme.mango)
+            Text("Mango Cast \(update.version) is available.")
+                .font(.headline)
+                .fixedSize(horizontal: false, vertical: true)
+            Spacer(minLength: 8)
+            Button("Update") { updates.openUpdate() }
+                .buttonStyle(.borderedProminent)
+                .tint(Theme.mango)
+                .foregroundColor(.black)
+        }
+        .padding(.horizontal, 18)
+        .padding(.vertical, 12)
+        .background(RoundedRectangle(cornerRadius: 16, style: .continuous).fill(Theme.surface))
+    }
+
+    private func statusBlock(compact: Bool) -> some View {
+        let dotSize: CGFloat = compact ? 12 : 16
+        let indent = dotSize + 14
+        return VStack(alignment: .leading, spacing: 10) {
             HStack(spacing: 14) {
                 Circle()
                     .fill(dotColor)
-                    .frame(width: 16, height: 16)
+                    .frame(width: dotSize, height: dotSize)
                     .accessibilityHidden(true)
                 Text(title)
-                    .font(.system(size: 40, weight: .bold))
-                    .minimumScaleFactor(0.6)
+                    .font(.system(size: compact ? 30 : 44, weight: .bold))
+                    .minimumScaleFactor(0.7)
                     .lineLimit(2)
+                    .fixedSize(horizontal: false, vertical: true)
             }
             Text(detail)
-                .font(.title3)
+                .font(compact ? .body : .title3)
                 .foregroundColor(Theme.textSecondary)
-                .padding(.leading, 30)
+                .padding(.leading, indent)
                 .fixedSize(horizontal: false, vertical: true)
             if status.state == .failed {
                 Button("Try again") { receiver.restart() }
                     .buttonStyle(.borderedProminent)
                     .tint(Theme.mango)
                     .foregroundColor(.black)
-                    .padding(.leading, 30)
+                    .padding(.leading, indent)
                     .padding(.top, 6)
             }
         }
@@ -118,20 +169,28 @@ struct HomeView: View {
         }
     }
 
+    /// Side by side the cards share the width equally and match heights;
+    /// stacked, each takes the full width. Either way they're as tall as
+    /// their text and no taller.
     @ViewBuilder
-    private func cards(wide: Bool) -> some View {
-        VStack(alignment: .leading, spacing: 20) {
-            if wide {
+    private func cards(sideBySide: Bool) -> some View {
+        VStack(alignment: .leading, spacing: sideBySide ? 20 : 16) {
+            if sideBySide {
                 HStack(alignment: .top, spacing: 20) {
-                    macCard.layoutPriority(1)
+                    macCard
                     keepOpenCard
                 }
+                .fixedSize(horizontal: false, vertical: true)
             } else {
-                macCard
-                keepOpenCard
+                VStack(alignment: .leading, spacing: 16) {
+                    macCard
+                    keepOpenCard
+                }
+                .fixedSize(horizontal: false, vertical: true)
             }
             if settings.windowsEnabled {
                 windowsCard
+                    .fixedSize(horizontal: false, vertical: true)
             }
         }
     }
@@ -140,7 +199,7 @@ struct HomeView: View {
         Card(title: "From your Mac", systemImage: "laptopcomputer") {
             Step(number: 1, text: "Open Control Center and click Screen Mirroring.")
             Step(number: 2, text: "Pick “\(name)”.")
-            Step(number: 3, text: "To use this screen as a second display instead of a copy, choose Use As Separate Display.")
+            Step(number: 3, text: "To use this screen as a second display instead of a copy, choose Use As Separate Display. It fills the screen exactly.")
             Text("No Screen Mirroring in Control Center? Use System Settings → Displays → Add Display.")
                 .font(.subheadline)
                 .foregroundColor(Theme.textSecondary)
@@ -160,8 +219,8 @@ struct HomeView: View {
     }
 
     private var keepOpenCard: some View {
-        Card(title: "Keep Mango open", systemImage: "rectangle.on.rectangle") {
-            Text("This device only shows up in Screen Mirroring while Mango is on screen. Your Mac and this device need to be on the same Wi-Fi network.")
+        Card(title: "Keep Mango Cast open", systemImage: "rectangle.on.rectangle") {
+            Text("This device only shows up in Screen Mirroring while Mango Cast is on screen. Your Mac and this device need to be on the same Wi-Fi network.")
                 .fixedSize(horizontal: false, vertical: true)
             Text("An iPhone or another iPad can mirror here too: Control Center → Screen Mirroring → “\(name)”.")
                 .font(.subheadline)
@@ -180,6 +239,7 @@ struct HomeView: View {
         }
         .font(.footnote)
         .foregroundColor(Theme.textSecondary)
+        .fixedSize(horizontal: false, vertical: true)
     }
 }
 
@@ -196,7 +256,7 @@ private struct Card<Content: View>: View {
             content
         }
         .padding(22)
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
         .background(RoundedRectangle(cornerRadius: 20, style: .continuous).fill(Theme.surface))
     }
 }
@@ -213,6 +273,7 @@ private struct Step: View {
                 .frame(width: 24, height: 24)
                 .background(Circle().fill(Theme.mango))
             Text(text)
+                .frame(maxWidth: .infinity, alignment: .leading)
                 .fixedSize(horizontal: false, vertical: true)
         }
     }

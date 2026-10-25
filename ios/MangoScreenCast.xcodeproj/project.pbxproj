@@ -31,6 +31,10 @@
 			isa = PBXBuildFile;
 			fileRef = 89276C6FDED1F139390BD16F /* VideoRenderer.swift */;
 		};
+		0A2C6ABD3009FBDEC66C62EF /* UpdateChecker.swift in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = D833A2401C974A26FC7F8143 /* UpdateChecker.swift */;
+		};
 		0B7BD122B11363F827E52DF4 /* MirrorProfile.swift in Sources */ = {
 			isa = PBXBuildFile;
 			fileRef = 9523147EF3861616EA05EF16 /* MirrorProfile.swift */;
@@ -58,6 +62,10 @@
 		1FAEC0737B42CD680023AFDB /* uxplay/compat.c in Sources */ = {
 			isa = PBXBuildFile;
 			fileRef = FC9B108732ECDBABF88A17DB /* uxplay/compat.c */;
+		};
+		2036B35C3C3E12B9560802AB /* ScreenshotTests.swift in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = 79E721B20DB850F527E28154 /* ScreenshotTests.swift */;
 		};
 		2ED6BDF3DD7B6663515E1966 /* uxplay/dns_sd/dns_sd.c in Sources */ = {
 			isa = PBXBuildFile;
@@ -87,6 +95,10 @@
 			isa = PBXBuildFile;
 			fileRef = C49D5C5572EE4BB4B57DB525 /* libplist/src/jplist.c */;
 		};
+		4085A47F46B0ABDA62FA182C /* ReleaseFeed.swift in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = B781CA545026F150FAF6C5BD /* ReleaseFeed.swift */;
+		};
 		45CBCAB64D2F3CC0D2C6B09C /* uxplay/byteutils.c in Sources */ = {
 			isa = PBXBuildFile;
 			fileRef = 791F6A6EF289E71AFAF00BEA /* uxplay/byteutils.c */;
@@ -94,6 +106,10 @@
 		535777A04BCC77238A7C2F92 /* Fixtures.swift in Sources */ = {
 			isa = PBXBuildFile;
 			fileRef = 1EE1C3DD4B75A85EAB818FDE /* Fixtures.swift */;
+		};
+		55A9F607CAD67B6D5E2641B1 /* ReleaseFeedTests.swift in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = F86FCFA8408ECCCD24B70B00 /* ReleaseFeedTests.swift */;
 		};
 		5B4446BDBB0674D9F76E25B6 /* android_dnssd/dns_sd_android.c in Sources */ = {
 			isa = PBXBuildFile;
@@ -166,6 +182,10 @@
 		82A930C753862F68DF52D9E7 /* uxplay/playfair/omg_hax.c in Sources */ = {
 			isa = PBXBuildFile;
 			fileRef = E0996224881AEC84FF78B6F7 /* uxplay/playfair/omg_hax.c */;
+		};
+		87428C1E9428475BE8927150 /* ReleaseFeed.swift in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = B781CA545026F150FAF6C5BD /* ReleaseFeed.swift */;
 		};
 		88B30A8C5FD4086AFA8AEA44 /* AudioCookie.swift in Sources */ = {
 			isa = PBXBuildFile;
@@ -334,6 +354,13 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		1BE5A9C15990AE65AD96A2A0 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 34B36BD8C5576B94E8FC1832 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A1F938A9A0D902A383207D1B /* MangoScreenCast */;
+			remoteInfo = MangoScreenCast;
+		};
 		D87959A19C960C82CA1AFF9F /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 34B36BD8C5576B94E8FC1832 /* Project object */;
@@ -557,6 +584,12 @@
 			path = "../android-tv/third_party/libplist/src/out-default.c";
 			sourceTree = SOURCE_ROOT;
 		};
+		79E721B20DB850F527E28154 /* ScreenshotTests.swift */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			path = ScreenshotTests.swift;
+			sourceTree = "<group>";
+		};
 		7DB1D6ED6783A6417F26163D /* uxplay/http_request.c */ = {
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.c.c;
@@ -680,6 +713,12 @@
 			path = MirrorView.swift;
 			sourceTree = "<group>";
 		};
+		B781CA545026F150FAF6C5BD /* ReleaseFeed.swift */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			path = ReleaseFeed.swift;
+			sourceTree = "<group>";
+		};
 		BBA83105F0E4994DE3C7D61E /* uxplay/httpd.c */ = {
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.c.c;
@@ -699,6 +738,13 @@
 			lastKnownFileType = sourcecode.swift;
 			path = DecodeTests.swift;
 			sourceTree = "<group>";
+		};
+		BFF3CE8B0C2E803C4B3A8A49 /* MangoScreenCastUITests.xctest */ = {
+			isa = PBXFileReference;
+			explicitFileType = wrapper.cfbundle;
+			includeInIndex = 0;
+			path = MangoScreenCastUITests.xctest;
+			sourceTree = BUILT_PRODUCTS_DIR;
 		};
 		C38F450146D4CF773889FD1B /* uxplay/dns_sd/dns_sd.c */ = {
 			isa = PBXFileReference;
@@ -757,6 +803,12 @@
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.swift;
 			path = RootView.swift;
+			sourceTree = "<group>";
+		};
+		D833A2401C974A26FC7F8143 /* UpdateChecker.swift */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			path = UpdateChecker.swift;
 			sourceTree = "<group>";
 		};
 		D98395F30646B3A176CE8CB8 /* uxplay/llhttp/http.c */ = {
@@ -856,6 +908,12 @@
 			path = "../android-tv/third_party/libplist/src/plist.c";
 			sourceTree = SOURCE_ROOT;
 		};
+		F86FCFA8408ECCCD24B70B00 /* ReleaseFeedTests.swift */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			path = ReleaseFeedTests.swift;
+			sourceTree = "<group>";
+		};
 		FC9B108732ECDBABF88A17DB /* uxplay/compat.c */ = {
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.c.c;
@@ -866,6 +924,13 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		0F0571C92B80AC2C3A2EAC00 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		1876E04271A7B9F012661AB2 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -899,6 +964,7 @@
 				90F1E934B2D28474CA0477E1 /* MangoScreenCast.app */,
 				6CB20C4BC9696047F5CA5B1E /* libMangoCore.a */,
 				66F8F7FC52639EF9C1C6D93B /* MangoScreenCastTests.xctest */,
+				BFF3CE8B0C2E803C4B3A8A49 /* MangoScreenCastUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -974,6 +1040,7 @@
 				BF26E6BE873B013450E336A2 /* MangoScreenCast */,
 				B4063EC772534333C810DCCE /* MangoCore */,
 				D40EF620259600F65F0248A8 /* MangoScreenCastTests */,
+				95AA0C79EA567C2D75E8916C /* MangoScreenCastUITests */,
 				0ACACDE51BB2F046E791E653 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -998,6 +1065,14 @@
 			path = MangoCast;
 			sourceTree = "<group>";
 		};
+		95AA0C79EA567C2D75E8916C /* MangoScreenCastUITests */ = {
+			isa = PBXGroup;
+			children = (
+				79E721B20DB850F527E28154 /* ScreenshotTests.swift */,
+			);
+			path = MangoScreenCastUITests;
+			sourceTree = "<group>";
+		};
 		B4063EC772534333C810DCCE /* MangoCore */ = {
 			isa = PBXGroup;
 			children = (
@@ -1006,6 +1081,15 @@
 				720481B02A26324A49FAC621 /* Shared AirPlay core */,
 			);
 			path = MangoCore;
+			sourceTree = "<group>";
+		};
+		B4CCF690B80EA160054DF016 /* Updates */ = {
+			isa = PBXGroup;
+			children = (
+				B781CA545026F150FAF6C5BD /* ReleaseFeed.swift */,
+				D833A2401C974A26FC7F8143 /* UpdateChecker.swift */,
+			);
+			path = Updates;
 			sourceTree = "<group>";
 		};
 		BF26E6BE873B013450E336A2 /* MangoScreenCast */ = {
@@ -1019,6 +1103,7 @@
 				26ED4D03850022678A5CB0E7 /* MangoScreenCastApp.swift */,
 				DF681E0BF6ABCF58F4B4B443 /* Media */,
 				70252C5B07C05771F091BD46 /* Settings.swift */,
+				B4CCF690B80EA160054DF016 /* Updates */,
 				8CFEA836ED2AC03501E875D2 /* Views */,
 			);
 			path = MangoScreenCast;
@@ -1034,6 +1119,7 @@
 				67D8955CAFD05E3A9645257D /* MangoCastTests.swift */,
 				8312D0C41899E2431E3C58D1 /* MirrorProfileTests.swift */,
 				A71B8DB044EDCC3196DD75C8 /* NalUnitsTests.swift */,
+				F86FCFA8408ECCCD24B70B00 /* ReleaseFeedTests.swift */,
 			);
 			path = MangoScreenCastTests;
 			sourceTree = "<group>";
@@ -1109,6 +1195,24 @@
 			productReference = 90F1E934B2D28474CA0477E1 /* MangoScreenCast.app */;
 			productType = "com.apple.product-type.application";
 		};
+		DD5A91B4DCA1063FFBE5C2D6 /* MangoScreenCastUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 7670B3E346E0980E302833F5 /* Build configuration list for PBXNativeTarget "MangoScreenCastUITests" */;
+			buildPhases = (
+				156EE8E0B68CD0CCAE53B054 /* Sources */,
+				0F0571C92B80AC2C3A2EAC00 /* Frameworks */,
+				6CFE723C1F2EEE3FDD1C89CC /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				B5B7B2A8B809F1BCF2F1848B /* PBXTargetDependency */,
+			);
+			name = MangoScreenCastUITests;
+			productName = MangoScreenCastUITests;
+			productReference = BFF3CE8B0C2E803C4B3A8A49 /* MangoScreenCastUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -1126,6 +1230,9 @@
 						CreatedOnToolsVersion = 16.0;
 					};
 					A1F938A9A0D902A383207D1B = {
+						CreatedOnToolsVersion = 16.0;
+					};
+					DD5A91B4DCA1063FFBE5C2D6 = {
 						CreatedOnToolsVersion = 16.0;
 					};
 				};
@@ -1149,11 +1256,19 @@
 				A1F938A9A0D902A383207D1B /* MangoScreenCast */,
 				0A26C2C5D03B539C572657FD /* MangoCore */,
 				996C4715DD027D7F8A6CEF97 /* MangoScreenCastTests */,
+				DD5A91B4DCA1063FFBE5C2D6 /* MangoScreenCastUITests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		6CFE723C1F2EEE3FDD1C89CC /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		D07F346CB390D0E144B55551 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -1172,6 +1287,14 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		156EE8E0B68CD0CCAE53B054 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2036B35C3C3E12B9560802AB /* ScreenshotTests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		172375CA73D9EF3BAB8321ED /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -1239,10 +1362,12 @@
 				99D229D30CEE738D39C0AE9B /* MangoCastTests.swift in Sources */,
 				B7DF6301E14BB9A9F411ABDA /* MirrorProfileTests.swift in Sources */,
 				5E73247FC2FC196CE55BC189 /* NalUnitsTests.swift in Sources */,
+				55A9F607CAD67B6D5E2641B1 /* ReleaseFeedTests.swift in Sources */,
 				D6B417A17022AA043A69543A /* NalUnits.swift in Sources */,
 				3BA316D82E5B93655287C37F /* AudioCookie.swift in Sources */,
 				3749B09B9124D7649A9919A2 /* VideoRenderer.swift in Sources */,
 				0B7BD122B11363F827E52DF4 /* MirrorProfile.swift in Sources */,
+				87428C1E9428475BE8927150 /* ReleaseFeed.swift in Sources */,
 				8CF4398BACC79BD00CF39CDE /* MangoCast.swift in Sources */,
 				F74E79B30A38A231B79E16B1 /* MangoCastServer.swift in Sources */,
 			);
@@ -1263,6 +1388,8 @@
 				5FC7A95FA9CD59176A3FC56F /* NalUnits.swift in Sources */,
 				0A13737D6F201A5BE0506E60 /* VideoRenderer.swift in Sources */,
 				B08B441909D2F8BDFB3465AB /* Settings.swift in Sources */,
+				4085A47F46B0ABDA62FA182C /* ReleaseFeed.swift in Sources */,
+				0A2C6ABD3009FBDEC66C62EF /* UpdateChecker.swift in Sources */,
 				0673B64CCBA2426BB75EAC49 /* HomeView.swift in Sources */,
 				6D3E809906C5855DE7ABAA0C /* MirrorView.swift in Sources */,
 				1C275174E235C79E30B17168 /* RootView.swift in Sources */,
@@ -1277,6 +1404,11 @@
 			isa = PBXTargetDependency;
 			target = 0A26C2C5D03B539C572657FD /* MangoCore */;
 			targetProxy = D87959A19C960C82CA1AFF9F /* PBXContainerItemProxy */;
+		};
+		B5B7B2A8B809F1BCF2F1848B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = A1F938A9A0D902A383207D1B /* MangoScreenCast */;
+			targetProxy = 1BE5A9C15990AE65AD96A2A0 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -1294,6 +1426,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				MANGO_BUILD_CHANNEL = local;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.mangoscreencast.ios;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1334,6 +1467,28 @@
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
+		};
+		2FBD6C2B9A3665C923278256 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.mangoscreencast.ios.uitests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TEST_TARGET_NAME = MangoScreenCast;
+			};
+			name = Release;
+		};
+		3CE250CEDDBE699455A9E20B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				GENERATE_INFOPLIST_FILE = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.mangoscreencast.ios.uitests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				TEST_TARGET_NAME = MangoScreenCast;
+			};
+			name = Debug;
 		};
 		4F6D5392095E386CED91601E /* Debug */ = {
 			isa = XCBuildConfiguration;
@@ -1438,6 +1593,7 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
+				MANGO_BUILD_CHANNEL = local;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.mangoscreencast.ios;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1504,6 +1660,15 @@
 			buildConfigurations = (
 				7FD933638DFE83DE14D7DB5B /* Debug */,
 				0E6793CDF0DAA09A51E18461 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		7670B3E346E0980E302833F5 /* Build configuration list for PBXNativeTarget "MangoScreenCastUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				3CE250CEDDBE699455A9E20B /* Debug */,
+				2FBD6C2B9A3665C923278256 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

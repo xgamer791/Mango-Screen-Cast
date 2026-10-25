@@ -16,6 +16,12 @@ struct RootView: View {
             }
         }
         .animation(.easeInOut(duration: 0.25), value: receiver.status.state == .mirroring)
+        .background(
+            // Turning the device changes the shape the next Mac should send.
+            GeometryReader { geometry in
+                Color.clear.onChange(of: geometry.size) { _ in receiver.screenShapeChanged() }
+            }
+        )
         .onAppear(perform: updateIdleTimer)
         .onChange(of: receiver.status.state) { _ in updateIdleTimer() }
         .onChange(of: settings.keepAwake) { _ in updateIdleTimer() }

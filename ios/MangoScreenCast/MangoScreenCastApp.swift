@@ -5,6 +5,7 @@ struct MangoScreenCastApp: App {
     @Environment(\.scenePhase) private var scenePhase
     @StateObject private var settings: Settings
     @StateObject private var receiver: Receiver
+    @StateObject private var updates = UpdateChecker()
 
     init() {
         let settings = Settings()
@@ -17,16 +18,25 @@ struct MangoScreenCastApp: App {
             RootView()
                 .environmentObject(settings)
                 .environmentObject(receiver)
+                .environmentObject(updates)
                 .preferredColorScheme(.dark)
-                .onAppear { receiver.start() }
+                .onAppear {
+                    receiver.start()
+                    updates.startChecking()
+                }
         }
         .onChange(of: scenePhase) { phase in
             // Inactive (Control Center, the app switcher, a call banner)
             // keeps the server up; only going to the background stops it.
             switch phase {
-            case .active: receiver.start()
-            case .background: receiver.stop()
-            default: break
+            case .active:
+                receiver.start()
+                updates.startChecking()
+            case .background:
+                receiver.stop()
+                updates.stopChecking()
+            default:
+                break
             }
         }
     }

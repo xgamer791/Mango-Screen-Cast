@@ -5,8 +5,8 @@ receiver**. Macs, iPhones and iPads find the TV in their built-in **Screen
 Mirroring** menu. You don't install anything on them and there's no code to
 type in.
 
-There's also an **iPad and iPhone app** that does the same on an iPad: put
-your Mac's screen on it, or use it as a second display. See
+There's also an **iPad and iPhone app, Mango Cast**, that does the same on an
+iPad: put your Mac's screen on it, or use it as a second display. See
 [iPad and iPhone](#ipad-and-iphone).
 
 - **Mac:** mirror the screen, or choose **Use As Separate Display** to use the
@@ -103,12 +103,20 @@ cd Mango-Screen-Cast/android-tv
 
 ## iPad and iPhone
 
-The app in `ios/` makes an iPad (or iPhone) an AirPlay receiver, with the same
-AirPlay core as the TV app. Your Mac mirrors to it from Screen Mirroring, or
-uses it as a second display with **Use As Separate Display**. The iPad offers
-its own screen size (for example 2360 × 1640 on an iPad Air) with HEVC, so a
-separate display fills the whole screen at full sharpness. Sound plays on the
-iPad.
+**Mango Cast**, the app in `ios/`, makes an iPad (or iPhone) an AirPlay
+receiver, with the same AirPlay core as the TV app. Your Mac finds it in Screen
+Mirroring as *Mango Cast iPad*, and mirrors to it or uses it as a second display
+with **Use As Separate Display**. Sound plays on the iPad.
+
+**Resolution is automatic.** The iPad offers exactly its own screen: its full
+pixel count (for example 2360 × 1640 on an iPad Air, 2752 × 2064 on a 13-inch
+iPad Pro), in the orientation it's held, with HEVC. So a separate display fills
+the screen edge to edge at full sharpness, in landscape or portrait. Turn the
+iPad while nothing is connected and it offers the new shape to the next Mac.
+Macs that can't send HEVC (Intel Macs) get the same shape at about 1080p.
+A *mirrored* Mac keeps its own shape (a MacBook is wider than an iPad), so it
+shows with thin bars; tap **Fill** (or double-tap) to zoom it to cover the
+screen instead.
 
 It needs iPadOS or iOS 16 or newer, and the Mac and the iPad on the same
 Wi-Fi network.
@@ -140,43 +148,71 @@ with your own Apple ID. A free Apple ID works.
 With a free Apple ID, the app stops opening after 7 days. Press Run in Xcode
 again to renew it. A paid developer account makes it last a year.
 
-**Without Xcode:** each build of the app is attached to the
-[`ios-latest` pre-release](../../releases/tag/ios-latest) as
-`MangoScreenCast-unsigned.ipa`. Install it with
-[Sideloadly](https://sideloadly.io) or [AltStore](https://altstore.io), which
-sign it with your Apple ID.
+**Without Xcode (and with updates):** use [AltStore](https://altstore.io) or
+[SideStore](https://sidestore.io), which install apps signed with your Apple ID.
+Add this source in AltStore (Browse → Sources → **+**) or SideStore:
+
+```
+https://github.com/xgamer791/Mango-Screen-Cast/releases/download/ios-latest/altstore-source.json
+```
+
+then install **Mango Cast** from it. You can also install the IPA from the
+[`ios-latest` pre-release](../../releases/tag/ios-latest)
+(`MangoScreenCast-unsigned.ipa`) with [Sideloadly](https://sideloadly.io).
+
+### Updates
+
+iOS only lets the App Store update apps by itself, so Mango Cast can't install
+its own updates the way the TV app does. Instead:
+
+- Every push to `main` or the development branch builds a new version
+  (1.0.*n*) and publishes it to the source above.
+- **AltStore and SideStore** show the new version under My Apps; tap
+  **Update**. AltStore also renews the app in the background every week (with
+  AltServer running on your Mac), so a free Apple ID's 7-day limit never
+  stops it opening.
+- **The app checks too**, at launch and every few hours while it's open. When a
+  newer version is out, the home screen says so, and **Update** opens AltStore
+  or SideStore on it. Settings → **Updates** shows the version you have and
+  has a button that adds the source to AltStore or SideStore.
+- **Built with Xcode?** Get the latest code and press Run again.
+
+For fully automatic updates (no tap), a paid Apple Developer account and
+TestFlight are the only way; this repository doesn't set that up.
 
 ### Use
 
-1. Open **Mango** on the iPad. The first time, allow **Local Network** access.
-   Without it your Mac can't see the iPad.
-2. On the Mac: Control Center → **Screen Mirroring** → *Mango iPad*. To use the
-   iPad as a second display instead of a copy, choose **Use As Separate
-   Display**. Without Screen Mirroring in Control Center, use System Settings →
-   Displays → **Add Display**.
-3. Tap the iPad's screen while mirroring to show who's mirroring, a **Stop**
-   button and live stats.
+1. Open **Mango Cast** on the iPad. The first time, allow **Local Network**
+   access. Without it your Mac can't see the iPad.
+2. On the Mac: Control Center → **Screen Mirroring** → *Mango Cast iPad*. To
+   use the iPad as a second display instead of a copy, choose **Use As
+   Separate Display**. Without Screen Mirroring in Control Center, use System
+   Settings → Displays → **Add Display**.
+3. Tap the iPad's screen while mirroring to show who's mirroring, **Fill** /
+   **Fit**, a **Stop** button and live stats. Double-tap to switch Fill / Fit.
 
-Keep Mango open. iOS pauses apps in the background, so the iPad is only in
-Screen Mirroring lists while Mango is on screen. Mango keeps the screen on
+Keep Mango Cast open. iOS pauses apps in the background, so the iPad is only in
+Screen Mirroring lists while Mango Cast is on screen. It keeps the screen on
 while it waits, because a locked iPad drops out of the list too.
 
 **Settings** (gear button on the home screen):
 
 | Setting | What it does |
 |---|---|
-| Name | What your Mac shows in Screen Mirroring. *Mango iPad* unless you change it. |
-| Resolution | *This screen* offers the iPad's own pixels with HEVC (default). *1080p* offers 1920 × 1080. |
+| Name | What your Mac shows in Screen Mirroring. *Mango Cast iPad* unless you change it. |
+| Resolution | *Automatic* (default) offers the iPad's whole screen, as described above. *Lighter* keeps the same shape at about 1080p, for a busy Wi-Fi network. |
+| Fill the screen | Zoom a mirrored picture of another shape to cover the screen, cutting off its edges. Same as Fill / Fit while mirroring. |
 | Sound | Play the Mac's audio on the iPad. |
 | Show stats while mirroring | Resolution, codec, frame rate and bitrate in a corner. |
 | Keep the screen on while waiting | On by default. It always stays on while mirroring. |
+| Updates | The version you have, Check for updates, and a button that adds the update source to AltStore or SideStore. |
 | Diagnostics | What the iPad offers and the recent AirPlay log, with a Share button. |
 
 **Sidecar:** if your Mac and iPad are signed in to the same Apple ID and both
 support it, macOS's built-in Sidecar also puts the Mac's screen on the iPad
 (it shows up in the same Screen Mirroring menu), with touch and Apple Pencil
-input. Mango works across Apple IDs, on iPads that Sidecar doesn't support,
-and from iPhones and other iPads too.
+input. Mango Cast works across Apple IDs, on iPads that Sidecar doesn't
+support, and from iPhones and other iPads too.
 
 ## What makes it fast
 
@@ -242,7 +278,10 @@ ios/
     AirPlay/               Receiver (server lifecycle, status), Bonjour advertising
     Media/                 VideoRenderer (VideoToolbox), AudioPlayer, NAL parsing
     Views/                 Home, Mirror (player), Settings
+    Updates/               checks the release feed for newer builds
   MangoScreenCastTests/    unit tests, including decoding real H.264/HEVC frames
+  MangoScreenCastUITests/  screenshots of each screen, for checking layouts
+tools/make_altstore_source.py   the AltStore / SideStore source CI publishes
 ```
 
 On the iPad the same UxPlay core is built with Xcode against
@@ -272,7 +311,9 @@ can decode it. That's what lets Apple devices send more than 1080p.
 `android-tv/native-test` builds the AirPlay core on Linux. It checks the
 service records and the `/info` reply Apple devices read (display size,
 60 fps, HEVC flag, no password). CI runs both and builds the APKs. For the
-iPad app, CI runs its tests on an iPad simulator and builds the unsigned IPA.
+iPad app, CI runs its tests on an iPad simulator, builds the unsigned IPA, and
+takes screenshots of the home and Settings screens on every iPad simulator (and
+an iPhone) in both orientations (the `ios-screenshots` artifact).
 
 ## License
 
