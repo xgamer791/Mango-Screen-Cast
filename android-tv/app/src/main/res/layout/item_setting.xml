@@ -23,7 +23,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:textColor="@color/text_primary"
-            android:textSize="17.6sp" />
+            android:textSize="15sp" />
 
         <TextView
             android:id="@+id/setting_value"
@@ -31,7 +31,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="24dp"
             android:textColor="@color/mango"
-            android:textSize="17.6sp"
+            android:textSize="15sp"
             android:textStyle="bold" />
     </LinearLayout>
 
