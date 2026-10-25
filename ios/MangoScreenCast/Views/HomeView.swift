@@ -12,6 +12,7 @@ struct HomeView: View {
     @EnvironmentObject private var settings: Settings
     @EnvironmentObject private var remote: RemoteControl
     @State private var showSettings = false
+    @State private var showWindows = false
 
     /// Below this width (iPhones, narrow Split View panes) everything gets smaller.
     private static let compactWidth: CGFloat = 600
@@ -69,6 +70,11 @@ struct HomeView: View {
                 .environmentObject(settings)
                 .environmentObject(remote)
         }
+        // A touchpad and keyboard for a PC running Mango Screen Cast For Windows.
+        .fullScreenCover(isPresented: $showWindows) {
+            WindowsTouchpadView()
+                .environmentObject(settings)
+        }
     }
 
     private var status: Receiver.Status { receiver.status }
@@ -85,6 +91,23 @@ struct HomeView: View {
                 .lineLimit(1)
                 .minimumScaleFactor(0.8)
             Spacer(minLength: 12)
+            Button {
+                showWindows = true
+            } label: {
+                // Just the icon on a phone, where the header is narrow.
+                Group {
+                    if compact {
+                        Image(systemName: "pc")
+                    } else {
+                        Label("Windows PC", systemImage: "pc")
+                    }
+                }
+                .font(.headline)
+            }
+            .buttonStyle(.bordered)
+            .tint(Theme.textSecondary)
+            .accessibilityLabel("Windows PC")
+            .accessibilityIdentifier("windowsPCButton")
             Button {
                 showSettings = true
             } label: {
