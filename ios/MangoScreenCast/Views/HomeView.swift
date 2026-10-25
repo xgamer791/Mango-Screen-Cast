@@ -206,8 +206,11 @@ struct HomeView: View {
     }
 
     private var keepOpenCard: some View {
-        Card(title: "Keep Mango Cast open", systemImage: "rectangle.on.rectangle") {
-            Text("This device only shows up in Screen Mirroring while Mango Cast is on screen. Your Mac and this device need to be on the same Wi-Fi network.")
+        Card(title: settings.runInBackground ? "Works in the background" : "Keep Mango Cast open",
+             systemImage: "rectangle.on.rectangle") {
+            Text(settings.runInBackground
+                 ? "Switch apps or lock the screen and your Mac stays connected; only closing Mango Cast disconnects it. Your Mac and this device need to be on the same Wi-Fi network."
+                 : "This device only shows up in Screen Mirroring while Mango Cast is on screen. Your Mac and this device need to be on the same Wi-Fi network.")
                 .fixedSize(horizontal: false, vertical: true)
             Text("An iPhone or another iPad can mirror here too: Control Center → Screen Mirroring → “\(name)”.")
                 .font(.subheadline)

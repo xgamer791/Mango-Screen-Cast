@@ -56,11 +56,25 @@ struct SettingsView: View {
                 }
 
                 Section {
+                    Toggle("Keep running in the background", isOn: binding(\.runInBackground) { _ in
+                        receiver.backgroundSettingsChanged()
+                    })
+                    Toggle("Picture in Picture when you leave", isOn: binding(\.pictureInPicture) { _ in
+                        receiver.backgroundSettingsChanged()
+                    })
+                    .disabled(!settings.runInBackground)
+                } header: {
+                    Text("In the background")
+                } footer: {
+                    Text("Your Mac stays connected while you use other apps or lock the screen, and this device stays in Screen Mirroring; only closing Mango Cast (swiping it away in the app switcher) disconnects it. iOS stops decoding video for apps in the background, so leaving while a Mac mirrors shows its screen in Picture in Picture, and the picture is live when you come back; without it, the picture catches up when you come back. Off, Mango Cast stops receiving when you leave it.")
+                }
+
+                Section {
                     Toggle("Sound", isOn: binding(\.soundEnabled) { receiver.setSoundEnabled($0) })
                     Toggle("Show stats while mirroring", isOn: binding(\.showStats))
                     Toggle("Keep the screen on while waiting", isOn: binding(\.keepAwake))
                 } footer: {
-                    Text("Sound plays the Mac’s audio here. A locked screen drops out of Screen Mirroring, so the screen stays on while Mango Cast waits; it always stays on while mirroring.")
+                    Text("Sound plays the Mac’s audio here. The screen stays on while mirroring, and while Mango Cast waits unless you turn that off.")
                 }
 
                 Section {

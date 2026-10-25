@@ -73,11 +73,26 @@ final class Settings: ObservableObject {
         set { change(Keys.stats, newValue) }
     }
 
-    /// Keep the screen on while waiting, so the device stays in Screen
-    /// Mirroring lists (it disappears when it locks).
+    /// Keep the screen on while waiting (it always stays on while mirroring).
+    /// Without running in the background, a locked device also drops out of
+    /// Screen Mirroring lists.
     var keepAwake: Bool {
         get { defaults.object(forKey: Keys.awake) as? Bool ?? true }
         set { change(Keys.awake, newValue) }
+    }
+
+    /// Keep receiving while the app is in the background or the screen is
+    /// locked, so a device mirroring stays connected until the app is closed.
+    var runInBackground: Bool {
+        get { defaults.object(forKey: Keys.background) as? Bool ?? true }
+        set { change(Keys.background, newValue) }
+    }
+
+    /// Leaving the app while a device mirrors shows its screen in Picture in
+    /// Picture (which also keeps the picture live for coming back).
+    var pictureInPicture: Bool {
+        get { defaults.object(forKey: Keys.pictureInPicture) as? Bool ?? true }
+        set { change(Keys.pictureInPicture, newValue) }
     }
 
     /// With a Mac to control, taps and swipes on the picture go to the Mac.
@@ -113,6 +128,8 @@ final class Settings: ObservableObject {
         static let awake = "keepAwake"
         static let fill = "fillScreen"
         static let controlMac = "controlMac"
+        static let background = "runInBackground"
+        static let pictureInPicture = "pictureInPicture"
         static let deviceId = "deviceId"
     }
 }

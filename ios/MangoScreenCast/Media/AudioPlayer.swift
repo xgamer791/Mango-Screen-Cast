@@ -8,6 +8,10 @@ import QuartzCore
 /// ALAC (Apple Lossless, used for music-only AirPlay) isn't supported yet.
 /// Frames are decoded on the AirPlay audio thread with Core Audio's AAC
 /// decoder and scheduled on an AVAudioEngine player.
+///
+/// With `keepAlive` on, the output also runs with nothing to play (silence,
+/// mixed with other apps' sound), which is what keeps iOS from suspending
+/// the app in the background, and the AirPlay server with it.
 final class AudioPlayer {
     enum Codec: Int {
         case pcm = 1, alac = 2, aacLc = 4, aacEld = 8
@@ -19,6 +23,10 @@ final class AudioPlayer {
     private let lock = NSLock()
     private let engine = AVAudioEngine()
     private let player = AVAudioPlayerNode()
+    /// Plays a second of silence over and over while `keepAlive` is on.
+    private let keeper = AVAudioPlayerNode()
+    private var keepAliveFlag = false
+    private var observers: [NSObjectProtocol] = []
     private let output = AVAudioFormat(standardFormatWithSampleRate: 44_100, channels: 2)!
     private var converter: AudioConverterRef?
     private var codec: Codec?
@@ -41,12 +49,53 @@ final class AudioPlayer {
     init() {
         engine.attach(player)
         engine.connect(player, to: engine.mainMixerNode, format: output)
+        engine.attach(keeper)
+        engine.connect(keeper, to: engine.mainMixerNode, format: output)
+        // A call, Siri, an alarm or a change of speakers stops the output; it
+        // comes back by itself, or the app would be suspended after them.
+        let center = NotificationCenter.default
+        observers.append(center.addObserver(forName: AVAudioSession.interruptionNotification, object: nil,
+                                            queue: nil) { [weak self] note in
+            let raw = note.userInfo?[AVAudioSessionInterruptionTypeKey] as? UInt
+            if raw.flatMap({ AVAudioSession.InterruptionType(rawValue: $0) }) == .ended { self?.resume(after: "an interruption") }
+        })
+        observers.append(center.addObserver(forName: .AVAudioEngineConfigurationChange, object: engine,
+                                            queue: nil) { [weak self] _ in
+            self?.resume(after: "a change of audio output")
+        })
+        observers.append(center.addObserver(forName: AVAudioSession.mediaServicesWereResetNotification, object: nil,
+                                            queue: nil) { [weak self] _ in
+            self?.resume(after: "an audio system reset")
+        })
     }
 
     deinit {
+        for observer in observers { NotificationCenter.default.removeObserver(observer) }
         if let converter { AudioConverterDispose(converter) }
         packetDescription.deallocate()
     }
+
+    /// Keeps the output running with nothing to play, so the app (and the
+    /// AirPlay server) keeps running in the background. Off, the output
+    /// stops when the sound does.
+    var keepAlive: Bool {
+        get { lock.withLock { keepAliveFlag } }
+        set {
+            lock.withLock {
+                guard newValue != keepAliveFlag else { return }
+                keepAliveFlag = newValue
+                if newValue {
+                    if ensureRunning(force: true) { log?("audio output on, to keep running in the background") }
+                } else {
+                    if keeper.engine != nil, engine.isRunning { keeper.stop() }
+                    if codec == nil { stopOutput() }
+                }
+            }
+        }
+    }
+
+    /// Whether the output is running (which keeps the app running in the background).
+    var outputRunning: Bool { lock.withLock { engine.isRunning } }
 
     var enabled: Bool {
         get { lock.withLock { enabledFlag } }
@@ -113,15 +162,33 @@ final class AudioPlayer {
         player.volume = gain
     }
 
-    /// Mirroring ended: stop the engine and hand the audio session back.
+    /// Mirroring ended: stop the engine and hand the audio session back,
+    /// unless it's keeping the app running.
     func stop() {
         lock.lock()
         defer { lock.unlock() }
         resetPlayback()
         disposeConverter()
         codec = nil
+        if !keepAliveFlag { stopOutput() }
+    }
+
+    private func stopOutput() {
         if engine.isRunning { engine.stop() }
         try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
+    }
+
+    /// The output stopped (see init): start it again if it's wanted.
+    private func resume(after cause: String) {
+        // Not from inside the notification: the engine may still be stopping.
+        DispatchQueue.global(qos: .userInitiated).asyncAfter(deadline: .now() + 0.2) { [weak self] in
+            guard let self else { return }
+            self.lock.withLock {
+                guard self.keepAliveFlag || self.codec != nil else { return }
+                if self.engine.isRunning && (!self.keepAliveFlag || self.keeper.isPlaying) { return }
+                if self.ensureRunning(force: true) { self.log?("audio output back after \(cause)") }
+            }
+        }
     }
 
     // MARK: - Decoding (lock held)
@@ -256,24 +323,53 @@ final class AudioPlayer {
     }
 
     /// Starts the engine on first use, and again after an interruption (a
-    /// call, Siri) or an output change stopped it.
-    private func ensureRunning() -> Bool {
-        if engine.isRunning { return true }
+    /// call, Siri) or an output change stopped it. `force` skips the wait
+    /// between attempts.
+    private func ensureRunning(force: Bool = false) -> Bool {
+        if engine.isRunning {
+            if keepAliveFlag { startKeeper() }
+            return true
+        }
         let now = CACurrentMediaTime()
-        guard now - lastStartAttempt > 1 else { return false }
+        guard force || now - lastStartAttempt > 1 else { return false }
         lastStartAttempt = now
         do {
             let session = AVAudioSession.sharedInstance()
-            try session.setCategory(.playback, mode: .moviePlayback)
+            // Mixed with other apps: the silence that keeps Mango Cast running
+            // mustn't stop someone's music, and a mixable session may start
+            // again from the background after an interruption.
+            try session.setCategory(.playback, mode: .moviePlayback, options: [.mixWithOthers])
             try? session.setPreferredIOBufferDuration(0.005)
             try session.setActive(true)
             engine.prepare()
             try engine.start()
             player.volume = gain
+            // Nodes don't carry on by themselves after the engine stopped.
+            resetPlayback()
+            if keepAliveFlag {
+                keeper.stop()
+                startKeeper()
+            }
             return true
         } catch {
             log?("audio output unavailable: \(error.localizedDescription)")
             return false
         }
+    }
+
+    private lazy var silence: AVAudioPCMBuffer? = {
+        guard let buffer = AVAudioPCMBuffer(pcmFormat: output, frameCapacity: 44_100),
+              let channels = buffer.floatChannelData else { return nil }
+        buffer.frameLength = 44_100
+        for channel in 0..<Int(output.channelCount) {
+            channels[channel].initialize(repeating: 0, count: Int(buffer.frameLength))
+        }
+        return buffer
+    }()
+
+    private func startKeeper() {
+        guard !keeper.isPlaying, let silence else { return }
+        keeper.scheduleBuffer(silence, at: nil, options: .loops)
+        keeper.play()
     }
 }

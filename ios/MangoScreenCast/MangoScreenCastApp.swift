@@ -28,14 +28,15 @@ struct MangoScreenCastApp: App {
                 }
         }
         .onChange(of: scenePhase) { phase in
-            // Inactive (Control Center, the app switcher, a call banner)
-            // keeps the server up; only going to the background stops it.
+            // The server keeps running in the background (Receiver says how);
+            // only closing the app ends it, unless Settings turns that off.
             switch phase {
             case .active:
+                receiver.setInBackground(false)
                 receiver.start()
                 updates.startChecking()
             case .background:
-                receiver.stop()
+                receiver.setInBackground(true)
                 updates.stopChecking()
             default:
                 break

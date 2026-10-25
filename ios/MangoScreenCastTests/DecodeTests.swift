@@ -100,4 +100,25 @@ final class DecodeTests: XCTestCase {
     func testDecodesHevc() throws {
         try decode(Fixtures.hevc, h265: true)
     }
+
+    /// Frames arriving while the app is in the background are kept, not
+    /// counted as failures, and the picture carries on when it's back.
+    func testThePlayerKeepsGoingThroughTheBackground() {
+        for (stream, h265) in [(Fixtures.h264, false), (Fixtures.hevc, true)] {
+            let renderer = VideoRenderer()
+            renderer.start(h265: h265)
+            let frames = airPlayFrames(stream, h265: h265)
+            frames[0].withUnsafeBytes { renderer.submit($0, h265: h265) }
+            renderer.setInBackground(true)
+            for frame in frames.dropFirst() {
+                frame.withUnsafeBytes { renderer.submit($0, h265: h265) }
+            }
+            renderer.setInBackground(false)
+            let stats = renderer.stats()
+            XCTAssertEqual(stats.frames, frames.count)
+            XCTAssertEqual(stats.dropped, 0)
+            XCTAssertEqual(stats.recoveries, 0)
+            renderer.stop()
+        }
+    }
 }

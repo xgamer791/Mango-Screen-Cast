@@ -95,6 +95,10 @@
 			isa = PBXBuildFile;
 			fileRef = 65D4ADC21910573FF82BAB5D /* uxplay/raop_rtp.c */;
 		};
+		3339C25C7752325933D710E8 /* PictureInPicture.swift in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = B7E8EC9365DA9CF207606223 /* PictureInPicture.swift */;
+		};
 		3702E69272B6345A2563F86D /* TypingField.swift in Sources */ = {
 			isa = PBXBuildFile;
 			fileRef = 36DA268C39A3066B27190066 /* TypingField.swift */;
@@ -830,6 +834,12 @@
 			path = ReleaseFeed.swift;
 			sourceTree = "<group>";
 		};
+		B7E8EC9365DA9CF207606223 /* PictureInPicture.swift */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			path = PictureInPicture.swift;
+			sourceTree = "<group>";
+		};
 		BBA83105F0E4994DE3C7D61E /* uxplay/httpd.c */ = {
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.c.c;
@@ -1301,6 +1311,7 @@
 				1B8BD01E19DA17A48F0CC037 /* AudioCookie.swift */,
 				07C82DD87630E6884BF38D8D /* AudioPlayer.swift */,
 				D2901938D18BD10743B7BA04 /* NalUnits.swift */,
+				B7E8EC9365DA9CF207606223 /* PictureInPicture.swift */,
 				89276C6FDED1F139390BD16F /* VideoRenderer.swift */,
 			);
 			path = Media;
@@ -1588,6 +1599,7 @@
 				88B30A8C5FD4086AFA8AEA44 /* AudioCookie.swift in Sources */,
 				0D8EBD1BBC028891A8A34457 /* AudioPlayer.swift in Sources */,
 				5FC7A95FA9CD59176A3FC56F /* NalUnits.swift in Sources */,
+				3339C25C7752325933D710E8 /* PictureInPicture.swift in Sources */,
 				0A13737D6F201A5BE0506E60 /* VideoRenderer.swift in Sources */,
 				A390CFD6063371BD44132140 /* MacKeys.swift in Sources */,
 				C2A4C8E52E2DF2092188CDF0 /* RemoteControl.swift in Sources */,

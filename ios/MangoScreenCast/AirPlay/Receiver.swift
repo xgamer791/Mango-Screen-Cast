@@ -2,8 +2,14 @@ import Combine
 import UIKit
 import VideoToolbox
 
-/// Runs the AirPlay server while the app is on screen, and routes what it
-/// receives to the video and audio players.
+/// Runs the AirPlay server while the app is open, on screen or not, and
+/// routes what it receives to the video and audio players.
+///
+/// iOS suspends apps in the background unless they play sound, so with
+/// Settings › Keep running in the background on (the default), the audio
+/// output runs (silently when there's nothing to play) for as long as the
+/// server does. A device mirroring stays connected while Mango Cast is in
+/// the background or the screen is locked; closing the app ends it.
 ///
 /// The server calls back on its own threads; `status` is only changed on
 /// the main thread, where SwiftUI reads it.
@@ -39,6 +45,7 @@ final class Receiver: ObservableObject {
     let settings: Settings
     let video = VideoRenderer()
     let audio = AudioPlayer()
+    private(set) lazy var pictureInPicture = PictureInPicture(layer: video.layer)
 
     private let advertiser = ServiceAdvertiser()
     private let control = DispatchQueue(label: "com.mangoscreencast.control")
@@ -56,6 +63,10 @@ final class Receiver: ObservableObject {
     private let logLock = NSLock()
     private var recentLog: [String] = []
     private var statsTimer: DispatchSourceTimer?
+    /// Ticks while the server runs; a long gap means iOS suspended the app.
+    private var heartbeat: Timer?
+    private var lastBeat = Date()
+    private var inBackground = false
     private let timeFormat: DateFormatter = {
         let formatter = DateFormatter()
         formatter.dateFormat = "HH:mm:ss"
@@ -74,6 +85,8 @@ final class Receiver: ObservableObject {
         advertiser.onPublished = { [weak self] type, name in self?.log("advertising \(type) as “\(name)”") }
         video.log = { [weak self] in self?.log($0) }
         audio.log = { [weak self] in self?.log($0) }
+        pictureInPicture.log = { [weak self] in self?.log($0) }
+        pictureInPicture.startsWhenLeaving = settings.runInBackground && settings.pictureInPicture
         if settings.resolutionOnTrial && settings.resolutionTrialInUse {
             // The app stopped while mirroring at a size on trial: don't
             // start with it again. (No window yet, so no sizes in the text.)
@@ -90,10 +103,58 @@ final class Receiver: ObservableObject {
     func start() {
         guard !running else { return }
         running = true
+        startHeartbeat()
         let name = settings.receiverName
         let profile = currentProfile()
         let deviceId = settings.deviceId
-        control.async { self.startServer(name: name, profile: profile, deviceId: deviceId) }
+        let keepAlive = settings.runInBackground
+        control.async { self.startServer(name: name, profile: profile, deviceId: deviceId, keepAlive: keepAlive) }
+    }
+
+    // MARK: - In the background (main thread)
+
+    /// The app left the screen (true) or came back (false). The server keeps
+    /// running in the background unless Settings says otherwise.
+    func setInBackground(_ background: Bool) {
+        guard background != inBackground else { return }
+        inBackground = background
+        if background {
+            guard running else { return }
+            if settings.runInBackground {
+                log(audio.outputRunning ? "in the background; still receiving"
+                                        : "in the background, but the audio output isn't running: iOS may pause Mango Cast")
+                video.setInBackground(true)
+            } else {
+                stop()
+            }
+        } else {
+            pictureInPicture.stop()
+            video.setInBackground(false)
+            if running, Date().timeIntervalSince(lastBeat) > 15 {
+                // Suspended anyway (a call, or the audio output wouldn't
+                // start): whatever was connected is gone, so start afresh.
+                log("iOS paused Mango Cast in the background; restarting AirPlay")
+                restart()
+            } else {
+                start()
+            }
+        }
+    }
+
+    /// Settings › Keep running in the background (and Picture in Picture) changed.
+    func backgroundSettingsChanged() {
+        let keepAlive = settings.runInBackground
+        pictureInPicture.startsWhenLeaving = keepAlive && settings.pictureInPicture
+        guard running else { return }
+        control.async { self.audio.keepAlive = keepAlive }
+    }
+
+    private func startHeartbeat() {
+        heartbeat?.invalidate()
+        lastBeat = Date()
+        let timer = Timer(timeInterval: 5, repeats: true) { [weak self] _ in self?.lastBeat = Date() }
+        RunLoop.main.add(timer, forMode: .common)
+        heartbeat = timer
     }
 
     /// The most this device can show, in the shape of its screen as it's
@@ -207,19 +268,34 @@ final class Receiver: ObservableObject {
         DispatchQueue.main.asyncAfter(deadline: .now() + 1, execute: work)
     }
 
-    /// iOS suspends apps in the background, which would leave Macs listing a
-    /// receiver that can't answer, so the server stops with the app.
+    /// Stops the server, and with it whatever is connected. Without running
+    /// in the background, iOS would suspend the app there and leave Macs
+    /// listing a receiver that can't answer, so it stops with the app then.
     func stop() {
         guard running else { return }
         running = false
-        control.async { self.stopServer() }
+        heartbeat?.invalidate()
+        heartbeat = nil
+        pictureInPicture.stop()
+        control.async {
+            self.stopServer()
+            self.audio.keepAlive = false
+        }
     }
 
-    /// Applies a changed name or resolution.
+    /// Applies a changed name or resolution. The audio output carries on
+    /// meanwhile, so this works in the background too.
     func restart() {
         guard running else { return }
-        stop()
-        start()
+        startHeartbeat()
+        let name = settings.receiverName
+        let profile = currentProfile()
+        let deviceId = settings.deviceId
+        let keepAlive = settings.runInBackground
+        control.async {
+            self.stopServer()
+            self.startServer(name: name, profile: profile, deviceId: deviceId, keepAlive: keepAlive)
+        }
     }
 
     /// Drops the connected device and returns to the home screen.
@@ -242,9 +318,10 @@ final class Receiver: ObservableObject {
 
     // MARK: - Server lifecycle (control queue)
 
-    private func startServer(name: String, profile: MirrorProfile, deviceId: [UInt8]) {
+    private func startServer(name: String, profile: MirrorProfile, deviceId: [UInt8], keepAlive: Bool) {
         update { $0 = Status(state: .starting, receiverName: name, profile: profile) }
         audio.enabled = settings.soundEnabled
+        audio.keepAlive = keepAlive
         let keyfile = Self.supportDirectory().appendingPathComponent("airplay.key").path
 
         var callbacks = mango_bridge_callbacks_t()
@@ -384,7 +461,10 @@ final class Receiver: ObservableObject {
 
     private func connectionsChanged(_ open: Int) {
         guard open == 0 else { return }
-        DispatchQueue.main.async { self.sessionEnded() }
+        DispatchQueue.main.async {
+            self.sessionEnded()
+            self.pictureInPicture.stop()
+        }
         endMirroring()
         update {
             if $0.state != .stopped { $0.state = .ready }
@@ -422,7 +502,10 @@ final class Receiver: ObservableObject {
     private func videoStop(reason: Int) {
         // The sender stopped mirroring, or another device took over.
         log("mirroring stopped (reset type \(reason))")
-        DispatchQueue.main.async { self.sessionEnded() }
+        DispatchQueue.main.async {
+            self.sessionEnded()
+            self.pictureInPicture.stop()
+        }
         stopStatsTimer()
         video.stop()
         update {
@@ -493,6 +576,8 @@ final class Receiver: ObservableObject {
         let info = Bundle.main.infoDictionary
         lines.append("App: \(info?["CFBundleShortVersionString"] as? String ?? "?") (\(info?["CFBundleVersion"] as? String ?? "?"))")
         lines.append("Hardware HEVC decoding: \(Self.hevcSupported ? "yes" : "no")")
+        lines.append("Keeps running in the background: \(settings.runInBackground ? "yes" : "no")"
+                     + (settings.runInBackground ? " (audio output \(audio.outputRunning ? "running" : "not running"))" : ""))
         if s.state == .mirroring {
             let v = video.stats()
             lines.append(String(format: "Video: %ldx%ld %@, %.1f fps, %.1f Mbit/s, %ld frames, %ld dropped, %ld recoveries",

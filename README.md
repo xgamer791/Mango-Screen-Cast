@@ -218,9 +218,18 @@ TestFlight are the only way; this repository doesn't set that up.
    Pinch to zoom in. To tap, scroll and type on the Mac instead, see
    [Control the Mac from the iPad](#control-the-mac-from-the-ipad).
 
-Keep Mango Cast open. iOS pauses apps in the background, so the iPad is only in
-Screen Mirroring lists while Mango Cast is on screen. It keeps the screen on
-while it waits, because a locked iPad drops out of the list too.
+**Leaving the app doesn't disconnect.** Switch to another app or lock the iPad
+and your Mac stays connected, and the iPad stays in Screen Mirroring lists;
+only closing Mango Cast (swiping it away in the app switcher) disconnects it.
+iOS suspends apps in the background unless they play sound, so Mango Cast
+keeps its audio output running, silently when there's nothing to play and
+mixed with other apps' sound. iOS doesn't let apps decode video in the
+background either, so leaving while the Mac mirrors shows its screen in
+**Picture in Picture**, and the picture is live the moment you come back.
+Close the floating window and the connection still stays; the picture
+catches up when you return (or, after a long time away, at the Mac's next
+full frame). A phone call or Siri can still pause the app; if that happens,
+Mango Cast restarts AirPlay when you come back.
 
 **Settings** (gear button on the home screen):
 
@@ -230,6 +239,8 @@ while it waits, because a locked iPad drops out of the list too.
 | Resolution | Full (default) or 90% down to 50% of it, all in the iPad's exact shape. New sizes are tried first and go back by themselves unless kept (see above). |
 | Fill the screen | Zoom a mirrored picture of another shape to cover the screen, cutting off its edges. Same as Fill / Fit while mirroring. |
 | Sound | Play the Mac's audio on the iPad. |
+| Keep running in the background | On by default: leaving the app or locking the screen keeps the Mac connected (see above). Off, Mango Cast stops receiving when you leave it. |
+| Picture in Picture when you leave | On by default: leaving while a Mac mirrors shows its screen in a floating window. |
 | Show stats while mirroring | Resolution, codec, frame rate and bitrate in a corner. |
 | Keep the screen on while waiting | On by default. It always stays on while mirroring. |
 | Updates | The version you have, Check for updates, and a button that adds the update source to AltStore or SideStore. |
@@ -328,10 +339,10 @@ The app removes as much delay as the TV side can:
 - **AirPlay "video" mode** (an app handing the TV a video link) isn't offered,
   so apps fall back to mirroring the screen.
 - Only one device mirrors at a time. A new one takes over the screen.
-- **iPad app:** it only receives while it's open on screen (iOS pauses apps
-  in the background), and like the TV app it hasn't been tried on real
-  hardware yet. CI builds it, and its tests decode real H.264 and HEVC frames
-  in the simulator.
+- **iPad app:** it keeps receiving in the background by keeping its audio
+  output running, so anything that takes the audio away for good (a long
+  phone call) can still pause it until you come back. CI builds it, and its
+  tests decode real H.264 and HEVC frames in the simulator.
 
 ## How it works
 

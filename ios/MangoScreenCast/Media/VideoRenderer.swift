@@ -14,6 +14,10 @@ import QuartzCore
 /// error, or iOS interrupting it), it's flushed and fed those frames again
 /// without showing them, and the picture comes back at once instead of
 /// staying frozen until the next keyframe.
+///
+/// In the background iOS stops decoding (unless the picture is in Picture in
+/// Picture). Frames are then only kept, more of them than usual, and played
+/// through to the latest one, unseen, when the app comes back.
 final class VideoRenderer {
     struct Stats {
         var width = 0
@@ -59,6 +63,9 @@ final class VideoRenderer {
 
     private static let maxGopBytes = 64 << 20
     private static let maxGopFrames = 600
+    /// In the background, where nothing is decoded until the app returns.
+    private static let maxBackgroundGopBytes = 128 << 20
+    private static let maxBackgroundGopFrames = 3600
 
     private let lock = NSLock()
     private var active = false
@@ -70,6 +77,9 @@ final class VideoRenderer {
     private var gopBytes = 0
     /// False once the frames since the last keyframe outgrew the cache.
     private var gopComplete = false
+    private var inBackground = false
+    /// Frames kept in the background but not decoded yet.
+    private var behind = false
 
     private var size = (width: 0, height: 0)
     private var frames = 0
@@ -132,11 +142,33 @@ final class VideoRenderer {
         windowFrames += 1
         keep(stored)
 
-        if rendererFailed {
+        if inBackground && (behind || rendererFailed || requiresFlush) {
+            // iOS isn't decoding for the app now: catch up when it's back.
+            behind = true
+        } else if rendererFailed {
             recover()
         } else if let sample = makeSample(stored, display: true) {
             enqueue(sample)
         }
+    }
+
+    /// The app went to the background, or came back. Coming back, frames
+    /// that came in meanwhile are decoded through to the latest one.
+    func setInBackground(_ background: Bool) {
+        lock.lock()
+        defer { lock.unlock() }
+        guard background != inBackground else { return }
+        inBackground = background
+        guard !background, active, behind || rendererFailed || requiresFlush else { return }
+        behind = false
+        flushRenderer(removeImage: false)
+        guard gopComplete, !gop.isEmpty else {
+            log?("back in the foreground; the picture returns with the next keyframe")
+            waitingForKeyframe = true
+            return
+        }
+        log?("back in the foreground; catching up \(gop.count) frames")
+        replayGop()
     }
 
     func stats() -> Stats {
@@ -156,6 +188,7 @@ final class VideoRenderer {
         gop = []
         gopBytes = 0
         gopComplete = false
+        behind = false
         size = (0, 0)
         frames = 0
         dropped = 0
@@ -187,7 +220,9 @@ final class VideoRenderer {
             gopComplete = true
         }
         guard gopComplete else { return }
-        if gop.count >= Self.maxGopFrames || gopBytes + stored.length > Self.maxGopBytes {
+        let maxFrames = inBackground ? Self.maxBackgroundGopFrames : Self.maxGopFrames
+        let maxBytes = inBackground ? Self.maxBackgroundGopBytes : Self.maxGopBytes
+        if gop.count >= maxFrames || gopBytes + stored.length > maxBytes {
             gop = []
             gopBytes = 0
             gopComplete = false
@@ -230,6 +265,11 @@ final class VideoRenderer {
             return
         }
         log?("display failed\(reason); restarting from the last keyframe (\(gop.count) frames)")
+        replayGop()
+    }
+
+    /// Decodes the frames since the last keyframe, showing only the latest.
+    private func replayGop() {
         for (index, stored) in gop.enumerated() {
             if let sample = makeSample(stored, display: index == gop.count - 1) {
                 enqueue(sample)
@@ -340,6 +380,12 @@ final class VideoRenderer {
     private var rendererError: Error? {
         if #available(iOS 17.0, *) { return layer.sampleBufferRenderer.error }
         return layer.error
+    }
+
+    /// iOS interrupted decoding (the app went to the background).
+    private var requiresFlush: Bool {
+        if #available(iOS 17.0, *) { return layer.sampleBufferRenderer.requiresFlushToResumeDecoding }
+        return layer.requiresFlushToResumeDecoding
     }
 
     private func enqueue(_ sample: CMSampleBuffer) {

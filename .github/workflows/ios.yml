@@ -25,14 +25,15 @@ on:
 permissions:
   contents: write
 
-concurrency:
-  group: ios-${{ github.ref }}
-  cancel-in-progress: false
-
 jobs:
   build:
     runs-on: macos-15
     timeout-minutes: 45
+    # One build per branch at a time, so releases come out in order; the
+    # screenshots of an earlier push never hold up the next build.
+    concurrency:
+      group: ios-build-${{ github.ref }}
+      cancel-in-progress: false
     steps:
       - uses: actions/checkout@v4
         with:
@@ -154,6 +155,10 @@ jobs:
   screenshots:
     runs-on: macos-15
     timeout-minutes: 80
+    # Only the latest push's screenshots matter.
+    concurrency:
+      group: ios-screenshots-${{ github.ref }}
+      cancel-in-progress: true
     steps:
       - uses: actions/checkout@v4
         with:
