@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="com.mangoscreencast.tv.ui.HomeLayoutTest" tests="3" skipped="0" failures="0" errors="0" timestamp="2026-10-25T03:49:05.797Z" hostname="vm" time="5.32">
-  <properties/>
-  <testcase name="failedUpdateCheckAndTwoLineStatus" classname="com.mangoscreencast.tv.ui.HomeLayoutTest" time="4.753"/>
-  <testcase name="ready" classname="com.mangoscreencast.tv.ui.HomeLayoutTest" time="0.278"/>
-  <testcase name="readyWithUpdateButton" classname="com.mangoscreencast.tv.ui.HomeLayoutTest" time="0.287"/>
-  <system-out><![CDATA[]]></system-out>
-  <system-err><![CDATA[]]></system-err>
-</testsuite>
