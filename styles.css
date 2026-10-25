@@ -134,7 +134,7 @@ body {
 .glass {
   left: 154px;
   top: 733.3px;
-  width: 1801.6px;
+  width: 2252px;
   height: 274.4px;
   isolation: isolate;
 }
@@ -158,8 +158,8 @@ body {
   background: rgba(255, 255, 255, 0.12);
 }
 
-.glass::before { left: 560.8px; }
-.glass::after  { left: 1165.6px; }
+.glass::before { left: 701px; }
+.glass::after  { left: 1457px; }
 
 .step {
   position: absolute;
@@ -167,9 +167,9 @@ body {
   height: 160px;
 }
 
-.step--connect { left: 6.4px; }
-.step--detect  { left: 612.8px; }
-.step--cast    { left: 1214.4px; }
+.step--connect { left: 8px; }
+.step--detect  { left: 766px; }
+.step--cast    { left: 1518px; }
 
 .step__tile {
   position: absolute;
