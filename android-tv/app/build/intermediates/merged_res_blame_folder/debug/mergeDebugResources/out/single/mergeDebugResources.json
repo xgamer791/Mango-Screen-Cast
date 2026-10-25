@@ -1,0 +1,70 @@
+[
+    {
+        "merged": "com.mangoscreencast.tv.app-debug-4:/drawable_row_bg.xml.flat",
+        "source": "com.mangoscreencast.tv.app-main-6:/drawable/row_bg.xml"
+    },
+    {
+        "merged": "com.mangoscreencast.tv.app-debug-4:/drawable-nodpi_logo.png.flat",
+        "source": "com.mangoscreencast.tv.app-main-6:/drawable-nodpi/logo.png"
+    },
+    {
+        "merged": "com.mangoscreencast.tv.app-debug-4:/mipmap-hdpi_ic_launcher.png.flat",
+        "source": "com.mangoscreencast.tv.app-main-6:/mipmap-hdpi/ic_launcher.png"
+    },
+    {
+        "merged": "com.mangoscreencast.tv.app-debug-4:/layout_activity_settings.xml.flat",
+        "source": "com.mangoscreencast.tv.app-main-6:/layout/activity_settings.xml"
+    },
+    {
+        "merged": "com.mangoscreencast.tv.app-debug-4:/drawable_dot.xml.flat",
+        "source": "com.mangoscreencast.tv.app-main-6:/drawable/dot.xml"
+    },
+    {
+        "merged": "com.mangoscreencast.tv.app-debug-4:/mipmap-xxxhdpi_ic_launcher.png.flat",
+        "source": "com.mangoscreencast.tv.app-main-6:/mipmap-xxxhdpi/ic_launcher.png"
+    },
+    {
+        "merged": "com.mangoscreencast.tv.app-debug-4:/drawable_overlay_bg.xml.flat",
+        "source": "com.mangoscreencast.tv.app-main-6:/drawable/overlay_bg.xml"
+    },
+    {
+        "merged": "com.mangoscreencast.tv.app-debug-4:/drawable-xhdpi_banner.png.flat",
+        "source": "com.mangoscreencast.tv.app-main-6:/drawable-xhdpi/banner.png"
+    },
+    {
+        "merged": "com.mangoscreencast.tv.app-debug-4:/mipmap-xxhdpi_ic_launcher.png.flat",
+        "source": "com.mangoscreencast.tv.app-main-6:/mipmap-xxhdpi/ic_launcher.png"
+    },
+    {
+        "merged": "com.mangoscreencast.tv.app-debug-4:/drawable_card_bg.xml.flat",
+        "source": "com.mangoscreencast.tv.app-main-6:/drawable/card_bg.xml"
+    },
+    {
+        "merged": "com.mangoscreencast.tv.app-debug-4:/mipmap-xhdpi_ic_launcher.png.flat",
+        "source": "com.mangoscreencast.tv.app-main-6:/mipmap-xhdpi/ic_launcher.png"
+    },
+    {
+        "merged": "com.mangoscreencast.tv.app-debug-4:/layout_item_setting.xml.flat",
+        "source": "com.mangoscreencast.tv.app-main-6:/layout/item_setting.xml"
+    },
+    {
+        "merged": "com.mangoscreencast.tv.app-debug-4:/layout_activity_home.xml.flat",
+        "source": "com.mangoscreencast.tv.app-main-6:/layout/activity_home.xml"
+    },
+    {
+        "merged": "com.mangoscreencast.tv.app-debug-4:/drawable_ic_cast.xml.flat",
+        "source": "com.mangoscreencast.tv.app-main-6:/drawable/ic_cast.xml"
+    },
+    {
+        "merged": "com.mangoscreencast.tv.app-debug-4:/mipmap-mdpi_ic_launcher.png.flat",
+        "source": "com.mangoscreencast.tv.app-main-6:/mipmap-mdpi/ic_launcher.png"
+    },
+    {
+        "merged": "com.mangoscreencast.tv.app-debug-4:/drawable_button_bg.xml.flat",
+        "source": "com.mangoscreencast.tv.app-main-6:/drawable/button_bg.xml"
+    },
+    {
+        "merged": "com.mangoscreencast.tv.app-debug-4:/layout_activity_mirror.xml.flat",
+        "source": "com.mangoscreencast.tv.app-main-6:/layout/activity_mirror.xml"
+    }
+]

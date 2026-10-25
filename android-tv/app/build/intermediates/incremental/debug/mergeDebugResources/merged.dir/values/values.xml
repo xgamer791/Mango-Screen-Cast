@@ -1,0 +1,351 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <attr format="reference" name="nestedScrollViewStyle"/>
+    <color name="androidx_core_ripple_material_light">#1f000000</color>
+    <color name="androidx_core_secondary_text_default_material_light">#8a000000</color>
+    <color name="background">#0E0D12</color>
+    <color name="call_notification_answer_color">#1d873b</color>
+    <color name="call_notification_decline_color">#d93025</color>
+    <color name="mango">#FFA41B</color>
+    <color name="mango_deep">#FF6A2B</color>
+    <color name="notification_action_color_filter">#ffffffff</color>
+    <color name="notification_icon_bg_color">#ff9e9e9e</color>
+    <color name="overlay">#B3000000</color>
+    <color name="status_error">#FF5C5C</color>
+    <color name="status_ready">#4CD38A</color>
+    <color name="status_waiting">#FFB547</color>
+    <color name="surface">#1B1922</color>
+    <color name="surface_focused">#2C2836</color>
+    <color name="text_primary">#F4F2F7</color>
+    <color name="text_secondary">#A9A4B5</color>
+    <dimen name="compat_button_inset_horizontal_material">4dp</dimen>
+    <dimen name="compat_button_inset_vertical_material">6dp</dimen>
+    <dimen name="compat_button_padding_horizontal_material">8dp</dimen>
+    <dimen name="compat_button_padding_vertical_material">4dp</dimen>
+    <dimen name="compat_control_corner_material">2dp</dimen>
+    <dimen name="compat_notification_large_icon_max_height">320dp</dimen>
+    <dimen name="compat_notification_large_icon_max_width">320dp</dimen>
+    <dimen name="notification_action_icon_size">32dp</dimen>
+    <dimen name="notification_action_text_size">13sp</dimen>
+    <dimen name="notification_big_circle_margin">12dp</dimen>
+    <dimen name="notification_content_margin_start">8dp</dimen>
+    <dimen name="notification_large_icon_height">64dp</dimen>
+    <dimen name="notification_large_icon_width">64dp</dimen>
+    <dimen name="notification_main_column_padding_top">10dp</dimen>
+    <dimen name="notification_media_narrow_margin">@dimen/notification_content_margin_start</dimen>
+    <dimen name="notification_right_icon_size">16dp</dimen>
+    <dimen name="notification_right_side_padding_top">4dp</dimen>
+    <dimen name="notification_small_icon_background_padding">3dp</dimen>
+    <dimen name="notification_small_icon_size_as_large">24dp</dimen>
+    <dimen name="notification_subtext_size">13sp</dimen>
+    <dimen name="notification_top_pad">10dp</dimen>
+    <dimen name="notification_top_pad_large_text">5dp</dimen>
+    <drawable name="notification_template_icon_bg">#3333B5E5</drawable>
+    <drawable name="notification_template_icon_low_bg">#0cffffff</drawable>
+    <item name="accessibility_action_clickable_span" type="id"/>
+    <item name="accessibility_custom_action_0" type="id"/>
+    <item name="accessibility_custom_action_1" type="id"/>
+    <item name="accessibility_custom_action_10" type="id"/>
+    <item name="accessibility_custom_action_11" type="id"/>
+    <item name="accessibility_custom_action_12" type="id"/>
+    <item name="accessibility_custom_action_13" type="id"/>
+    <item name="accessibility_custom_action_14" type="id"/>
+    <item name="accessibility_custom_action_15" type="id"/>
+    <item name="accessibility_custom_action_16" type="id"/>
+    <item name="accessibility_custom_action_17" type="id"/>
+    <item name="accessibility_custom_action_18" type="id"/>
+    <item name="accessibility_custom_action_19" type="id"/>
+    <item name="accessibility_custom_action_2" type="id"/>
+    <item name="accessibility_custom_action_20" type="id"/>
+    <item name="accessibility_custom_action_21" type="id"/>
+    <item name="accessibility_custom_action_22" type="id"/>
+    <item name="accessibility_custom_action_23" type="id"/>
+    <item name="accessibility_custom_action_24" type="id"/>
+    <item name="accessibility_custom_action_25" type="id"/>
+    <item name="accessibility_custom_action_26" type="id"/>
+    <item name="accessibility_custom_action_27" type="id"/>
+    <item name="accessibility_custom_action_28" type="id"/>
+    <item name="accessibility_custom_action_29" type="id"/>
+    <item name="accessibility_custom_action_3" type="id"/>
+    <item name="accessibility_custom_action_30" type="id"/>
+    <item name="accessibility_custom_action_31" type="id"/>
+    <item name="accessibility_custom_action_4" type="id"/>
+    <item name="accessibility_custom_action_5" type="id"/>
+    <item name="accessibility_custom_action_6" type="id"/>
+    <item name="accessibility_custom_action_7" type="id"/>
+    <item name="accessibility_custom_action_8" type="id"/>
+    <item name="accessibility_custom_action_9" type="id"/>
+    <item name="line1" type="id"/>
+    <item name="line3" type="id"/>
+    <item name="tag_accessibility_actions" type="id"/>
+    <item name="tag_accessibility_clickable_spans" type="id"/>
+    <item name="tag_accessibility_heading" type="id"/>
+    <item name="tag_accessibility_pane_title" type="id"/>
+    <item name="tag_on_apply_window_listener" type="id"/>
+    <item name="tag_on_receive_content_listener" type="id"/>
+    <item name="tag_on_receive_content_mime_types" type="id"/>
+    <item name="tag_screen_reader_focusable" type="id"/>
+    <item name="tag_state_description" type="id"/>
+    <item name="tag_transition_group" type="id"/>
+    <item name="tag_unhandled_key_event_manager" type="id"/>
+    <item name="tag_unhandled_key_listeners" type="id"/>
+    <item name="tag_window_insets_animation_callback" type="id"/>
+    <item name="text" type="id"/>
+    <item name="text2" type="id"/>
+    <item name="title" type="id"/>
+    <id name="view_tree_lifecycle_owner"/>
+    <integer name="status_bar_notification_info_maxnum">999</integer>
+    <string name="a_device">a device</string>
+    <string name="about">Mango Screen Cast For macOS/iOS %1$s. Built on UxPlay (GPL-3.0), libplist (LGPL-2.1) and OpenSSL. AirPlay is a trademark of Apple Inc.</string>
+    <string name="androidx_startup" translatable="false">androidx.startup</string>
+    <string name="app_name">Mango Screen Cast For macOS/iOS</string>
+    <string name="back_again">Press Back again to stop mirroring</string>
+    <string name="background_notice">“%1$s” is visible to Macs, iPhones and iPads</string>
+    <string name="brand_name">Mango Screen Cast</string>
+    <string name="brand_platform">For macOS/iOS</string>
+    <string name="call_notification_answer_action">Answer</string>
+    <string name="call_notification_answer_video_action">Video</string>
+    <string name="call_notification_decline_action">Decline</string>
+    <string name="call_notification_hang_up_action">Hang Up</string>
+    <string name="call_notification_incoming_text">Incoming call</string>
+    <string name="call_notification_ongoing_text">Ongoing call</string>
+    <string name="call_notification_screening_text">Screening an incoming call</string>
+    <string name="capability">Up to %1$s · %2$d × %3$d · %4$d fps · %5$s   ·   TV screen %6$d × %7$d</string>
+    <string name="checking_updates">Checking for updates…</string>
+    <string name="fill_hint">Black bars? Press Up to fill the screen</string>
+    <string name="fill_off">Whole picture. Up or Down to fill the screen.</string>
+    <string name="fill_on">Filling the screen (sides cut off). Up or Down to go back.</string>
+    <string name="fill_value">Fill the screen</string>
+    <string name="fit_value">Fit whole picture</string>
+    <string name="fps_value">%1$d fps</string>
+    <string name="ios_steps">Open Control Center, tap Screen Mirroring, then “%1$s”.</string>
+    <string name="ios_title">iPhone and iPad</string>
+    <string name="mac_steps">Control Center → Screen Mirroring → “%1$s”. Choose Use As Separate Display to extend instead of mirror. Not in Control Center? System Settings → Displays → Add Display.</string>
+    <string name="mac_title">Mac</string>
+    <string name="mirroring_banner">Mirroring %1$s · press Back twice to stop</string>
+    <string name="off">Off</string>
+    <string name="on">On</string>
+    <string name="overlay_later">Not now</string>
+    <string name="overlay_message">To start mirroring while another app is open, Android needs Mango Screen Cast For macOS/iOS to have “Display over other apps” permission. If this TV has no settings screen for it, run this once from your Mac:\n\n%1$s</string>
+    <string name="overlay_open">Open settings</string>
+    <string name="overlay_title">Allow the player to open by itself?</string>
+    <string name="pacing_balanced">Balanced</string>
+    <string name="pacing_balanced_hint">Shows each frame right away, one per screen refresh. Best for most networks.</string>
+    <string name="pacing_fastest">Fastest</string>
+    <string name="pacing_fastest_hint">Lowest delay. Motion can stutter if Wi-Fi delivers frames unevenly.</string>
+    <string name="pacing_smoothest">Smoothest</string>
+    <string name="pacing_smoothest_hint">Holds one frame (about 17 ms) to smooth out a busy Wi-Fi network.</string>
+    <string name="paused">Paused on the other device</string>
+    <string name="resolution_auto">Auto</string>
+    <string name="resolution_auto_value">Auto (%1$s)</string>
+    <string name="setting_background">Stay visible after closing the app</string>
+    <string name="setting_background_hint">Keeps the TV in Screen Mirroring lists while you use other apps</string>
+    <string name="setting_background_needs_overlay">Visible, but Android won’t let the player open by itself while another app is on screen. Run this once from your Mac: %1$s</string>
+    <string name="setting_check_updates">Check for updates now</string>
+    <string name="setting_check_updates_hint">Current version. New versions come from the project’s GitHub releases.</string>
+    <string name="setting_diagnostics">Diagnostics</string>
+    <string name="setting_diagnostics_hint">What the TV detected and offers, plus the recent AirPlay log. Useful when reporting a problem.</string>
+    <string name="setting_fill">iPhone in landscape</string>
+    <string name="setting_fill_hint">iPhones are wider than a TV, so the whole picture leaves black bars above and below. Fill zooms in to cover the TV and cuts off the left and right edges; a 16:9 video then fills the TV exactly. Mac screens are never cropped. While mirroring, press Up or Down to switch.</string>
+    <string name="setting_frame_rate">Frame rate</string>
+    <string name="setting_frame_rate_hint">The most frames per second Macs and iPhones may send. 120 needs a 120 Hz TV screen, and Apple devices decide what they actually send: turn on Show stats to see it.</string>
+    <string name="setting_name">TV name</string>
+    <string name="setting_name_hint">What Macs and iPhones show in Screen Mirroring</string>
+    <string name="setting_pacing">Frame pacing</string>
+    <string name="setting_resolution">Resolution</string>
+    <string name="setting_resolution_hint">Apple devices size their picture to this: 720p unless you pick another. Auto offers the most the TV can decode, up to 4K.</string>
+    <string name="setting_sound">Sound</string>
+    <string name="setting_sound_hint">Play the mirrored device’s sound on the TV</string>
+    <string name="setting_stats">Show stats while mirroring</string>
+    <string name="setting_stats_hint">You can also press OK on the remote while mirroring</string>
+    <string name="setting_updates">Updates</string>
+    <string name="setting_updates_hint">Automatic installs new versions while nothing is mirroring. Ask first shows an Update button on the home screen.</string>
+    <string name="settings">Settings</string>
+    <string name="stats_format">%1$d × %2$d %3$s · %4$.0f fps · %5$.1f Mbit/s\ndecode %6$.1f ms · dropped %7$d · restarts %8$d\nTV offers %9$d × %10$d · pacing: %11$s</string>
+    <string name="status_bar_notification_info_overflow">999+</string>
+    <string name="status_connected">%1$s is connected</string>
+    <string name="status_connected_detail">Start Screen Mirroring on it to show its screen here.</string>
+    <string name="status_failed">AirPlay isn’t running</string>
+    <string name="status_mirroring">Mirroring %1$s</string>
+    <string name="status_ready">Ready to mirror</string>
+    <string name="status_ready_detail">Pick “%1$s” in Screen Mirroring on your Mac, iPhone or iPad.</string>
+    <string name="status_starting">Starting…</string>
+    <string name="update_allow">Allow</string>
+    <string name="update_available">Version %1$s is available</string>
+    <string name="update_downloading">Downloading update… %1$d%%</string>
+    <string name="update_installing">Installing update… the app restarts by itself</string>
+    <string name="update_needs_permission">To update itself, the app needs “Install unknown apps” allowed</string>
+    <string name="update_now">Update</string>
+    <string name="update_press_ok">%1$s Press OK to install it.</string>
+    <string name="update_press_ok_retry">%1$s Press OK to try again.</string>
+    <string name="update_retry">Try again</string>
+    <string name="update_up_to_date">You have the latest version.</string>
+    <string name="updates_ask">Ask first</string>
+    <string name="updates_automatic">Automatic</string>
+    <string name="version_label">Version %1$s</string>
+    <string name="version_up_to_date">Version %1$s · up to date</string>
+    <string name="view">View</string>
+    <style name="Mango.Button" parent="@android:style/Widget.DeviceDefault.Button.Borderless">
+        <item name="android:background">@drawable/button_bg</item>
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:textSize">20sp</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:paddingStart">28dp</item>
+        <item name="android:paddingEnd">28dp</item>
+        <item name="android:minHeight">56dp</item>
+        <item name="android:focusable">true</item>
+    </style>
+    <style name="Mango.Card" parent="">
+        <item name="android:background">@drawable/card_bg</item>
+        <item name="android:orientation">vertical</item>
+        <item name="android:padding">24dp</item>
+    </style>
+    <style name="Mango.CardBody" parent="">
+        <item name="android:layout_marginTop">8dp</item>
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:textSize">20sp</item>
+        <item name="android:lineSpacingMultiplier">1.15</item>
+    </style>
+    <style name="Mango.CardTitle" parent="">
+        <item name="android:textColor">@color/mango</item>
+        <item name="android:textSize">24sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+    <style name="TextAppearance.Compat.Notification" parent="@android:style/TextAppearance.StatusBar.EventContent"/>
+    <style name="TextAppearance.Compat.Notification.Info">
+        <item name="android:textSize">12sp</item>
+        <item name="android:textColor">?android:attr/textColorSecondary</item>
+    </style>
+    <style name="TextAppearance.Compat.Notification.Line2" parent="TextAppearance.Compat.Notification.Info"/>
+    <style name="TextAppearance.Compat.Notification.Time">
+        <item name="android:textSize">12sp</item>
+        <item name="android:textColor">?android:attr/textColorSecondary</item>
+    </style>
+    <style name="TextAppearance.Compat.Notification.Title" parent="@android:style/TextAppearance.StatusBar.EventContent.Title"/>
+    <style name="Theme.Mango" parent="@android:style/Theme.DeviceDefault.NoActionBar">
+        <item name="android:windowBackground">@color/background</item>
+        <item name="android:colorAccent">@color/mango</item>
+        <item name="android:colorPrimary">@color/background</item>
+        <item name="android:textColorPrimary">@color/text_primary</item>
+        <item name="android:textColorSecondary">@color/text_secondary</item>
+        <item name="android:statusBarColor">@color/background</item>
+        <item name="android:navigationBarColor">@color/background</item>
+    </style>
+    <style name="Theme.Mango.Fullscreen">
+        <item name="android:windowBackground">@android:color/black</item>
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowContentOverlay">@null</item>
+    </style>
+    <style name="Widget.Compat.NotificationActionContainer" parent=""/>
+    <style name="Widget.Compat.NotificationActionText" parent=""/>
+    <declare-styleable name="Capability">
+        
+        <attr format="reference" name="queryPatterns"/>
+        
+        <attr format="boolean" name="shortcutMatchRequired"/>
+    </declare-styleable>
+    <declare-styleable name="ColorStateListItem">
+        
+        <attr name="android:color"/>
+        
+        <attr format="float" name="alpha"/>
+        <attr name="android:alpha"/>
+        
+        <attr format="float" name="lStar"/>
+        <attr name="android:lStar"/>
+    </declare-styleable>
+    <declare-styleable name="FontFamily">
+        
+        <attr format="string" name="fontProviderAuthority"/>
+        
+        <attr format="string" name="fontProviderPackage"/>
+        
+        <attr format="string" name="fontProviderQuery"/>
+        
+        <attr format="reference" name="fontProviderCerts"/>
+        
+        <attr name="fontProviderFetchStrategy">
+            <!-- The blocking font fetch works as follows.
+              First, check the local cache, then if the requested font is not cached, request the
+              font from the provider and wait until it is finished.  You can change the length of
+              the timeout by modifying fontProviderFetchTimeout.  If the timeout happens, the
+              default typeface will be used instead. -->
+            <enum name="blocking" value="0"/>
+            <!-- The async font fetch works as follows.
+              First, check the local cache, then if the requeted font is not cached, trigger a
+              request the font and continue with layout inflation. Once the font fetch succeeds, the
+              target text view will be refreshed with the downloaded font data. The
+              fontProviderFetchTimeout will be ignored if async loading is specified. -->
+            <enum name="async" value="1"/>
+        </attr>
+        
+        <attr format="integer" name="fontProviderFetchTimeout">
+            <!-- A special value for the timeout. In this case, the blocking font fetching will not
+              timeout and wait until a reply is received from the font provider. -->
+            <enum name="forever" value="-1"/>
+        </attr>
+        
+        <attr format="string" name="fontProviderSystemFontFamily"/>
+    </declare-styleable>
+    <declare-styleable name="FontFamilyFont">
+        
+        <attr name="fontStyle">
+            <enum name="normal" value="0"/>
+            <enum name="italic" value="1"/>
+        </attr>
+        
+        <attr format="reference" name="font"/>
+        
+        <attr format="integer" name="fontWeight"/>
+        
+        <attr format="string" name="fontVariationSettings"/>
+        
+        <attr format="integer" name="ttcIndex"/>
+        
+        <attr name="android:fontStyle"/>
+        <attr name="android:font"/>
+        <attr name="android:fontWeight"/>
+        <attr name="android:fontVariationSettings"/>
+        <attr name="android:ttcIndex"/>
+    </declare-styleable>
+    <declare-styleable name="GradientColor">
+        
+        <attr name="android:startColor"/>
+        
+        <attr name="android:centerColor"/>
+        
+        <attr name="android:endColor"/>
+        
+        <attr name="android:type"/>
+
+        
+        
+        <attr name="android:gradientRadius"/>
+
+        
+        
+        <attr name="android:centerX"/>
+        
+        <attr name="android:centerY"/>
+
+        
+        
+        <attr name="android:startX"/>
+        
+        <attr name="android:startY"/>
+        
+        <attr name="android:endX"/>
+        
+        <attr name="android:endY"/>
+
+        
+        <attr name="android:tileMode"/>
+    </declare-styleable>
+    <declare-styleable name="GradientColorItem">
+        
+        <attr name="android:offset"/>
+        
+        <attr name="android:color"/>
+    </declare-styleable>
+</resources>

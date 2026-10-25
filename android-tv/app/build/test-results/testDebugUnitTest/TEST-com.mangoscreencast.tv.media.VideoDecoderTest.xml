@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="com.mangoscreencast.tv.media.VideoDecoderTest" tests="6" skipped="0" failures="0" errors="0" timestamp="2026-10-25T03:49:03.665Z" hostname="vm" time="1.824">
+  <properties/>
+  <testcase name="startsWhenThePlayerScreenArrivesLater" classname="com.mangoscreencast.tv.media.VideoDecoderTest" time="0.12"/>
+  <testcase name="slowDecoderGetsTheKeyframeFirstAndTheNetworkNeverWaits" classname="com.mangoscreencast.tv.media.VideoDecoderTest" time="1.523"/>
+  <testcase name="sameParameterSetsDoNotRestartTheDecoder" classname="com.mangoscreencast.tv.media.VideoDecoderTest" time="0.113"/>
+  <testcase name="decoderCrashRestartsFromTheLastKeyframe" classname="com.mangoscreencast.tv.media.VideoDecoderTest" time="0.023"/>
+  <testcase name="surfaceGoingAwayKeepsTheDecoderRunning" classname="com.mangoscreencast.tv.media.VideoDecoderTest" time="0.021"/>
+  <testcase name="rotationBuildsANewDecoderStartingAtTheNewKeyframe" classname="com.mangoscreencast.tv.media.VideoDecoderTest" time="0.022"/>
+  <system-out><![CDATA[]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>
