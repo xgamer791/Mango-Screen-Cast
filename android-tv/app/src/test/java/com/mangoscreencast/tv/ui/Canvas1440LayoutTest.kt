@@ -56,6 +56,10 @@ class Canvas1440LayoutTest {
         val steps = activity.findViewById<View>(R.id.steps)
         assertEquals(120, steps.left)
         assertEquals(510, steps.top)
+        // As wide as the app row under it, edge to edge.
+        val apps = activity.findViewById<View>(R.id.apps_row)
+        assertEquals(apps.left, steps.left)
+        assertEquals(apps.right, steps.right)
         assertEquals(Size(2560, 1440), frame.requestedSize)
         assertNotNull(frame.findSurfaceView())
     }

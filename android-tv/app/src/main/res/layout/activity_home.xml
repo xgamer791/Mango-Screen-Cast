@@ -88,10 +88,10 @@
             android:src="@drawable/ic_cast_badge" />
     </FrameLayout>
 
-    <!-- The glass strip (Mango Liquid Glass): three equal columns, each with its icon and text centred. -->
+    <!-- The glass strip (Mango Liquid Glass), as wide as the app row under it: three equal columns, each with its icon and text centred. -->
     <com.mangoscreencast.tv.ui.LiquidGlassLayout
         android:id="@+id/steps"
-        android:layout_width="672dp"
+        android:layout_width="840dp"
         android:layout_height="89.6dp"
         android:layout_marginStart="60dp"
         android:layout_marginTop="255.2dp"
