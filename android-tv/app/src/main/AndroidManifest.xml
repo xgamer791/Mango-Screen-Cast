@@ -22,6 +22,13 @@
         <intent>
             <action android:name="android.settings.action.MANAGE_OVERLAY_PERMISSION" />
         </intent>
+        <!-- So Settings can find the TV's own settings app and open that dashboard
+             directly. On Android 11 and later, other apps that handle this action
+             are hidden unless they are declared here. -->
+        <intent>
+            <action android:name="android.settings.SETTINGS" />
+            <category android:name="android.intent.category.DEFAULT" />
+        </intent>
         <!-- The home screen's streaming apps (apps/StreamingApps.kt): Android 11 and
              later hide other apps, their banners and their launch intents otherwise. -->
         <package android:name="com.netflix.ninja" />
@@ -78,15 +85,29 @@
             android:theme="@style/Theme.Mango.Fullscreen"
             android:configChanges="keyboard|keyboardHidden|navigation|screenSize|screenLayout|smallestScreenSize|orientation|uiMode|density" />
 
-        <!-- The gear on the Hisense remote sends android.settings.SETTINGS, which
-             stock TvSettings claims at priority 1. Same priority so Android can
-             offer Mango once; DEFAULT is required for that implicit intent.
-             LEANBACK_SETTINGS marks this as the TV settings screen and does not
-             add a second launcher tile (that needs MAIN + LEANBACK_LAUNCHER). -->
+        <!--
+            The remote's gear. On this Hisense (Google TV) the gear goes through
+            Hisense's key handling (com.hisense.KEY_EVENT) to the system, which
+            looks up activities for MAIN + LEANBACK_SETTINGS, as TvSettings'
+            MainSettings declares them (at priority 3, with no DEFAULT), and
+            opens what it finds by component. So this filter has MAIN and
+            LEANBACK_SETTINGS. android.settings.SETTINGS with DEFAULT is what
+            `am start -a android.settings.SETTINGS` and other apps start.
+
+            The priority is a request only: Android sets an intent filter's
+            priority to 0 for an app that isn't privileged, so stock TvSettings
+            (privileged, priority 3) comes first while it's enabled. For the
+            gear to open Mango Settings, TvSettings has to stay off
+            (adb shell pm disable-user com.android.tv.settings), which
+            leaves Mango the only MAIN + LEANBACK_SETTINGS handler. Settings'
+            last row opens the TV's own settings by component when they're on.
+        -->
         <activity
             android:name=".ui.SettingsActivity"
-            android:exported="true">
-            <intent-filter android:priority="1">
+            android:exported="true"
+            android:launchMode="singleTop">
+            <intent-filter android:label="@string/settings_gear_label" android:priority="1000">
+                <action android:name="android.intent.action.MAIN" />
                 <action android:name="android.settings.SETTINGS" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.LEANBACK_SETTINGS" />
