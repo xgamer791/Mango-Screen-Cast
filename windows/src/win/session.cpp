@@ -15,6 +15,7 @@
 #include "core/stream_math.h"
 #include "d3d.h"
 #include "discovery.h"
+#include "duplication.h"
 #include "encoder.h"
 #include "log.h"
 #include "monitors.h"
@@ -30,6 +31,7 @@ constexpr int kWelcomeTimeoutMs = 10000;
 constexpr int kNameSearchMs = 3000;
 constexpr int64_t kRepeatUs = 100000;        // a still screen is sent again 10 times a second
 constexpr int64_t kKeyframeWaitUs = 1500000;  // an encoder that ignores a keyframe request is restarted
+constexpr int64_t kStallUs = 2000000;         // an encoder that stops for this long is restarted
 const char kDash[] = "\xE2\x80\x94";         // em dash
 const char kTimes[] = "\xC3\x97";            // multiplication sign
 
@@ -129,8 +131,9 @@ namespace {
 class VideoSender {
 public:
     VideoSender(Connection& conn, Codec codec, Size maxSize, int fps, double bitrateOverride, std::string mode,
-                int64_t originUs)
-        : conn_(conn),
+                std::string captureMode, int64_t originUs)
+        : captureMode_(std::move(captureMode)),
+          conn_(conn),
           codec_(codec),
           maxSize_(maxSize),
           fps_(fps),
@@ -142,6 +145,7 @@ public:
     ~VideoSender() {
         encoder_.close();
         capture_.stop();
+        duplication_.stop();
     }
 
     bool setup(HMONITOR monitor, std::string* error) {
@@ -158,19 +162,25 @@ public:
         LOG("Graphics: %s%s", d3d_.adapterName.c_str(), d3d_.software ? " (drawn on the CPU)" : "");
         if (!converter_.init(d3d_.device.Get(), error)) return false;
         canRenderNv12_ = Nv12Converter::canRenderNv12(d3d_.device.Get());
-        if (!capture_.start(d3d_.device.Get(), monitor, error)) return false;
-        return true;
+        std::string why;
+        useDuplication_ = captureMode_ == "duplication";
+        if (captureMode_ == "auto" && !ScreenCapture::supported(&why)) {
+            LOG("%s; using Desktop Duplication", why.c_str());
+            useDuplication_ = true;
+        }
+        if (useDuplication_) return duplication_.start(d3d_.device.Get(), monitor, error);
+        return capture_.start(d3d_.device.Get(), monitor, error);
     }
 
     void requestKeyframe() { keyRequested_ = true; }
     Size size() const { return size_; }
     std::string encoderName() const { return encoder_.name() + (encoder_.hardware() ? "" : " (software)"); }
-    bool captureClosed() const { return capture_.closed(); }
+    bool captureClosed() const { return useDuplication_ ? duplication_.closed() : capture_.closed(); }
 
     // One tick of the frame clock. False (and why) when it can't go on.
     bool tick(int64_t nowUs, std::string* error) {
         ScreenCapture::Frame frame;
-        if (capture_.latest(frame)) {
+        if (useDuplication_ ? duplication_.latest(frame) : capture_.latest(frame)) {
             Size out = fitInside(frame.content, maxSize_);
             if (out != size_ || !encoder_.isOpen()) {
                 if (!openEncoder(out, error)) return false;
@@ -188,11 +198,13 @@ public:
         if (!havePicture_ || !encoder_.isOpen()) return true;
 
         std::string why;
-        if (encoder_.failed(&why)) return recover(why, error);
+        if (encoder_.failed(&why)) return recover(why, error, true);
         if (keyAskedUs_ >= 0 && lastKeyOutUs_.load() < keyAskedUs_ && nowUs - keyAskedUs_ > kKeyframeWaitUs) {
-            if (!recover("it didn't make a keyframe when asked", error)) return false;
-            return true;
+            // It ignored the request: a fresh encoder starts with one.
+            return recover("it didn't make a keyframe when asked", error, false);
         }
+        if (submittedSinceOutput_.load() > std::max(30, 2 * fps_) && nowUs - lastOutputUs_.load() > kStallUs)
+            return recover("it stopped giving pictures back", error, true);
 
         const bool repeat = !fresh_ && nowUs - lastEncodeUs_ >= kRepeatUs;
         if (!fresh_ && !repeat && !wantKey_) return true;
@@ -217,18 +229,30 @@ public:
             dropped_++;
             return true;
         }
-        if (!encoder_.ready()) return true;  // busy: try again next tick
+        if (!encoder_.ready()) {
+            // Busy: try again next tick, unless it has stopped asking altogether.
+            if (notReadySinceUs_ < 0) notReadySinceUs_ = nowUs;
+            if (nowUs - notReadySinceUs_ > kStallUs) return recover("it stopped asking for pictures", error, true);
+            return true;
+        }
+        notReadySinceUs_ = -1;
 
         const bool key = wantKey_ || congestionKey;
+        if (key && !encoder_.forcesKeyframes() && submittedSinceOpen_ > 0) {
+            // It can't be told to make a keyframe: start a fresh one, which begins with one.
+            if (!openEncoder(size_, error)) return false;
+        }
         int64_t ts = (fresh_ ? captureUs_ : nowUs) - originUs_;
         if (ts <= lastTs_) ts = lastTs_ + 1;
         bool ok = encoder_.takesTextures()
                       ? encoder_.encodeTexture(converter_.current(), ts * 10, key, &why)
                       : encoder_.encodeMemory(picture_.data(), ts * 10, key, &why);
         if (!ok) {
-            if (encoder_.ready() || !encoder_.isOpen()) return recover(why, error);
+            if (encoder_.ready() || !encoder_.isOpen()) return recover(why, error, true);
             return true;
         }
+        if (submittedSinceOutput_++ == 0) lastOutputUs_ = nowUs;  // start the stall clock
+        submittedSinceOpen_++;
         lastTs_ = ts;
         lastEncodeUs_ = nowUs;
         fresh_ = false;
@@ -304,6 +328,9 @@ private:
                     }
                     wantKey_ = true;
                     keyAskedUs_ = -1;
+                    notReadySinceUs_ = -1;
+                    submittedSinceOpen_ = 0;
+                    submittedSinceOutput_ = 0;
                     if (s != size) LOG("Sending %s instead of %s: no encoder takes the full size", sizeText(s).c_str(),
                                        sizeText(size).c_str());
                     return true;
@@ -317,22 +344,29 @@ private:
     }
 
     // The encoder failed or stopped listening: open it again (the next
-    // encoder if this one keeps failing).
-    bool recover(const std::string& why, std::string* error) {
+    // encoder if this one keeps failing; failures a minute apart are forgiven).
+    bool recover(const std::string& why, std::string* error, bool failure) {
         LOG("Restarting the encoder: %s", why.c_str());
-        if (++restarts_ > 3 && candidates_.size() > 1) {
-            LOG("Giving up on %s", candidates_.front().name.c_str());
-            candidates_.erase(candidates_.begin());
-            restarts_ = 0;
-        } else if (restarts_ > 6) {
-            if (error) *error = "The video encoder keeps failing: " + why;
-            return false;
+        if (failure) {
+            const double now = nowMs();
+            if (now - lastFailureMs_ > 60000) failures_ = 0;
+            lastFailureMs_ = now;
+            if (++failures_ > 3 && candidates_.size() > 1) {
+                LOG("Giving up on %s", candidates_.front().name.c_str());
+                candidates_.erase(candidates_.begin());
+                failures_ = 0;
+            } else if (failures_ > 6) {
+                if (error) *error = "The video encoder keeps failing: " + why;
+                return false;
+            }
         }
         return openEncoder(size_, error);
     }
 
     // Runs on the encoder's thread (or inside encode..() for a synchronous one).
     void onEncoded(const uint8_t* data, size_t n, int64_t time100ns, bool) {
+        submittedSinceOutput_ = 0;
+        lastOutputUs_ = qpcNowUs();
         AccessUnitFixer::Result r = fixer_.fix(data, n, au_);
         if (!r.picture) return;
         if (r.key) lastKeyOutUs_ = qpcNowUs();
@@ -360,6 +394,7 @@ private:
         if (r.key) keys_++;
     }
 
+    std::string captureMode_;
     Connection& conn_;
     Codec codec_;
     Size maxSize_;
@@ -370,6 +405,8 @@ private:
 
     D3DDevice d3d_;
     ScreenCapture capture_;
+    DesktopDuplication duplication_;
+    bool useDuplication_ = false;
     Nv12Converter converter_;
     VideoEncoder encoder_;
     std::vector<EncoderCandidate> candidates_;
@@ -383,7 +420,12 @@ private:
     std::atomic<bool> keyRequested_{false};
     int64_t keyAskedUs_ = -1;
     std::atomic<int64_t> lastKeyOutUs_{-1};
-    int restarts_ = 0;
+    std::atomic<int64_t> lastOutputUs_{0};
+    std::atomic<int> submittedSinceOutput_{0};
+    int64_t notReadySinceUs_ = -1;
+    int submittedSinceOpen_ = 0;
+    int failures_ = 0;
+    double lastFailureMs_ = 0;
 
     // Used by onEncoded.
     AccessUnitFixer fixer_;
@@ -418,7 +460,8 @@ SessionResult Session::run(const SessionOptions& opt, StatusFn status, std::stri
     // What we can do, checked before connecting.
     std::string why;
     if (!startWinsock(&why) || !startMediaFoundation(&why)) return finish(SessionResult::Error, why);
-    if (!ScreenCapture::supported(&why)) return finish(SessionResult::Error, "Can't capture the screen: " + why);
+    if (opt.capture == "wgc" && !ScreenCapture::supported(&why))
+        return finish(SessionResult::Error, "Can't capture the screen: " + why + " (try --capture duplication)");
     auto monitors = listMonitors();
     if (monitors.empty()) return finish(SessionResult::Error, "No screen to capture.");
     const MonitorInfo* monitor = &monitors.front();
@@ -519,7 +562,7 @@ SessionResult Session::run(const SessionOptions& opt, StatusFn status, std::stri
     const Size maxSize{welcome.maxWidth, welcome.maxHeight};
     const int64_t originUs = qpcNowUs();
 
-    VideoSender video(conn, welcome.codec, maxSize, fps, opt.bitrateMbps * 1e6, opt.encoder, originUs);
+    VideoSender video(conn, welcome.codec, maxSize, fps, opt.bitrateMbps * 1e6, opt.encoder, opt.capture, originUs);
     conn.start([&](MsgType type, const std::vector<uint8_t>&) {
         if (type == MsgType::Keyframe) video.requestKeyframe();
     });

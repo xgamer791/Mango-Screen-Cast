@@ -361,6 +361,9 @@ static void testOptions() {
     CHECK(o.connect == "192.168.1.5:7300" && o.seconds == 10 && o.codec == "h265" && o.noAudio && o.fps == 30 &&
           o.bitrateMbps == 12.5 && o.monitor == 2 && o.encoder == "software");
     CHECK(parseOptions({"--connect", "tv", "--codec", "hevc"}, o, &err) && o.codec == "h265");
+    CHECK(o.capture == "auto");
+    CHECK(parseOptions({"--connect", "tv", "--capture", "dda"}, o, &err) && o.capture == "duplication");
+    CHECK(!parseOptions({"--capture", "gdi"}, o, &err));
     CHECK(!parseOptions({"--codec", "vp9"}, o, &err) && !err.empty());
     CHECK(!parseOptions({"--fps", "0"}, o, &err));
     CHECK(!parseOptions({"--monitor", "1.5"}, o, &err));

@@ -44,6 +44,7 @@ if(WIN32)
     src/win/convert.cpp
     src/win/d3d.cpp
     src/win/discovery.cpp
+    src/win/duplication.cpp
     src/win/encoder.cpp
     src/win/log.cpp
     src/win/main.cpp

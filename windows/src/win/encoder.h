@@ -66,6 +66,8 @@ public:
     const std::string& name() const;
     bool hardware() const;
     bool takesTextures() const;
+    // Whether it says it takes keyframe requests (CODECAPI_AVEncVideoForceKeyFrame).
+    bool forcesKeyframes() const;
     const Config& config() const;
 
     // Whether it can take a picture now (a hardware encoder asks for them).

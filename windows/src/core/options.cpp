@@ -81,6 +81,10 @@ bool parseOptions(const std::vector<std::string>& args, Options& o, std::string*
         } else if (arg == "--log") {
             if (!take(v) || v.empty()) return fail("--log needs a file name");
             o.logFile = v;
+        } else if (arg == "--capture") {
+            if (!take(v) || (v != "auto" && v != "wgc" && v != "duplication" && v != "dda"))
+                return fail("--capture is auto, wgc or duplication");
+            o.capture = v == "dda" ? "duplication" : v;
         } else if (arg == "--encoder") {
             if (!take(v) || (v != "auto" && v != "hardware" && v != "software"))
                 return fail("--encoder is auto, hardware or software");
@@ -114,6 +118,8 @@ std::string usage() {
            "  --bitrate MBPS      Video bitrate in Mbit/s (default: from the picture size)\n"
            "  --no-audio          Picture only\n"
            "  --encoder auto|hardware|software   Which video encoder (default auto)\n"
+           "  --capture auto|wgc|duplication     How to capture the screen (default auto:\n"
+           "                      Windows.Graphics.Capture, else Desktop Duplication)\n"
            "  --log FILE          Write a log\n"
            "\n"
            "Exit codes: 0 done, 1 error, 2 bad options, 3 the receiver said no,\n"

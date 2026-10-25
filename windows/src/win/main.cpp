@@ -53,7 +53,8 @@ int diagnose() {
         console::out("Graphics: " + why + "\n");
     }
     bool wgc = ScreenCapture::supported(&why);
-    console::out("Screen capture (Windows.Graphics.Capture): " + (wgc ? std::string("yes") : "no, " + why) + "\n");
+    console::out("Screen capture: Windows.Graphics.Capture " + (wgc ? std::string("yes") : "no (" + why + ")") +
+                 "; Desktop Duplication as the fallback\n");
 
     if (!startMediaFoundation(&why)) {
         console::out("Video encoders: " + why + "\n");
@@ -127,6 +128,7 @@ int commandLine(const Options& opt) {
     so.fps = opt.fps;
     so.bitrateMbps = opt.bitrateMbps;
     so.encoder = opt.encoder;
+    so.capture = opt.capture;
     so.seconds = opt.seconds;
     Session session;
     g_session = &session;

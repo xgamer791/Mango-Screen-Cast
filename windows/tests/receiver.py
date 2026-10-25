@@ -20,7 +20,7 @@ import struct
 import subprocess
 import sys
 import threading
-import time
+import time  # (time.perf_counter: monotonic() ticks only every 15.6 ms on Windows)
 
 HELLO, WELCOME, REFUSE, VIDEO, KEYFRAME, AUDIO, PING, PONG, BYE = 0x01, 0x02, 0x03, 0x10, 0x11, 0x20, 0x30, 0x31, 0x3F
 NAMES = {HELLO: "HELLO", WELCOME: "WELCOME", REFUSE: "REFUSE", VIDEO: "VIDEO", KEYFRAME: "KEYFRAME",
@@ -214,15 +214,15 @@ class Receiver:
             self.sock, _ = self.listener.accept()
             self.connected.set()
             self.sock.settimeout(15)
-            t_connect = time.monotonic()
+            t_connect = time.perf_counter()
             msg_type, payload = self._read()
             if msg_type != HELLO:
                 self.problem(f"first message was {NAMES.get(msg_type, hex(msg_type))}, not HELLO")
                 return
-            if time.monotonic() - t_connect > 5:
+            if time.perf_counter() - t_connect > 5:
                 self.problem("HELLO took more than 5 s")
             self.hello = json.loads(payload.decode("utf-8"))
-            self.messages.append((time.monotonic(), msg_type, payload))
+            self.messages.append((time.perf_counter(), msg_type, payload))
             # Nothing may come before WELCOME: wait a moment and look.
             self.sock.settimeout(0.3)
             try:
@@ -243,7 +243,7 @@ class Receiver:
             self.codec = welcome["codec"]
             self.welcome = welcome
             self.send(WELCOME, json.dumps(welcome).encode())
-            self.welcome_time = time.monotonic()
+            self.welcome_time = time.perf_counter()
             threading.Thread(target=self._talk, daemon=True).start()
             self._listen()
         except Exception as e:  # noqa: BLE001 - every failure is a finding
@@ -264,7 +264,7 @@ class Receiver:
         next_ping = t0 + sc.get("ping_every", 1.0)
         keyframe_done = unknown_done = run_done = False
         while not self.done.is_set():
-            now = time.monotonic() - t0
+            now = time.perf_counter() - t0
             if sc.get("silent_after") is not None and now >= sc["silent_after"]:
                 time.sleep(0.05)
                 continue
@@ -278,7 +278,7 @@ class Receiver:
                 return
             if sc.get("keyframe_at") is not None and not keyframe_done and now >= sc["keyframe_at"]:
                 keyframe_done = True
-                self.keyframe_sent = time.monotonic()
+                self.keyframe_sent = time.perf_counter()
                 self.send(KEYFRAME)
             if sc.get("run_at") and not run_done and now >= sc["run_at"][0]:
                 run_done = True
@@ -286,9 +286,9 @@ class Receiver:
             if sc.get("unknown_at") is not None and not unknown_done and now >= sc["unknown_at"]:
                 unknown_done = True
                 self.send(0x5A, b"\x00" * 100)
-            if time.monotonic() >= next_ping:
-                payload = struct.pack(">Q", int(time.monotonic() * 1e6))
-                self.pings_sent[payload] = time.monotonic()
+            if time.perf_counter() >= next_ping:
+                payload = struct.pack(">Q", int(time.perf_counter() * 1e6))
+                self.pings_sent[payload] = time.perf_counter()
                 self.send(PING, payload)
                 next_ping += sc.get("ping_every", 1.0)
             time.sleep(0.02)
@@ -303,7 +303,7 @@ class Receiver:
         while True:
             if sc.get("pause") and not paused:
                 start, length = sc["pause"]
-                if time.monotonic() - self.welcome_time >= start:
+                if time.perf_counter() - self.welcome_time >= start:
                     paused = True
                     time.sleep(length)  # not reading: the sender's data backs up
             try:
@@ -313,7 +313,7 @@ class Receiver:
                 return
             except (ConnectionError, OSError, socket.timeout):
                 return
-            now = time.monotonic()
+            now = time.perf_counter()
             self.messages.append((now, msg_type, payload))
             if msg_type == PING and sc.get("silent_after") is None:
                 self.send(PONG, payload)
@@ -610,6 +610,10 @@ def scenarios(sound):
              expect_audio=False, expect_size=True, min_fps=12,
              about="the hardware encoders' path: NV12 textures drawn on the GPU, handed to the encoder as "
                    "Direct3D surfaces (scaled to 800x600)"),
+        dict(name="duplication", seconds=5, args=["--capture", "duplication"],
+             welcome=dict(protocol=1, name="Test Receiver", maxWidth=1920, maxHeight=1080, fps=30, audio=AUDIO_ON),
+             expect_audio=sound, min_fps=12,
+             about="--capture duplication: DXGI Desktop Duplication instead of Windows.Graphics.Capture"),
         dict(name="resize", seconds=8, keyframe_at=6.0,
              run_at=(3.0, ["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", DISPLAY_PS1,
                            "-Width", "1280", "-Height", "720"]),
@@ -645,7 +649,7 @@ def run_scenario(exe, sc, out_dir):
     if sc.get("seconds"):
         args += ["--seconds", str(sc["seconds"])]
     env = dict(os.environ, **sc.get("env", {}))
-    started = time.monotonic()
+    started = time.perf_counter()
     try:
         proc = subprocess.run(args, capture_output=True, timeout=90, env=env)
     except subprocess.TimeoutExpired:
@@ -654,7 +658,7 @@ def run_scenario(exe, sc, out_dir):
     finally:
         if sc.get("cleanup"):
             subprocess.run(sc["cleanup"], capture_output=True, timeout=60)
-    runtime = time.monotonic() - started
+    runtime = time.perf_counter() - started
     rx.done.wait(10)
     if sc.get("run_at"):
         findings["command"] = rx.run_result
@@ -720,8 +724,8 @@ def run_window_scenario(exe, sc, out_dir):
         return buf.value
 
     def wait_for(cond, seconds):
-        until = time.monotonic() + seconds
-        while time.monotonic() < until:
+        until = time.perf_counter() + seconds
+        while time.perf_counter() < until:
             if cond():
                 return True
             time.sleep(0.1)

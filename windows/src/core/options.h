@@ -22,6 +22,7 @@ struct Options {
     int monitor = 0;        // --monitor N (0: the main screen)
     std::string logFile;    // --log file
     std::string encoder = "auto";  // --encoder auto|hardware|software
+    std::string capture = "auto";  // --capture auto|wgc|duplication
 
     // Command-line mode (no window).
     bool commandLine() const { return help || version || list || monitors || diagnose || !connect.empty(); }
