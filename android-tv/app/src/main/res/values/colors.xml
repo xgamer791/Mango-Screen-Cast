@@ -1,14 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="background">#0E0D12</color>
-    <color name="surface">#1B1922</color>
-    <color name="surface_focused">#2C2836</color>
-    <color name="text_primary">#F4F2F7</color>
-    <color name="text_secondary">#A9A4B5</color>
+    <!-- Blacks and greys, nothing else. True black behind everything. -->
+    <color name="background">#000000</color>
+    <color name="surface">#1A1A1E</color>
+    <color name="surface_focused">#2A2A2F</color>
+    <color name="border">#2A2A2E</color>
+    <color name="text_primary">#FFFFFF</color>
+    <color name="text_secondary">#B3FFFFFF</color>
+    <color name="text_detail">#CCFFFFFF</color>
     <color name="mango">#FFA41B</color>
     <color name="mango_deep">#FF6A2B</color>
     <color name="status_ready">#4CD38A</color>
     <color name="status_waiting">#FFB547</color>
     <color name="status_error">#FF5C5C</color>
     <color name="overlay">#B3000000</color>
+
+    <!-- Home screen -->
+    <color name="home_bg_bottom">#0A0A0C</color>
+    <color name="home_tile">#2A2A2F</color>
+    <color name="home_badge">#303036</color>
+    <color name="home_badge_ring">#232327</color>
+    <color name="home_badge_ring_outer">#19191C</color>
+    <color name="home_glass_base">#0FFFFFFF</color>
+    <color name="home_divider">#1FFFFFFF</color>
 </resources>

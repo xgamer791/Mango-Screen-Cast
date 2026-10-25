@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- The Connect tile: a touch more violet than the other two, as in the reference. -->
-<shape xmlns:android="http://schemas.android.com/apk/res/android">
-    <gradient
-        android:angle="270"
-        android:startColor="#555CFB"
-        android:endColor="#525EDF" />
-    <corners android:radius="12.75dp" />
-</shape>

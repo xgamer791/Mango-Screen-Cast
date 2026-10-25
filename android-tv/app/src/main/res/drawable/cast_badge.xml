@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Solid blue disc with two translucent rings around it. Drawn in a 213 x 213 dp box. -->
+<!-- A dark grey disc with two rings of deeper grey around it. Drawn in a 213 x 213 dp box. -->
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
     <item>
         <shape android:shape="oval">
-            <solid android:color="#3B3770FA" />
+            <solid android:color="@color/home_badge_ring_outer" />
         </shape>
     </item>
     <item
@@ -12,7 +12,7 @@
         android:right="18dp"
         android:top="18dp">
         <shape android:shape="oval">
-            <solid android:color="#853770FA" />
+            <solid android:color="@color/home_badge_ring" />
         </shape>
     </item>
     <item
@@ -21,13 +21,7 @@
         android:right="37dp"
         android:top="37dp">
         <shape android:shape="oval">
-            <gradient
-                android:type="radial"
-                android:gradientRadius="60%p"
-                android:centerX="0.38"
-                android:centerY="0.30"
-                android:startColor="#3B73FB"
-                android:endColor="#356CF6" />
+            <solid android:color="@color/home_badge" />
         </shape>
     </item>
 </layer-list>
