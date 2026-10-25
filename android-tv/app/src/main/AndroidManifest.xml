@@ -78,9 +78,20 @@
             android:theme="@style/Theme.Mango.Fullscreen"
             android:configChanges="keyboard|keyboardHidden|navigation|screenSize|screenLayout|smallestScreenSize|orientation|uiMode|density" />
 
+        <!-- The gear on the Hisense remote sends android.settings.SETTINGS, which
+             stock TvSettings claims at priority 1. Same priority so Android can
+             offer Mango once; DEFAULT is required for that implicit intent.
+             LEANBACK_SETTINGS marks this as the TV settings screen and does not
+             add a second launcher tile (that needs MAIN + LEANBACK_LAUNCHER). -->
         <activity
             android:name=".ui.SettingsActivity"
-            android:exported="false" />
+            android:exported="true">
+            <intent-filter android:priority="1">
+                <action android:name="android.settings.SETTINGS" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.LEANBACK_SETTINGS" />
+            </intent-filter>
+        </activity>
 
         <service
             android:name=".ReceiverService"
