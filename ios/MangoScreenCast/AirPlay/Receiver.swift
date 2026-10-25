@@ -629,11 +629,10 @@ final class Receiver: ObservableObject {
         windowScene?.screen.nativeBounds.size ?? CGSize(width: 1920, height: 1080)
     }
 
-    /// Whether the app is sideways, which it always is: it only runs in
-    /// landscape (Info.plist). Main thread.
-    static func isLandscape() -> Bool {
-        windowScene?.effectiveGeometry.interfaceOrientation.isLandscape ?? true
-    }
+    /// Always sideways: the app only runs in landscape (Info.plist), so it
+    /// always offers the screen's landscape shape, even before iOS reports
+    /// the window's orientation.
+    static func isLandscape() -> Bool { true }
 
     private static func supportDirectory() -> URL {
         let url = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
