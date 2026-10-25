@@ -90,7 +90,7 @@ struct VideoEncoder::Impl {
     ComPtr<IMFSample> outSample;  // when the MFT wants us to supply output samples
     DWORD inId = 0, outId = 0;
     DWORD outBufferSize = 0;
-    bool async = false, hardware = false, textures = false, providesSamples = false;
+    bool async = false, hardware = false, textures = false, providesSamples = false, canForceKey = false;
     bool closed = false;
     std::atomic<int> needInput{0};
     std::atomic<bool> failed{false};
@@ -397,6 +397,7 @@ bool VideoEncoder::open(const EncoderCandidate& candidate, const Config& config,
     if (device && config.forceTextures && !impl->textures) impl->textures = true;
 
     impl->mft.As(&impl->codecApi);
+    impl->canForceKey = impl->codecApi && impl->codecApi->IsSupported(&CODECAPI_AVEncVideoForceKeyFrame) == S_OK;
     impl->applySettings();
 
     // Output type first (encoders want it before the input type).
@@ -460,9 +461,10 @@ bool VideoEncoder::open(const EncoderCandidate& candidate, const Config& config,
         hr = impl->events->BeginGetEvent(impl->callback.Get(), nullptr);
         if (FAILED(hr)) return fail("couldn't wait for its events", hr);
     }
-    LOG("Encoder: %s (%s, %s, %s), %d x %d %s at %d fps, %.1f Mbit/s", impl->name.c_str(),
+    LOG("Encoder: %s (%s, %s, %s%s), %d x %d %s at %d fps, %.1f Mbit/s", impl->name.c_str(),
         impl->hardware ? "hardware" : "software", impl->async ? "asynchronous" : "synchronous",
-        impl->textures ? "Direct3D textures" : "pictures in memory", config.size.width, config.size.height,
+        impl->textures ? "Direct3D textures" : "pictures in memory",
+        impl->canForceKey ? "" : ", restarted for keyframes", config.size.width, config.size.height,
         codecName(config.codec), config.fps, config.bitrate / 1e6);
     impl_ = std::move(impl);
     return true;
@@ -504,6 +506,8 @@ const std::string& VideoEncoder::name() const {
 bool VideoEncoder::hardware() const { return impl_ && impl_->hardware; }
 
 bool VideoEncoder::takesTextures() const { return impl_ && impl_->textures; }
+
+bool VideoEncoder::forcesKeyframes() const { return impl_ && impl_->canForceKey; }
 
 const VideoEncoder::Config& VideoEncoder::config() const {
     static const Config none;

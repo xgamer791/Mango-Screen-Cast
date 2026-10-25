@@ -67,9 +67,13 @@ jobs:
           Start-Sleep 3
 
       - name: End-to-end tests
+        env:
+          PYTHONIOENCODING: utf-8
         run: python windows/tests/receiver.py --exe build/Release/MangoCast.exe ${{ steps.runner.outputs.sound }} --out e2e-out
 
       - name: Discovery test
+        env:
+          PYTHONIOENCODING: utf-8
         run: python windows/tests/discovery_test.py --exe build/Release/MangoCast.exe
 
       # A rolling pre-release, never the "latest" release (the TV app updates
