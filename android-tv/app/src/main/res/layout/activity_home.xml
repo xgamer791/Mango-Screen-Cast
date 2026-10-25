@@ -9,7 +9,7 @@
     android:layout_height="match_parent"
     android:background="@drawable/home_background">
 
-    <!-- Wallpaper: Manhattan in fog at dusk, 3840 x 2160 (half of it on a 1080p UI, pixel for pixel). -->
+    <!-- Wallpaper: Manhattan in fog at dusk, 2560 x 1440: pixel for pixel on the 1440p surface the page is drawn into. -->
     <ImageView
         android:id="@+id/wallpaper"
         android:layout_width="match_parent"
