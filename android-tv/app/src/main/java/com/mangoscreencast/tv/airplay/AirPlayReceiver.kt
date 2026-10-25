@@ -9,7 +9,6 @@ import android.os.Looper
 import android.util.Log
 import com.mangoscreencast.tv.Settings
 import com.mangoscreencast.tv.display.DisplayCapabilities
-import com.mangoscreencast.tv.display.IphoneScreens
 import com.mangoscreencast.tv.display.MirrorProfile
 import com.mangoscreencast.tv.media.AudioPlayer
 import com.mangoscreencast.tv.media.VideoDecoder
@@ -227,7 +226,6 @@ class AirPlayReceiver(private val context: Context, private val settings: Settin
 
     override fun onClientRequest(deviceId: String, model: String, name: String): Boolean {
         log("connection from $name ($model)")
-        offerDisplayTo(model)
         update {
             it.copy(
                 state = if (it.state == State.MIRRORING) State.MIRRORING else State.CONNECTED,
@@ -237,28 +235,6 @@ class AirPlayReceiver(private val context: Context, private val settings: Settin
             )
         }
         return true
-    }
-
-    /**
-     * Sizes the display this device is about to be offered: an iPhone its
-     * own screen's resolution ([DisplayCapabilities.iphoneOffer]), anything
-     * else the TV's [MirrorProfile]. The server offers one size at a time,
-     * so it's set for every device that connects.
-     */
-    private fun offerDisplayTo(model: String) {
-        val profile = status.profile ?: return
-        val offer = DisplayCapabilities.iphoneOffer(model, profile)
-        if (offer == null) {
-            AirPlayNative.nativeOfferDisplay(profile.width, profile.height, profile.maxFps)
-            if (IphoneScreens.isIphone(model)) {
-                log("offering $model ${profile.width}x${profile.height}: its own resolution needs a known iPhone " +
-                    "(the 8 or later) and an HEVC decoder")
-            }
-            return
-        }
-        AirPlayNative.nativeOfferDisplay(offer.width, offer.height, offer.maxFps)
-        log("offering $model ${offer.width}x${offer.height} @ ${offer.maxFps} fps, for its screen's own resolution")
-        offer.note?.let { log(it) }
     }
 
     override fun onConnectionsChanged(open: Int) {
@@ -271,7 +247,11 @@ class AirPlayReceiver(private val context: Context, private val settings: Settin
     override fun onVideoCodec(
         h265: Boolean, sourceWidth: Int, sourceHeight: Int, x: Int, y: Int, width: Int, height: Int,
     ): Int {
-        log("mirroring starts: ${if (h265) "HEVC" else "H.264"} ${sourceWidth}x$sourceHeight, " +
+        // What the device chose to send for the size the TV offered: it fits
+        // its screen inside that size, keeping its shape, so a 4K offer gets
+        // about 1000x2160 from an iPhone held upright.
+        val offered = status.profile?.let { " for the TV's ${it.width}x${it.height} offer" } ?: ""
+        log("mirroring starts: ${if (h265) "HEVC" else "H.264"} ${sourceWidth}x$sourceHeight$offered, " +
             "picture ${width}x$height at ($x, $y)")
         if (h265 && status.profile?.h265 == false) return -1
         video.latencyMode = settings.latencyMode

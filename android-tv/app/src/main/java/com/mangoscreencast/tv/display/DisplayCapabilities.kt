@@ -59,35 +59,18 @@ data class MirrorProfile(
     val codecs: String get() = if (h265) "HEVC + H.264" else "H.264"
 }
 
-/**
- * What an iPhone is offered in place of [MirrorProfile]'s size: see
- * [DisplayCapabilities.iphoneOffer].
- */
-data class IphoneOffer(
-    val width: Int,
-    val height: Int,
-    val maxFps: Int,
-    /** Why the iPhone's picture is still scaled down, if it is. */
-    val note: String? = null,
-)
-
 /** What the TV's hardware decoders take; an interface so [DisplayCapabilities.choose] can be tested. */
 internal interface DecoderInfo {
     val hevcAvailable: Boolean
 
     /** Either way round. */
     fun supportsSize(mime: String, width: Int, height: Int): Boolean
-
-    /** Exactly this way round: some decoders take 2868 x 1320 but not 1320 x 2868. */
-    fun supportsUpright(mime: String, width: Int, height: Int): Boolean = supportsSize(mime, width, height)
     fun canDecode(mime: String, width: Int, height: Int, fps: Int): Boolean
 }
 
 private object SystemDecoders : DecoderInfo {
     override val hevcAvailable get() = DecoderSelection.hardwareDecoder(MediaFormat.MIMETYPE_VIDEO_HEVC) != null
     override fun supportsSize(mime: String, width: Int, height: Int) = DecoderSelection.supportsSize(mime, width, height)
-    override fun supportsUpright(mime: String, width: Int, height: Int) =
-        DecoderSelection.supportsExactly(mime, width, height)
     override fun canDecode(mime: String, width: Int, height: Int, fps: Int) =
         DecoderSelection.canDecode(mime, width, height, fps)
 }
@@ -96,7 +79,6 @@ object DisplayCapabilities {
     private val CANDIDATES = listOf(3840 to 2160, 2560 to 1440, 1920 to 1080)
     private const val HEVC = MediaFormat.MIMETYPE_VIDEO_HEVC
     private const val AVC = MediaFormat.MIMETYPE_VIDEO_AVC
-    private const val MIN_SIDE = 1080
 
     fun panel(context: Context): Panel {
         val display = context.getSystemService(DisplayManager::class.java).getDisplay(Display.DEFAULT_DISPLAY)
@@ -132,19 +114,25 @@ object DisplayCapabilities {
     ): MirrorProfile = choose(setting, frameRate, panel(context), maxRefreshRate(context), SystemDecoders)
 
     /**
-     * The size Macs and iPads are offered (iPhones get [iphoneOffer]). A
-     * size picked under Resolution is offered exactly as picked, whatever
-     * the screen or the decoder's tables report: nothing overrides it.
+     * The size every Mac, iPhone and iPad is offered. A size picked under
+     * Resolution is offered exactly as picked, whatever the screen or the
+     * decoder's tables report: nothing overrides it.
      *
      * Auto (the default) is the sharpest picture the TV's hardware decoder
      * takes: 4K, else 1440p, else 1080p, whatever the TV's menus run at.
-     * Apple devices fit their picture to the size offered, so an iPad held
-     * upright sends 2160 rows to a 4K offer, where 1080p gets it 1080. Above
-     * 1080p Apple devices only send HEVC,
-     * so those sizes need an HEVC decoder. Every TV HEVC decoder that takes
-     * a 4K picture is built for 4K60 streaming apps, so up to 60 fps the size
-     * check is enough; the frame-rate tables some vendors publish are often
-     * too conservative.
+     * Apple devices scale their screen to fit inside the size offered,
+     * keeping its shape (up as well as down): a 4K offer gets about
+     * 1000 x 2160 from an iPhone held upright (996 x 2160 from a 15 Pro Max)
+     * and 1620 x 2160 from an iPad, where 1080p gets them about 500 x 1080
+     * and 810 x 1080. The TV's own size is the most it
+     * can show, so that is the most worth asking for: a bigger offer only
+     * has the TV scale the picture down instead of the phone, and apps that
+     * play video on a TV screen of their own (YouTube does) then draw it
+     * into a shape that isn't the TV's. Above 1080p Apple devices only send
+     * HEVC, so those sizes need an HEVC decoder. Every TV HEVC decoder that
+     * takes a 4K picture is built for 4K60 streaming apps, so up to 60 fps
+     * the size check is enough; the frame-rate tables some vendors publish
+     * are often too conservative.
      *
      * Above 60 fps nothing is assumed: the screen needs a mode that fast and
      * the decoder's own tables must list the rate. The resolution always
@@ -187,52 +175,6 @@ object DisplayCapabilities {
                 "$wanted fps needs ${fast.first} × ${fast.second} or smaller on this TV: pick it under Resolution to get it.")
             else -> offer(wanted, wanted)
         }
-    }
-
-    /**
-     * What `model` is offered when it's an iPhone the TV can show at its own
-     * screen's resolution; null for anything else (it gets the [MirrorProfile]).
-     *
-     * Apple devices scale their screen to fit the size offered, up or down,
-     * keeping its shape. A square as big as the iPhone's long side fits it
-     * exactly both ways round, so it sends every pixel of its screen, not
-     * scaled: 1320 × 2868 held upright and 2868 × 1320 sideways for a
-     * 16 Pro Max, where a 4K offer gets 994 × 2160 upright. The TV then fits
-     * that whole picture to its screen. This takes HEVC (above 1080p Apple
-     * devices send nothing else), and a side the decoder doesn't take is cut
-     * to the most it does, so the picture always plays.
-     */
-    fun iphoneOffer(model: String, profile: MirrorProfile): IphoneOffer? = iphoneOffer(model, profile, SystemDecoders)
-
-    internal fun iphoneOffer(model: String, profile: MirrorProfile, decoders: DecoderInfo): IphoneOffer? {
-        val (short, long) = IphoneScreens.nativeSize(model) ?: return null
-        if (!profile.h265) return null
-        fun across(side: Int) = (side.toLong() * short / long).toInt() and 1.inv()
-        // Sideways the frame is width x across(width), upright across(height) x height.
-        val width = largestUpTo(long) { decoders.supportsUpright(HEVC, it, across(it)) } ?: return null
-        val height = largestUpTo(long) { decoders.supportsUpright(HEVC, across(it), it) } ?: return null
-        val fps = profile.maxFps.takeIf { it <= 60 || decoders.canDecode(HEVC, width, across(width), it) } ?: 60
-        val notes = listOfNotNull(
-            if (width < long || height < long) "The TV's video decoder takes up to ${across(height)} × $height " +
-                "upright and $width × ${across(width)} sideways, so the iPhone's ${short} × $long screen is scaled to fit."
-            else null,
-            if (fps < profile.maxFps) "The TV's video decoder isn't rated for ${profile.maxFps} fps at the iPhone's " +
-                "size, so it offers 60 fps." else null,
-        )
-        return IphoneOffer(width, height, fps, notes.joinToString(" ").ifEmpty { null })
-    }
-
-    /** `full` if `fits` takes it, else the largest even size below it that does, down to 1080; null below that. */
-    private fun largestUpTo(full: Int, fits: (Int) -> Boolean): Int? {
-        if (fits(full)) return full
-        var low = MIN_SIDE
-        if (low >= full || !fits(low)) return null
-        var high = full // fits(low), and not fits(high)
-        while (high - low > 2) {
-            val middle = (low + high) / 2 and 1.inv()
-            if (fits(middle)) low = middle else high = middle
-        }
-        return low
     }
 
     private fun takes(decoders: DecoderInfo, width: Int, height: Int): Boolean {

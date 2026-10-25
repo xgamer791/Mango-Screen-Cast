@@ -31,7 +31,7 @@
     <string name="setting_name">TV name</string>
     <string name="setting_name_hint">What Macs and iPhones show in Screen Mirroring</string>
     <string name="setting_resolution">Resolution</string>
-    <string name="setting_resolution_hint">Macs and iPads send their picture at this size, exactly as picked. Auto (the default) is the sharpest this TV decodes: 4K when it can. iPhones always send their screen at its own resolution, every pixel, upright or sideways.</string>
+    <string name="setting_resolution_hint">Macs, iPhones and iPads fit their screen inside this size, keeping its shape, exactly as picked. Auto (the default) is the sharpest this TV decodes: 4K when it can, so an upright iPhone sends about 1000 × 2160, every row the TV has. Show stats shows what arrives.</string>
     <string name="resolution_auto">Auto</string>
     <string name="resolution_auto_value">Auto (%1$s)</string>
     <string name="setting_frame_rate">Frame rate</string>
@@ -82,7 +82,7 @@
     <string name="update_installing">Installing update… the app restarts by itself</string>
     <string name="update_retry">Try again</string>
     <string name="setting_updates">Updates</string>
-    <string name="setting_updates_hint">Automatic installs new versions while nothing is mirroring. Ask first shows an Update button on the home screen.</string>
+    <string name="setting_updates_hint">Automatic installs new versions as soon as nothing is mirroring: the TV looks whenever this app comes up or mirroring ends, and every 10 minutes while the home screen is up. Ask first shows an Update button on the home screen.</string>
     <string name="updates_automatic">Automatic</string>
     <string name="updates_ask">Ask first</string>
     <string name="setting_check_updates">Check for updates now</string>

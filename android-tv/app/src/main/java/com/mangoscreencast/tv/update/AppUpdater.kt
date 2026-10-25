@@ -27,6 +27,10 @@ import java.util.concurrent.Executors
  *
  * The first update asks for confirmation on the TV. From Android 12 on, once
  * the app has installed itself, later updates usually go through silently.
+ *
+ * It looks whenever the app comes to the front or a device stops mirroring,
+ * and every few minutes while the home screen is up, so a new release
+ * reaches the TV within minutes of the next idle moment, not hours later.
  */
 class AppUpdater(
     private val context: Context,
@@ -79,7 +83,11 @@ class AppUpdater(
         listeners -= listener
     }
 
-    /** Checks if the last check was a while ago (and updates are on). */
+    /**
+     * Checks unless one was made a moment ago (and updates are on). Called on
+     * every screen start and whenever the TV becomes free, so this only
+     * keeps a burst of those from asking GitHub several times over.
+     */
     fun checkIfDue() {
         if (settings.updateMode == UpdateMode.OFF) return
         val now = System.currentTimeMillis()
@@ -299,7 +307,10 @@ class AppUpdater(
     companion object {
         private const val TAG = "MangoUpdater"
         const val VERSION_FILE = "version.json"
-        const val CHECK_INTERVAL_MS = 6 * 60 * 60 * 1000L
+        /** How close together two checks may be: the home screen asks again every [RECHECK_INTERVAL_MS]. */
+        const val CHECK_INTERVAL_MS = 60 * 1000L
+        /** While the home screen stays up, how often it looks for a new release. */
+        const val RECHECK_INTERVAL_MS = 10 * 60 * 1000L
         const val RETRY_INTERVAL_MS = 10 * 60 * 1000L
         const val NOT_PUBLISHED_MESSAGE =
             "GitHub shows this TV no releases. If the repository is private, the TV can't see them."

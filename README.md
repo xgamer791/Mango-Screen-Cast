@@ -14,13 +14,13 @@ iPad: put your Mac's screen on it, or use it as a second display. See
   can show it (60 otherwise), and the size picked under Resolution, exactly
   as picked: by default 4K (3840 × 2160) with HEVC whenever its decoder takes
   it, so the Mac renders for the full panel instead of 1080p.
-- **iPhone:** it sends its screen at its own resolution, every pixel,
-  upright or sideways: 1320 × 2868 and 2868 × 1320 from an iPhone 16 Pro Max,
-  where a 4K offer gets 994 × 2160 upright. The TV shows the whole picture in
-  its own shape, never cropped (unless you pick Fill for landscape) or squeezed.
-  This takes HEVC, which every iPhone from the 8 on sends.
-- **iPad:** it sends the sharpest picture it's able to. iPads that can send
-  HEVC go above 1080p.
+- **iPhone and iPad:** they fit their screen inside the size the TV offers,
+  keeping its shape, so with 4K an upright iPhone sends about 1000 × 2160
+  (996 × 2160 from a 15 Pro Max: every row a 4K TV has; a 1080p offer gets
+  498 × 1080) and an upright iPad 1620 × 2160.
+  The TV shows the whole picture in its own shape, never cropped (unless you
+  pick Fill for a landscape iPhone) or squeezed. Above 1080p takes HEVC, which
+  every iPhone from the 8 on and recent iPads send.
 - **Sound** plays on the TV.
 
 ## Requirements
@@ -58,9 +58,11 @@ adb shell appops set com.mangoscreencast.tv REQUEST_INSTALL_PACKAGES allow
 Apps such as *Downloader* also work for the install itself; the two `appops`
 lines need adb.
 
-**Updates:** the app checks this repository's latest GitHub Release every few
-hours and installs newer versions by itself while it's on screen and nothing
-is mirroring (Settings → Updates: *Automatic*, *Ask first* or *Off*). CI
+**Updates:** the app checks this repository's latest GitHub Release whenever
+it comes to the front or a device stops mirroring, and every 10 minutes while
+its home screen is up, and installs newer versions by itself while it's on
+screen and nothing is mirroring (Settings → Updates: *Automatic*, *Ask first*
+or *Off*). CI
 publishes a release for every push to `main` or the development branch once
 the `MANGO_KEYSTORE_BASE64` Actions secret holds the signing key (a base64'd
 keystore; optional `MANGO_KEYSTORE_PASSWORD`, `MANGO_KEY_ALIAS` and
@@ -97,7 +99,7 @@ cd Mango-Screen-Cast/android-tv
 | Setting | What it does |
 |---|---|
 | TV name | The name Apple devices show. *Mango Screen Cast For macOS/iOS* unless you change it. |
-| Resolution | *Auto* (default), *4K* (3840 × 2160), *2K* (1440p) or *1080p* (1920 × 1080). What you pick is what the TV offers Macs and iPads, exactly as picked: nothing resets it or lowers it. *Auto* is the sharpest the TV's video decoder takes, 4K whenever it can, whatever resolution the TV's menus run at. Apple devices size their picture to fit it, in their own shape, never stretched. On a Mac, leave the TV's display at its default in System Settings → Displays, which follows what the TV offers. iPhones don't use this setting: each is offered a square as big as its own screen's long side (2868 × 2868 for a 16 Pro Max), the one size that fits its screen exactly both ways round, so it sends every pixel of it, upright and sideways, nothing scaled. Only if the TV's video decoder can't take that size is it cut to the most the decoder takes (Diagnostics says so). |
+| Resolution | *Auto* (default), *4K* (3840 × 2160), *2K* (1440p) or *1080p* (1920 × 1080). What you pick is what the TV offers every Mac, iPhone and iPad, exactly as picked: nothing resets it or lowers it. *Auto* is the sharpest the TV's video decoder takes, 4K whenever it can, whatever resolution the TV's menus run at. Apple devices scale their screen to fit inside it, keeping its shape, never stretched: at 4K an upright iPhone 15 Pro Max sends 996 × 2160, which is every row a 4K TV can show, so nothing the TV could display is lost; a sideways one sends 3840 × 1772. Asking for more than the TV's own size wouldn't add a pixel on screen (the TV would scale the picture down instead of the phone), and apps that play video on a TV screen of their own, like YouTube, would get a screen that isn't the TV's shape. On a Mac, leave the TV's display at its default in System Settings → Displays, which follows what the TV offers. |
 | Frame rate | The most frames per second Apple devices may send: *120 fps* (default), *60 fps* or *30 fps*. 120 needs a 120 Hz mode on the TV's screen and a decoder rated for it; a TV without them offers 60. The resolution comes first: if the decoder isn't rated for 120 at that size, the TV offers 60 (pick a smaller Resolution to get 120). Apple devices treat this as an upper limit and may still send 60; *Show stats* shows what arrives. |
 | Frame pacing | *Balanced* (default) shows each frame right away, one per screen refresh. *Fastest* shows frames the moment they're decoded. *Smoothest* holds one frame back to absorb Wi-Fi jitter. |
 | iPhone in landscape | *Fill the screen* (default), *Fit whole picture* or *Stretch to the screen*. iPhones are wider than a TV, so the whole picture leaves black bars above and below; Fill zooms in to cover the TV and cuts off the left and right edges (a 16:9 video then fills the TV exactly); Stretch pulls the picture out to the whole screen, nothing cut off and no bars, but everything a little wider. Mac screens and portrait phones are never cropped or stretched. While mirroring, press **Up** (Fit → Fill → Stretch) or **Down** to switch. |
@@ -105,7 +107,7 @@ cd Mango-Screen-Cast/android-tv
 | Show stats | Overlay while mirroring: resolution, codec, fps, the bitrate the sender is using, decode time. |
 | Diagnostics | What the TV detected (panel, decoders), what it offers Apple devices, and the recent AirPlay and decoder log. Include this when reporting a problem. |
 | Stay visible after closing the app | Keeps the TV in Screen Mirroring lists while you use other apps, and after the TV restarts. For mirroring to bring the player up by itself, Android also needs *Display over other apps* for the app; on Google TV grant it with the `SYSTEM_ALERT_WINDOW` adb line above. Diagnostics shows whether it's granted. |
-| Updates | *Automatic* (default) installs new releases while nothing is mirroring; *Ask first* shows an Update button on the home screen. |
+| Updates | *Automatic* (default) installs new releases as soon as nothing is mirroring: the app looks whenever it comes up or mirroring ends, and every 10 minutes while the home screen is up. *Ask first* shows an Update button on the home screen. |
 
 ## iPad and iPhone
 

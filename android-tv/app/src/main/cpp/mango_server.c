@@ -118,11 +118,3 @@ void mango_server_disconnect_clients(void) {
     if (g_raop) raop_remove_known_connections(g_raop);
     pthread_mutex_unlock(&g_lock);
 }
-
-void mango_server_offer_display(int width, int height, int max_fps) {
-    /* No lock: see mango_server.h. The server's thread is the only reader. */
-    if (!g_raop) return;
-    raop_set_plist(g_raop, "width", width);
-    raop_set_plist(g_raop, "height", height);
-    raop_set_plist(g_raop, "maxFPS", max_fps);
-}
