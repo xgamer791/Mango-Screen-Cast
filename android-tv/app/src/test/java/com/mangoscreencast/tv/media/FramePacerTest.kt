@@ -57,17 +57,38 @@ class FramePacerTest {
     }
 
     @Test
-    fun aLongerBurstDropsOneAndTheNextTakesOverAWaitingRefresh() {
+    fun aLongerBurstDropsOneAndTheNextTakesOverTheNewestRefresh() {
         val decisions = decide(pacer(), listOf(0.0, 1.0, 2.0, 3.0, 4.0, 5.0))
-        // The fourth would be shown 47 ms late: it goes, the schedule starts over, and
-        // the fifth lands before the third's refresh, taking it over.
-        assertEquals(listOf("At", "At", "At", "Drop", "At+", "At"), decisions.map {
+        // The fourth would be shown 47 ms late: it goes, and the fifth takes over the
+        // third's refresh; the sixth can't be shown in time either.
+        assertEquals(listOf("At", "At", "At", "Drop", "At+", "Drop"), decisions.map {
             when (it) {
                 is Decision.At -> if (it.replaces) "At+" else "At"
                 else -> it.javaClass.simpleName
             }
         })
-        assertEquals(4, shown(decisions))
+        assertEquals(3, shown(decisions))
+        assertEquals(3, decisions.count { it is Decision.Drop } + decisions.count { it is Decision.At && it.replaces })
+    }
+
+    @Test
+    fun targetsNeverGoBackwards() {
+        val times = listOf(0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0) + (1..40).map { 6.0 + it * 16.6667 }
+        val targets = targets(decide(pacer(), times))
+        for (i in 1 until targets.size) assertTrue("$i", targets[i] >= targets[i - 1])
+    }
+
+    @Test
+    fun aResumeAfterAQuietSpellNeedsNoWarmUp() {
+        val p = pacer()
+        decide(p, (0 until 240).map { it * 8.3333 })
+        assertTrue(p.streamIsFasterThanScreen)
+        // Two seconds of nothing, then 120 fps again: one per refresh from the first frame.
+        val after = decide(p, (0 until 120).map { 4_000.0 + it * 8.3333 })
+        assertTrue(p.streamIsFasterThanScreen)
+        assertFalse(after.any { it is Decision.Drop })
+        assertFalse(after.any { it is Decision.At && it.replaces })
+        assertEquals(60, after.count { it is Decision.At })
     }
 
     @Test

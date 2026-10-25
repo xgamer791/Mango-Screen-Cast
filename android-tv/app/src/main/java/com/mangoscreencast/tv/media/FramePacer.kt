@@ -11,9 +11,10 @@ import com.mangoscreencast.tv.LatencyMode
  * smooth; two in one refresh means one is never seen, and a frame scheduled
  * far ahead adds delay. Wi-Fi delivers frames in bursts, so a short burst
  * is spread over the refreshes that follow; past a couple of refreshes a
- * frame goes instead, and the schedule starts over from now so the picture
- * stays current. The frames after that land on refreshes already given out
- * and take them over from the frames waiting there ([Decision.At.replaces]).
+ * frame goes instead, and the next one takes over the newest refresh
+ * already given out from the frame waiting there ([Decision.At.replaces]),
+ * so the picture stays current without anything being scheduled behind a
+ * frame already handed to the screen.
  *
  * A stream faster than the screen (120 fps on a 60 Hz TV) gets one frame
  * per refresh, the one whose turn is next, and the rest are skipped before
@@ -30,8 +31,8 @@ internal class FramePacer(periodNs: Long = 16_666_667L) {
 
         /**
          * Show it at this time, on the clock [decide] was given. [replaces]:
-         * the time is before one already given out, so the screen will show
-         * this frame in place of the one waiting for that refresh.
+         * the refresh was already given out, so the screen will show this
+         * frame in place of the one waiting for it.
          */
         data class At(val timestampNs: Long, val replaces: Boolean = false) : Decision()
 
@@ -112,9 +113,10 @@ internal class FramePacer(periodNs: Long = 16_666_667L) {
         val target = maxOf(nowNs + hold, earliest)
         if (target - nowNs > limit) {
             // More frames than the screen can show (a long burst, or 60 fps on
-            // a 50 Hz TV): skip this one, and start the schedule over from
-            // now so the picture stays current.
-            lastTargetNs = nowNs
+            // a 50 Hz TV): skip this one, and step the schedule back one
+            // refresh, so the next frame takes over the newest refresh given
+            // out rather than waiting behind it.
+            lastTargetNs = maxOf(nowNs, lastTargetNs - period)
             hasTarget = true
             return Decision.Drop
         }
@@ -122,7 +124,7 @@ internal class FramePacer(periodNs: Long = 16_666_667L) {
     }
 
     private fun schedule(targetNs: Long): Decision.At {
-        val replaces = hasTarget && targetNs < maxTargetNs
+        val replaces = hasTarget && targetNs <= maxTargetNs
         lastTargetNs = targetNs
         hasTarget = true
         if (targetNs > maxTargetNs) maxTargetNs = targetNs
@@ -132,9 +134,11 @@ internal class FramePacer(periodNs: Long = 16_666_667L) {
     /**
      * Mean time between frames over the last second, counting this one, or
      * null when there's no basis for a judgment yet: before a whole second
-     * has been seen, and whenever the second holds too few frames to tell
-     * a rate from a quiet screen (bursts only ever add frames, so they can't
-     * make a stream look fast).
+     * has been seen, whenever the second holds too few frames to tell a
+     * rate from a quiet screen, and until the frames in it reach back most
+     * of the second (a stream resuming after a pause is judged on what it
+     * does, not on the pause). Bursts only ever add frames, so they can't
+     * make a stream look fast.
      */
     private fun intervalNs(nowNs: Long, period: Long): Long? {
         if (!hasFirst) {
@@ -153,6 +157,7 @@ internal class FramePacer(periodNs: Long = 16_666_667L) {
         size++
         if (nowNs - firstNs < WINDOW_NS) return null
         if (size * period < WINDOW_NS / 2) return null
+        if (nowNs - arrivals[head] < WINDOW_NS * 4 / 5) return null
         return WINDOW_NS / size
     }
 
