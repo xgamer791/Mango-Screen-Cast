@@ -28,6 +28,8 @@ final class MangoCastServer {
     private var listener: NWListener?
     private var current: Session?
     private var listening: UInt16?
+    /// Every open connection, held here until it ends: their callbacks only hold them weakly.
+    private var sessions: [ObjectIdentifier: Session] = [:]
 
     init() {
         queue.setSpecific(key: queueKey, value: ())
@@ -53,13 +55,14 @@ final class MangoCastServer {
         }
     }
 
-    /// Stops listening and ends the connected sender's session.
+    /// Stops listening and ends every connection, the connected sender's first.
     func stop(reason: String) {
         onQueue {
             listener?.cancel()
             listener = nil
             listening = nil
             current?.end(reason, sendBye: true)
+            Array(sessions.values).forEach { $0.end(reason, sendBye: false) }
         }
     }
 
@@ -97,7 +100,9 @@ final class MangoCastServer {
         }
         listener.newConnectionHandler = { [weak self] connection in
             guard let self else { return connection.cancel() }
-            Session(server: self, connection: connection).begin()
+            let session = Session(server: self, connection: connection)
+            self.sessions[ObjectIdentifier(session)] = session
+            session.begin()
         }
         listener.stateUpdateHandler = { [weak self, weak listener] state in
             guard let self, let listener, listener === self.listener else { return }
@@ -329,7 +334,9 @@ final class MangoCastServer {
                 connection.send(content: nil, contentContext: .finalMessage, isComplete: true,
                                 completion: .contentProcessed { _ in connection.cancel() })
             }
-            guard let server, server.current === self else { return }
+            guard let server else { return }
+            server.sessions[ObjectIdentifier(self)] = nil
+            guard server.current === self else { return }
             server.current = nil
             if started {
                 server.log?("Windows: \(hello.name) ended: \(reason)")
