@@ -12,7 +12,7 @@ import kotlin.math.abs
 import kotlin.math.roundToLong
 
 /**
- * The gear's menu: a panel a third of the screen wide on the right, over
+ * The gear's menu: a panel on the right, 580 px of a 1920 px wide screen, over
  * whatever is on screen. It slides in from the right edge as the gear opens
  * it, and back out to it, in the same time and on the same curve, as the gear
  * or Back closes it; the gear while it's sliding turns it around at the same
@@ -26,7 +26,7 @@ class SettingsMenuActivity : Activity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_settings_menu)
         panel = findViewById(R.id.menu_panel)
-        val width = resources.displayMetrics.widthPixels / 3
+        val width = resources.displayMetrics.widthPixels * WIDTH / SCREEN
         panel.layoutParams.width = width
         panel.translationX = width.toFloat()
         slide(open = true)
@@ -64,6 +64,10 @@ class SettingsMenuActivity : Activity() {
     }
 
     companion object {
+        /** The panel's width: 580 px of a 1920 px wide screen, the same share on any TV. */
+        const val WIDTH = 580
+        const val SCREEN = 1920
+
         /** How long the panel takes to slide all the way in, and all the way out. */
         const val SLIDE_MS = 320L
 

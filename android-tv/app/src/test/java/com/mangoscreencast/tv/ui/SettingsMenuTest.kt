@@ -18,7 +18,7 @@ import org.robolectric.annotation.LooperMode
 import java.time.Duration
 
 /**
- * The gear's menu: a panel a third of the screen wide on the right, that
+ * The gear's menu: a panel 580 px of a 1920 px wide screen on the right, that
  * slides in from the right edge as it opens and back out the same way as it
  * closes, with the gear or Back: the same time and the same curve each way.
  */
@@ -51,10 +51,11 @@ class SettingsMenuTest {
     }
 
     @Test
-    fun itsAThirdOfTheScreenOnTheRight() {
+    fun its580PixelsOfThe1920WideScreenOnTheRight() {
         open()
         val screen = menu.resources.displayMetrics.widthPixels
-        assertEquals(screen / 3, panel.width)
+        assertEquals(1920, screen)
+        assertEquals(580, panel.width)
         assertEquals("flush with the right edge", screen, panel.right)
         assertEquals(0f, panel.translationX)
     }

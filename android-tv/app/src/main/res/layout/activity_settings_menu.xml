@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- The gear's menu (ui/SettingsMenuActivity.kt): over whatever is on screen,
-     a panel on the right, a third of the screen wide (set in code). Empty for now. -->
+     a panel on the right, 580 px of a 1920 px wide screen (set in code). Empty for now. -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
     <FrameLayout
         android:id="@+id/menu_panel"
-        android:layout_width="320dp"
+        android:layout_width="290dp"
         android:layout_height="match_parent"
         android:layout_gravity="end"
         android:background="@drawable/menu_panel_bg" />
