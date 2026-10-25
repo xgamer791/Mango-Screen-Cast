@@ -22,6 +22,11 @@ iPad: put your Mac's screen on it, or use it as a second display. See
   pick Fill for a landscape iPhone) or squeezed. Above 1080p takes HEVC, which
   every iPhone from the 8 on and recent iPads send.
 - **Sound** plays on the TV.
+- **Apps:** the TV's home screen has a row of streaming apps, each tile with
+  the service's logo: Netflix, YouTube, HBO Max, Paramount+, Peacock, Prime
+  Video, Hulu, Disney+ and Tubi. **OK** on a tile opens the app. One the TV
+  doesn't have opens its page in Google Play (the Amazon Appstore on a Fire
+  TV) to install it, and opens on the next press after that.
 
 ## Requirements
 
@@ -81,7 +86,9 @@ cd Mango-Screen-Cast/android-tv
 
 ## Use
 
-1. Open **Mango Screen Cast For macOS/iOS** on the TV. It shows *Ready to Cast*.
+1. Open **Mango Screen Cast For macOS/iOS** on the TV. It shows *Ready to Cast*,
+   and the streaming apps along the bottom (**Left** and **Right** move along
+   them, **OK** opens one).
 2. On a **Mac**: Control Center → Screen Mirroring → your TV. To extend the
    desktop instead of mirroring it, choose **Use As Separate Display**. No
    code is needed. On macOS 26, Screen Mirroring can be removed from Control
@@ -348,6 +355,7 @@ android-tv/
     airplay/               AirPlayReceiver (server lifecycle, status), ServiceAdvertiser
     media/                 VideoDecoder (MediaCodec + pacing), AudioPlayer, NAL parsing
     display/               works out the resolution and codecs to offer
+    apps/                  the home screen's streaming apps: which are installed, opening them
     ui/                    Home, Mirror (player), Settings
   third_party/uxplay       AirPlay protocol (git submodule)
   third_party/libplist     Apple property lists (git submodule)
@@ -399,4 +407,8 @@ an iPhone), sideways (the `ios-screenshots` artifact).
 The app links UxPlay, which is GPL-3.0, so if you distribute the app it must
 be under GPL-3.0. libplist is LGPL-2.1. OpenSSL 1.1.1 is under the OpenSSL
 license. AirPlay is a trademark of Apple Inc. This project isn't affiliated
-with Apple.
+with Apple. The streaming apps' names and logos (Netflix, YouTube, HBO Max,
+Paramount+, Peacock, Prime Video, Hulu, Disney+, Tubi) are trademarks of
+their owners, shown only to name and open their apps; this project isn't
+affiliated with them either. The logo files come from each service's
+official artwork as published on Wikimedia Commons.

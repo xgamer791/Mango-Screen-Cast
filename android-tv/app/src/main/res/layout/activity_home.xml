@@ -170,94 +170,27 @@
     </LinearLayout>
 
     <TextView
-        android:id="@+id/devices_label"
+        android:id="@+id/apps_label"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="60dp"
         android:layout_marginTop="380dp"
         android:fontFamily="@font/geist_semibold"
         android:includeFontPadding="false"
-        android:text="@string/supported_devices"
+        android:text="@string/apps_label"
         android:textColor="#FFFFFF"
         android:textSize="20sp" />
 
-    <!-- Five tiles across the content width, 24 dp apart. The remote walks them; +More opens Settings. -->
+    <!-- A tile per streaming app across the content width, 12 dp apart, filled in
+         by AppTiles. The remote walks them; OK opens the app. -->
     <LinearLayout
+        android:id="@+id/apps_row"
         android:layout_width="840dp"
         android:layout_height="56dp"
         android:layout_marginStart="60dp"
         android:layout_marginTop="416dp"
         android:baselineAligned="false"
-        android:orientation="horizontal">
-
-        <FrameLayout
-            android:id="@+id/tile_samsung"
-            style="@style/Mango.DeviceTile">
-
-            <ImageView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:contentDescription="Samsung"
-                android:src="@drawable/brand_samsung" />
-        </FrameLayout>
-
-        <FrameLayout
-            android:id="@+id/tile_lg"
-            style="@style/Mango.DeviceTile"
-            android:layout_marginStart="24dp">
-
-            <ImageView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:contentDescription="LG"
-                android:src="@drawable/brand_lg" />
-        </FrameLayout>
-
-        <FrameLayout
-            android:id="@+id/tile_sony"
-            style="@style/Mango.DeviceTile"
-            android:layout_marginStart="24dp">
-
-            <ImageView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:contentDescription="Sony"
-                android:src="@drawable/brand_sony" />
-        </FrameLayout>
-
-        <FrameLayout
-            android:id="@+id/tile_tcl"
-            style="@style/Mango.DeviceTile"
-            android:layout_marginStart="24dp">
-
-            <ImageView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:contentDescription="TCL"
-                android:src="@drawable/brand_tcl" />
-        </FrameLayout>
-
-        <FrameLayout
-            android:id="@+id/tile_more"
-            style="@style/Mango.DeviceTile"
-            android:layout_marginStart="24dp">
-
-            <TextView
-                android:id="@+id/more_devices"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:fontFamily="@font/geist_medium"
-                android:includeFontPadding="false"
-                android:text="@string/more_devices"
-                android:textColor="#000000"
-                android:textSize="20sp" />
-        </FrameLayout>
-    </LinearLayout>
+        android:orientation="horizontal" />
 
     <!-- Under the tiles: the app version, or an update's progress. -->
     <TextView

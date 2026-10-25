@@ -17,11 +17,29 @@
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
     <uses-permission android:name="android.permission.UPDATE_PACKAGES_WITHOUT_USER_ACTION" />
 
-    <!-- So Settings can tell whether this TV has a "Display over other apps" screen. -->
     <queries>
+        <!-- So Settings can tell whether this TV has a "Display over other apps" screen. -->
         <intent>
             <action android:name="android.settings.action.MANAGE_OVERLAY_PERMISSION" />
         </intent>
+        <!-- The home screen's streaming apps (apps/StreamingApps.kt): Android 11 and
+             later hide other apps, their banners and their launch intents otherwise. -->
+        <package android:name="com.netflix.ninja" />
+        <package android:name="com.netflix.mediaclient" />
+        <package android:name="com.google.android.youtube.tv" />
+        <package android:name="com.amazon.firetv.youtube" />
+        <package android:name="com.google.android.youtube" />
+        <package android:name="com.wbd.stream" />
+        <package android:name="com.cbs.ott" />
+        <package android:name="com.cbs.app" />
+        <package android:name="com.peacocktv.peacockandroid" />
+        <package android:name="com.amazon.amazonvideo.livingroom" />
+        <package android:name="com.amazon.firebat" />
+        <package android:name="com.amazon.avod.thirdpartyclient" />
+        <package android:name="com.hulu.livingroomplus" />
+        <package android:name="com.hulu.plus" />
+        <package android:name="com.disney.disneyplus" />
+        <package android:name="com.tubitv" />
     </queries>
 
     <uses-feature android:name="android.software.leanback" android:required="false" />

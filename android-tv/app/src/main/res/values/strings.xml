@@ -20,8 +20,9 @@
     <string name="step_detect_body">App will search for\nnearby devices</string>
     <string name="step_cast">Cast</string>
     <string name="step_cast_body">Tap to connect and\nstart casting</string>
-    <string name="supported_devices">Supported Devices</string>
-    <string name="more_devices">+More</string>
+    <string name="apps_label">Apps</string>
+    <string name="app_not_installed">%1$s isn’t on this TV yet: here it is in the app store</string>
+    <string name="app_open_failed">Couldn’t open %1$s or an app store on this TV</string>
     <string name="settings">Settings</string>
 
     <!-- Player -->
@@ -72,7 +73,7 @@
     <string name="overlay_message">To start mirroring while another app is open, Android needs Mango Screen Cast For macOS/iOS to have “Display over other apps” permission. If this TV has no settings screen for it, run this once from your Mac:\n\n%1$s</string>
     <string name="overlay_open">Open settings</string>
     <string name="overlay_later">Not now</string>
-    <string name="about">Mango Screen Cast For macOS/iOS %1$s. Built on UxPlay (GPL-3.0), libplist (LGPL-2.1) and OpenSSL; set in Geist (SIL OFL). AirPlay is a trademark of Apple Inc.</string>
+    <string name="about">Mango Screen Cast For macOS/iOS %1$s. Built on UxPlay (GPL-3.0), libplist (LGPL-2.1) and OpenSSL; set in Geist (SIL OFL). AirPlay is a trademark of Apple Inc.; the streaming apps’ names and logos are trademarks of their owners.</string>
 
     <!-- Updates -->
     <string name="version_label">Version %1$s</string>

@@ -8,14 +8,17 @@ import android.os.Looper
 import android.view.View
 import android.widget.Button
 import android.widget.TextView
+import android.widget.Toast
 import com.mangoscreencast.tv.MangoApp
 import com.mangoscreencast.tv.R
 import com.mangoscreencast.tv.ReceiverService
 import com.mangoscreencast.tv.airplay.AirPlayReceiver
 import com.mangoscreencast.tv.airplay.AirPlayReceiver.State
+import com.mangoscreencast.tv.apps.AppLauncher
+import com.mangoscreencast.tv.apps.StreamingApp
 import com.mangoscreencast.tv.update.AppUpdater
 
-/** The "Ready to Cast" screen: the name to pick on a Mac or iPhone, the three steps, and what the TV can take. */
+/** The "Ready to Cast" screen: the name to pick on a Mac or iPhone, the three steps, and the streaming apps. */
 class HomeActivity : Activity(), AirPlayReceiver.Listener, AppUpdater.Listener {
     private lateinit var statusView: TextView
     private lateinit var subtitleView: TextView
@@ -25,6 +28,7 @@ class HomeActivity : Activity(), AirPlayReceiver.Listener, AppUpdater.Listener {
 
     private val receiver get() = MangoApp.receiver
     private val updater get() = MangoApp.instance.updater
+    private val launcher by lazy { AppLauncher(packageManager, AppLauncher.isFireTv(this)) }
     private val handler = Handler(Looper.getMainLooper())
 
     /** A TV left on this screen still picks up a new release within minutes. */
@@ -53,12 +57,22 @@ class HomeActivity : Activity(), AirPlayReceiver.Listener, AppUpdater.Listener {
             setOnClickListener { openSettings() }
             requestFocus()
         }
-        // The tiles let the remote walk the dashboard; +More is the way into Settings from the row.
-        findViewById<View>(R.id.tile_more).setOnClickListener { openSettings() }
+        AppTiles.fill(findViewById(R.id.apps_row), ::openApp)
         ReceiverService.sync(this)
     }
 
     private fun openSettings() = startActivity(Intent(this, SettingsActivity::class.java))
+
+    /** Starts the app; one the TV doesn't have opens its app store page, and says so. */
+    private fun openApp(app: StreamingApp) {
+        val entry = launcher.entry(app)
+        val note = when {
+            !launcher.open(this, entry) -> getString(R.string.app_open_failed, app.name)
+            entry is AppLauncher.Entry.Missing -> getString(R.string.app_not_installed, app.name)
+            else -> return
+        }
+        Toast.makeText(this, note, Toast.LENGTH_LONG).show()
+    }
 
     override fun onStart() {
         super.onStart()

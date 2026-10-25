@@ -85,13 +85,14 @@
         <item name="android:background">#1FFFFFFF</item>
     </style>
 
-    <!-- Home screen: a Supported Devices tile. Focusable, so the remote can walk the row. -->
-    <style name="Mango.DeviceTile" parent="">
+    <!-- Home screen: a streaming app's tile. Focusable, so the remote can walk the row. -->
+    <style name="Mango.AppTile" parent="">
         <item name="android:layout_width">0dp</item>
         <item name="android:layout_height">56dp</item>
         <item name="android:layout_weight">1</item>
-        <item name="android:background">@drawable/device_tile</item>
+        <item name="android:background">@drawable/app_tile</item>
         <item name="android:focusable">true</item>
+        <item name="android:clickable">true</item>
     </style>
 
     <!-- Home screen: the small corner buttons (Settings, Update). -->

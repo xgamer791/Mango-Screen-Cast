@@ -9,8 +9,11 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
+import android.widget.ImageView
 import android.widget.TextView
 import com.mangoscreencast.tv.R
+import com.mangoscreencast.tv.apps.StreamingApps
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -48,6 +51,33 @@ class HomeLayoutTest {
         }
     }
 
+    /** Every app has a tile on the screen, in order, with its whole logo inside it. */
+    @Test
+    fun appTiles() {
+        var row: ViewGroup? = null
+        check("apps") { root ->
+            ready(root)
+            row = root.findViewById(R.id.apps_row)
+        }
+        val tiles = (0 until row!!.childCount).map { row!!.getChildAt(it) }
+        assertEquals(StreamingApps.ALL.map { it.name }, tiles.map { it.contentDescription })
+        val screen = row!!.rootView.width
+        var left = 0
+        for (tile in tiles) {
+            val name = tile.contentDescription
+            assertTrue("$name overlaps the tile before it", tile.left >= left)
+            left = tile.right
+            val logo = tile.findViewById<ImageView>(R.id.app_logo)
+            assertTrue("$name has no logo", logo.drawable != null)
+            assertTrue("$name's logo is ${logo.width}x${logo.height} in a ${tile.width}x${tile.height} tile",
+                logo.left >= 0 && logo.top >= 0 && logo.right <= tile.width && logo.bottom <= tile.height)
+            assertTrue("$name's logo is squeezed", logo.width == logo.drawable.intrinsicWidth &&
+                logo.height == logo.drawable.intrinsicHeight)
+        }
+        val rowRight = IntArray(2).also { row!!.getLocationInWindow(it) }[0] + row!!.width
+        assertTrue("the row runs past the screen", rowRight <= screen)
+    }
+
     @Test
     fun connected() = check("connected") { root ->
         ready(root)
@@ -77,6 +107,7 @@ class HomeLayoutTest {
         root.text(R.id.status, c.getString(R.string.status_ready))
         root.text(R.id.subtitle, c.getString(R.string.ready_subtitle))
         root.findViewById<TextView>(R.id.status_detail).visibility = View.GONE
+        AppTiles.fill(root.findViewById(R.id.apps_row)) {}
     }
 
     private fun check(label: String, fill: (View) -> Unit) {
