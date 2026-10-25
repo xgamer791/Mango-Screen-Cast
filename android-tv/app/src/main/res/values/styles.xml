@@ -95,6 +95,14 @@
         <item name="android:clickable">true</item>
     </style>
 
+    <!-- A pop-up's buttons: the app's button (button_bg, the cards' corners), a little smaller. -->
+    <style name="Mango.DialogButton" parent="Mango.Button">
+        <item name="android:minHeight">44dp</item>
+        <item name="android:paddingStart">22dp</item>
+        <item name="android:paddingEnd">22dp</item>
+        <item name="android:layout_marginStart">8dp</item>
+    </style>
+
     <!-- Home screen: the small corner buttons (Settings, Update). -->
     <style name="Mango.HomeButton" parent="@android:style/Widget.DeviceDefault.Button.Borderless">
         <item name="android:layout_width">wrap_content</item>

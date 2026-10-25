@@ -12,6 +12,13 @@
         <item name="android:textViewStyle">@style/Mango.TextView</item>
         <item name="android:buttonStyle">@style/Mango.ButtonBase</item>
         <item name="android:editTextStyle">@style/Mango.EditText</item>
+        <!-- Pop-ups (TV name, Diagnostics) get the app's buttons, with the cards' corners. -->
+        <item name="android:alertDialogTheme">@style/Theme.Mango.Dialog</item>
+    </style>
+
+    <style name="Theme.Mango.Dialog" parent="@android:style/Theme.DeviceDefault.Dialog.Alert">
+        <item name="android:colorAccent">@color/mango</item>
+        <item name="android:buttonBarButtonStyle">@style/Mango.DialogButton</item>
     </style>
 
     <style name="Theme.Mango.Fullscreen">

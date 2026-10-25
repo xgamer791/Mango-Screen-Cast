@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- The app tiles' corners; the Liquid Glass strip uses the same. -->
+    <!-- The app tiles' corners; the Liquid Glass strip, the buttons and the Settings rows use the same. -->
     <dimen name="card_radius">8dp</dimen>
 </resources>
