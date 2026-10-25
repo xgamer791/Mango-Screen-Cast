@@ -9,6 +9,9 @@ There's also an **iPad and iPhone app, Mango Cast**, that does the same on an
 iPad: put your Mac's screen on it, or use it as a second display. See
 [iPad and iPhone](#ipad-and-iphone).
 
+Windows can't send AirPlay, so **Mango Cast for Windows** puts a PC's screen
+and sound on the TV or the iPad instead. See [Windows PC](#windows-pc).
+
 - **Mac:** mirror the screen, or choose **Use As Separate Display** to use the
   TV as a second monitor. The TV offers 4K (3840 × 2160) at 60 fps with HEVC
   whenever its decoder can take it, so the Mac renders for the full panel
@@ -213,6 +216,46 @@ support it, macOS's built-in Sidecar also puts the Mac's screen on the iPad
 (it shows up in the same Screen Mirroring menu), with touch and Apple Pencil
 input. Mango Cast works across Apple IDs, on iPads that Sidecar doesn't
 support, and from iPhones and other iPads too.
+
+## Windows PC
+
+**Mango Cast for Windows** (`MangoCast.exe`, in `windows/`) sends a Windows
+PC's screen and sound to the TV app or the iPad app, over the local network,
+with the protocol in [`protocol/mango-cast.md`](protocol/mango-cast.md).
+AirPlay works exactly as before; this is a second way in.
+
+It needs 64-bit Windows 10 (version 1903) or Windows 11, and the PC and the
+TV or iPad on the same network.
+
+### Install
+
+Download `MangoCast.exe` from the
+[`windows-latest` pre-release](../../releases/tag/windows-latest). It's a single
+program with nothing to install. It isn't signed yet, so the first time
+Windows may say it protected your PC: choose **More info → Run anyway**.
+
+### Use
+
+1. Open **Mango Screen Cast** on the TV, or **Mango Cast** on the iPad.
+2. Open `MangoCast.exe` on the PC. The TVs and iPads it finds on the network
+   are listed by name; pick one (or type its address under **Or an address**)
+   and click **Connect**. Its screen and sound play there.
+3. **Screen** picks which monitor to send, and **Send sound** turns the PC's
+   sound on or off. **Stop** ends it, or press **Back** twice on the TV
+   remote, or tap **Stop** on the iPad.
+
+The PC sends the sharpest picture the TV or iPad offers: HEVC up to 4K when
+the PC has a hardware HEVC encoder (most from the last eight years), otherwise
+H.264 up to 1080p. One device shows at a time: while a Mac or an iPhone is
+mirroring, the PC is told the TV is busy, and an Apple device that starts
+mirroring takes over from the PC.
+
+On the TV, **Settings → Windows computers** turns this off; on the iPad, the
+same switch is in **Settings**. Diagnostics on either says whether it's
+listening and which PC is connected.
+
+`MangoCast.exe --help` lists its command line (find receivers, connect by
+name or address, choose a codec, a monitor or a bitrate).
 
 ## What makes it fast
 
