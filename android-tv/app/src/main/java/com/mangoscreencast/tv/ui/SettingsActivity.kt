@@ -113,7 +113,7 @@ class SettingsActivity : Activity(), AppUpdater.Listener {
             text = receiver.diagnostics()
             setTextIsSelectable(true)
             typeface = Typeface.MONOSPACE
-            textSize = 14f
+            textSize = 11.2f
             val pad = (16 * resources.displayMetrics.density).toInt()
             setPadding(pad, pad, pad, pad)
             isFocusable = true

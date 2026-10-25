@@ -23,7 +23,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:textColor="@color/text_primary"
-            android:textSize="22sp" />
+            android:textSize="17.6sp" />
 
         <TextView
             android:id="@+id/setting_value"
@@ -31,7 +31,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="24dp"
             android:textColor="@color/mango"
-            android:textSize="22sp"
+            android:textSize="17.6sp"
             android:textStyle="bold" />
     </LinearLayout>
 
@@ -41,5 +41,5 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
         android:textColor="@color/text_secondary"
-        android:textSize="16sp" />
+        android:textSize="12.8sp" />
 </LinearLayout>

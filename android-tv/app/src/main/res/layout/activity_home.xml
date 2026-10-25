@@ -42,7 +42,7 @@
         android:includeFontPadding="false"
         android:maxLines="1"
         android:textColor="#FFFFFF"
-        android:textSize="44sp" />
+        android:textSize="35.2sp" />
 
     <TextView
         android:id="@+id/subtitle"
@@ -55,7 +55,7 @@
         android:maxLines="2"
         android:maxWidth="560dp"
         android:textColor="#FFFFFF"
-        android:textSize="31sp" />
+        android:textSize="24.8sp" />
 
     <!-- Only when something needs saying: a lost connection, or why AirPlay isn't running. -->
     <TextView
@@ -69,7 +69,7 @@
         android:maxLines="2"
         android:maxWidth="540dp"
         android:textColor="#D9FFFFFF"
-        android:textSize="15sp" />
+        android:textSize="12sp" />
 
     <FrameLayout
         android:id="@+id/badge"
@@ -185,7 +185,7 @@
         android:includeFontPadding="false"
         android:text="@string/apps_label"
         android:textColor="#FFFFFF"
-        android:textSize="20sp" />
+        android:textSize="16sp" />
 
     <!-- A tile per streaming app across the content width, 12 dp apart, filled in
          by AppTiles. The remote walks them; OK opens the app. -->
@@ -212,7 +212,7 @@
         android:maxLines="1"
         android:maxWidth="300dp"
         android:textColor="#B3FFFFFF"
-        android:textSize="14sp" />
+        android:textSize="11.2sp" />
 
     <!-- Top-right corner, clear of the badge's rings. -->
     <LinearLayout
