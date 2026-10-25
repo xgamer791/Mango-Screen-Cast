@@ -193,21 +193,25 @@ final class ControlsUITests: XCTestCase {
         keyboardButton.tap()
     }
 
-    /// ⋯ shows the bar saying what's mirroring, with no buttons on it:
-    /// Control and Fill are in Settings, and the Mac stops mirroring.
-    func testMoreShowsTheBarWithNoButtons() {
+    /// ⋯ pops up nothing for now: no bar saying what's mirroring, no stats,
+    /// no Controlling, Fit or Stop. Nothing shows as the picture opens either.
+    func testMorePopsUpNothing() {
         let more = app.buttons["moreButton"]
         XCTAssertTrue(more.waitForExistence(timeout: 5))
         let bar = app.descendants(matching: .any)["controlsBar"]
-        // The bar shows as the picture opens and goes after a few seconds.
-        XCTAssertTrue(bar.waitForNonExistence(timeout: 10))
+        let mirroring = app.staticTexts.containing(NSPredicate(format: "label CONTAINS 'Mirroring'")).firstMatch
+        let stats = app.staticTexts.containing(NSPredicate(format: "label CONTAINS 'fps' OR label CONTAINS 'recoveries'")).firstMatch
+        XCTAssertFalse(bar.exists, "no bar as the picture opens")
+        XCTAssertFalse(mirroring.exists, "nothing says what's mirroring")
         more.tap()
-        XCTAssertTrue(bar.waitForExistence(timeout: 5))
-        XCTAssertTrue(bar.label.contains("Mirroring Demo Mac"), "the bar says what's mirroring: \(bar.label)")
+        Thread.sleep(forTimeInterval: 1)
+        XCTAssertFalse(bar.exists, "⋯ shows no bar")
+        XCTAssertFalse(mirroring.exists, "⋯ shows nothing saying what's mirroring")
+        XCTAssertFalse(stats.exists, "⋯ shows no stats")
         for name in ["controlButton", "Controlling", "Control Mac", "Fit", "Fill", "Stop"] {
             XCTAssertFalse(app.buttons[name].exists, "no \(name) button")
         }
-        snap("7 controls bar")
+        snap("7 controls more")
     }
 
     private func snap(_ name: String) {
