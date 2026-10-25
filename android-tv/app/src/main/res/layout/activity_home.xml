@@ -88,14 +88,13 @@
             android:src="@drawable/ic_cast_badge" />
     </FrameLayout>
 
-    <!-- The glass strip: three equal columns, each with its icon and text centred. -->
-    <LinearLayout
+    <!-- The glass strip (Mango Liquid Glass): three equal columns, each with its icon and text centred. -->
+    <com.mangoscreencast.tv.ui.LiquidGlassLayout
         android:id="@+id/steps"
         android:layout_width="840dp"
         android:layout_height="112dp"
         android:layout_marginStart="60dp"
         android:layout_marginTop="244dp"
-        android:background="@drawable/glass_strip"
         android:baselineAligned="false"
         android:orientation="horizontal">
 
@@ -174,7 +173,7 @@
                 </LinearLayout>
             </LinearLayout>
         </LinearLayout>
-    </LinearLayout>
+    </com.mangoscreencast.tv.ui.LiquidGlassLayout>
 
     <TextView
         android:id="@+id/apps_label"
