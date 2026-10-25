@@ -53,21 +53,32 @@ class SettingsTest {
     }
 
     @Test
-    fun resolutionIs1080pByDefault() {
-        assertEquals(ResolutionSetting.FHD_1080, Settings(context).resolution)
+    fun resolutionIsAutoByDefault() {
+        assertEquals(ResolutionSetting.AUTO, Settings(context).resolution)
     }
 
     @Test
-    fun anyResolutionSavedBeforeStartsAt1080pOnce() {
-        for (old in listOf("HD_720", "AUTO", "UHD_2160", "QHD_1440")) {
-            prefs.edit().clear().putString("resolution", old).commit()
-            assertEquals(old, ResolutionSetting.FHD_1080, Settings(context).resolution)
+    fun aResolutionSavedBeforeIsNeverReset() {
+        for (saved in ResolutionSetting.entries) {
+            // Whichever one-time resets earlier versions had done or not.
+            for (flag in listOf(null, "resolution_1080_default", "resolution_auto_default")) {
+                val editor = prefs.edit().clear().putString("resolution", saved.name)
+                flag?.let { editor.putBoolean(it, true) }
+                editor.commit()
+                assertEquals("$saved after $flag", saved, Settings(context).resolution)
+                assertEquals("$saved after $flag, opened again", saved, Settings(context).resolution)
+            }
         }
     }
 
     @Test
-    fun fillingTheScreenWithALandscapeIPhoneIsBackOnOnceThenKept() {
-        prefs.edit().putBoolean("fill_wide", false).commit()
+    fun aResolutionThatNoLongerExistsIsAuto() {
+        prefs.edit().putString("resolution", "HD_720").commit()
+        assertEquals(ResolutionSetting.AUTO, Settings(context).resolution)
+    }
+
+    @Test
+    fun aLandscapeIPhoneFillsTheScreenUnlessChanged() {
         assertEquals(WidePictures.FILL, Settings(context).widePictures)
         for (chosen in WidePictures.entries) {
             Settings(context).widePictures = chosen
@@ -77,7 +88,7 @@ class SettingsTest {
 
     @Test
     fun fillTurnedOffBeforeStretchCameIsFit() {
-        prefs.edit().putBoolean("resolution_1080_default", true).putBoolean("fill_wide", false).commit()
+        prefs.edit().putBoolean("fill_wide", false).commit()
         assertEquals(WidePictures.FIT, Settings(context).widePictures)
     }
 

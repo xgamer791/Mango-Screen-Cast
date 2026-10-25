@@ -14,12 +14,17 @@ import java.util.concurrent.CopyOnWriteArrayList
  * player screen arriving late, a decoder crash and a rotation.
  */
 class VideoDecoderTest {
-    /** Records what it was fed. Accepts input only after `warmUpMs`, and can be told to crash. */
-    private class FakeCodec(val id: Int, private val warmUpMs: Long) : VideoCodec {
+    /**
+     * Records what it was fed. Accepts input only after `warmUpMs`, can be
+     * told to crash, and reports `size` as its picture's size once it starts.
+     */
+    private class FakeCodec(val id: Int, private val warmUpMs: Long, private val size: Pair<Int, Int>? = null) :
+        VideoCodec {
         override val name = "fake-$id"
         val fed = CopyOnWriteArrayList<String>()
         @Volatile var crash = false
         @Volatile var released = false
+        @Volatile private var sizeReported = false
         private val createdAt = System.nanoTime()
         private val input = ByteBuffer.allocate(1 shl 20)
 
@@ -43,11 +48,15 @@ class VideoDecoderTest {
 
         override fun dequeueOutputBuffer(out: OutputInfo, timeoutUs: Long): Int {
             if (crash) throw IllegalStateException("decoder died")
+            if (size != null && !sizeReported) {
+                sizeReported = true
+                return VideoCodec.FORMAT_CHANGED
+            }
             Thread.sleep(timeoutUs / 1000)
             return -1
         }
 
-        override fun outputSize(): Pair<Int, Int>? = null
+        override fun outputSize(): Pair<Int, Int>? = size
         override fun render(index: Int, timestampNs: Long?) {}
         override fun discard(index: Int) {}
         override fun setOutputSurface(surface: Surface) {}
@@ -61,9 +70,10 @@ class VideoDecoderTest {
 
     private val codecs = CopyOnWriteArrayList<FakeCodec>()
     private var warmUpMs = 0L
+    private var pictureSize: Pair<Int, Int>? = null
 
     private fun decoder(canSwapSurfaces: Boolean = true) = VideoDecoder(
-        { _, _, _, _, _ -> FakeCodec(codecs.size + 1, warmUpMs).also { codecs += it } },
+        { _, _, _, _, _ -> FakeCodec(codecs.size + 1, warmUpMs, pictureSize).also { codecs += it } },
         canSwapSurfaces,
     )
 
@@ -186,6 +196,42 @@ class VideoDecoderTest {
         video.submit(delta("P03"), false)
         waitFor { codecs.single().fed.size == 3 }
         assertEquals(1, codecs.size)
+        video.stop()
+    }
+
+    @Test
+    fun aPlayerThatOpensAfterThePictureStartedIsToldItsShape() {
+        // An iPhone held upright; the player opens once it's already decoding (from the background, say).
+        pictureSize = 500 to 1080
+        val video = decoder()
+        val firstPlayer = CopyOnWriteArrayList<Pair<Int, Int>>()
+        video.listener = object : VideoDecoder.Listener {
+            override fun onVideoSize(width: Int, height: Int) {
+                firstPlayer += width to height
+            }
+        }
+        video.setSurface(screen(), 60f)
+        video.start(h265 = false, width = 500, height = 1080)
+        video.submit(keyframe("K01"), false)
+        waitFor { firstPlayer.isNotEmpty() }
+
+        val laterPlayer = CopyOnWriteArrayList<Pair<Int, Int>>()
+        video.listener = object : VideoDecoder.Listener {
+            override fun onVideoSize(width: Int, height: Int) {
+                laterPlayer += width to height
+            }
+        }
+        assertEquals(listOf(500 to 1080), laterPlayer)
+
+        // A new stream's player isn't told the last stream's shape.
+        video.start(h265 = false, width = 1920, height = 888)
+        val nextStream = CopyOnWriteArrayList<Pair<Int, Int>>()
+        video.listener = object : VideoDecoder.Listener {
+            override fun onVideoSize(width: Int, height: Int) {
+                nextStream += width to height
+            }
+        }
+        assertTrue(nextStream.isEmpty())
         video.stop()
     }
 }

@@ -51,8 +51,21 @@ class VideoDecoder internal constructor(
         val restarts: Int,
     )
 
+    /**
+     * Told the picture's size, also straight away when set mid-stream: a
+     * player that opens after the picture started (from the background, or
+     * opened again) would otherwise lay it out at 16:9, stretched.
+     */
     @Volatile
     var listener: Listener? = null
+        set(value) {
+            field = value
+            pictureSize?.let { (width, height) -> value?.onVideoSize(width, height) }
+        }
+
+    /** The decoded picture's size in this stream, once known. */
+    @Volatile
+    private var pictureSize: Pair<Int, Int>? = null
 
     @Volatile
     var latencyMode: LatencyMode = LatencyMode.BALANCED
@@ -139,6 +152,7 @@ class VideoDecoder internal constructor(
     fun start(h265: Boolean, width: Int, height: Int) {
         stop()
         val next = Stream(h265, width.coerceAtLeast(16), height.coerceAtLeast(16))
+        pictureSize = null
         synchronized(queueLock) {
             stream = next
             bytesReceived = 0
@@ -515,7 +529,10 @@ class VideoDecoder internal constructor(
         if (width != outputWidth || height != outputHeight) note("decoded picture ${width}x$height")
         outputWidth = width
         outputHeight = height
-        if (width > 0 && height > 0) pictureAspect = width.toFloat() / height
+        if (width > 0 && height > 0) {
+            pictureAspect = width.toFloat() / height
+            pictureSize = width to height
+        }
         shapeWaitSinceNs = 0
         listener?.onVideoSize(width, height)
     }

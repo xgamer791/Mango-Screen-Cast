@@ -6,6 +6,7 @@ import android.media.MediaFormat
 import android.os.Build
 import android.util.DisplayMetrics
 import android.view.Display
+import androidx.annotation.RequiresApi
 import com.mangoscreencast.tv.media.DecoderSelection
 import kotlin.math.abs
 import kotlin.math.max
@@ -31,6 +32,11 @@ enum class FrameRateSetting(val fps: Int) {
 
 /** The physical screen: Android TVs often run their UI at 1080p on a 4K panel. */
 data class Panel(val width: Int, val height: Int, val refreshRates: List<Float>)
+
+/** A display mode the TV offers, sideways (width the larger side). */
+internal data class ScreenMode(val id: Int, val width: Int, val height: Int, val refreshRate: Float) {
+    val pixels: Long get() = width.toLong() * height
+}
 
 /** What the TV tells Macs, iPhones and iPads it can show. They size their stream to it. */
 data class MirrorProfile(
@@ -75,16 +81,14 @@ object DisplayCapabilities {
     fun panel(context: Context): Panel {
         val display = context.getSystemService(DisplayManager::class.java).getDisplay(Display.DEFAULT_DISPLAY)
         if (Build.VERSION.SDK_INT >= 23) {
-            val modes = (display.supportedModes.toList() + display.mode)
-            val best = modes.maxBy { it.physicalWidth.toLong() * it.physicalHeight }
-            val width = max(best.physicalWidth, best.physicalHeight)
-            val height = min(best.physicalWidth, best.physicalHeight)
+            val modes = tvShaped(screenModes(display))
+            val best = modes.maxBy { it.pixels }
             val rates = modes
-                .filter { max(it.physicalWidth, it.physicalHeight) == width && min(it.physicalWidth, it.physicalHeight) == height }
+                .filter { it.width == best.width && it.height == best.height }
                 .map { it.refreshRate }
                 .distinctBy { (it * 100).toInt() }
                 .sortedDescending()
-            return Panel(width, height, rates)
+            return Panel(best.width, best.height, rates)
         }
         val metrics = DisplayMetrics()
         @Suppress("DEPRECATION")
@@ -108,17 +112,19 @@ object DisplayCapabilities {
     ): MirrorProfile = choose(setting, frameRate, panel(context), maxRefreshRate(context), SystemDecoders)
 
     /**
-     * The largest size the TV's hardware decoder takes, up to the chosen
-     * resolution. Above 1080p Apple devices only send HEVC, so those sizes
-     * need an HEVC decoder.
+     * The size Macs, iPhones and iPads are offered. A size picked under
+     * Resolution is offered exactly as picked, whatever the screen or the
+     * decoder's tables report: nothing overrides it.
      *
-     * Auto is the TV's own resolution: its largest display mode (4K on a 4K
-     * panel, even when the menus run at 1080p), never less than 1080p. Macs,
-     * iPhones and iPads then fit their picture to it. A TV that reports a
-     * smaller screen than it has can be set to 4K by hand. Every TV HEVC
-     * decoder that takes a 4K picture is built for 4K60 streaming apps, so
-     * up to 60 fps the size check is enough; the frame-rate tables some
-     * vendors publish are often too conservative.
+     * Auto (the default) is the sharpest picture the TV's hardware decoder
+     * takes: 4K, else 1440p, else 1080p, whatever the TV's menus run at.
+     * Apple devices size their picture to the height offered, so this is
+     * what makes an iPhone held upright sharp: 1000 × 2160 for a 4K offer,
+     * where 1080p gets 500 × 1080. Above 1080p Apple devices only send HEVC,
+     * so those sizes need an HEVC decoder. Every TV HEVC decoder that takes
+     * a 4K picture is built for 4K60 streaming apps, so up to 60 fps the size
+     * check is enough; the frame-rate tables some vendors publish are often
+     * too conservative.
      *
      * Above 60 fps nothing is assumed: the screen needs a mode that fast and
      * the decoder's own tables must list the rate. The resolution always
@@ -130,30 +136,36 @@ object DisplayCapabilities {
         resolution: ResolutionSetting, frameRate: FrameRateSetting, panel: Panel, screenMaxHz: Float,
         decoders: DecoderInfo,
     ): MirrorProfile {
-        val maxHeight = if (resolution == ResolutionSetting.AUTO) max(panel.height, 1080) else resolution.maxHeight
-        val sizes = CANDIDATES.filter { (width, height) -> height <= maxHeight && takes(decoders, width, height) }
-        val best = sizes.firstOrNull()
+        val taken = CANDIDATES.filter { (width, height) -> takes(decoders, width, height) }
+        // Nothing reported even 1080p on Auto; ask for it anyway and let the decoder try.
+        val best = if (resolution == ResolutionSetting.AUTO) taken.firstOrNull() ?: (1920 to 1080)
+            else CANDIDATES.first { it.second == resolution.maxHeight }
+        val unlisted = best !in taken
         val refresh = refreshFor(panel)
-        fun offer(size: Pair<Int, Int>?, fps: Int, refreshRate: Int, note: String? = null): MirrorProfile {
-            // Nothing reported 1080p; ask for it anyway and let the decoder try.
-            val (width, height) = size ?: (1920 to 1080)
-            val h265 = if (size == null) decoders.hevcAvailable else decoders.supportsSize(HEVC, width, height)
-            return MirrorProfile(width, height, refreshRate, fps, h265, panel, note)
+        fun offer(fps: Int, refreshRate: Int, note: String? = null): MirrorProfile {
+            val (width, height) = best
+            // A size the decoder doesn't list goes out with HEVC whenever there's an HEVC decoder.
+            val h265 = decoders.supportsSize(HEVC, width, height) || (unlisted && decoders.hevcAvailable)
+            val notes = listOfNotNull(
+                if (unlisted && resolution != ResolutionSetting.AUTO)
+                    "The TV's video decoder doesn't list $width × $height; it's offered as picked under Resolution."
+                else null,
+                note,
+            )
+            return MirrorProfile(width, height, refreshRate, fps, h265, panel, notes.joinToString(" ").ifEmpty { null })
         }
 
         val wanted = frameRate.fps
-        if (wanted <= 60) return offer(best, wanted, refresh)
+        if (wanted <= 60) return offer(wanted, refresh)
         if (screenMaxHz < wanted - 1.5f) {
-            return offer(best, 60, refresh,
-                "This TV's screen goes up to ${screenMaxHz.roundToInt()} Hz, so it offers 60 fps.")
+            return offer(60, refresh, "This TV's screen goes up to ${screenMaxHz.roundToInt()} Hz, so it offers 60 fps.")
         }
-        val fast = sizes.firstOrNull { (width, height) -> decodesAt(decoders, width, height, wanted) }
+        val fast = taken.firstOrNull { (width, height) -> height <= best.second && decodesAt(decoders, width, height, wanted) }
         return when {
-            fast == null -> offer(best, 60, refresh,
-                "The TV's video decoder isn't rated for $wanted fps, so it offers 60 fps.")
-            fast != best -> offer(best, 60, refresh,
+            fast == null -> offer(60, refresh, "The TV's video decoder isn't rated for $wanted fps, so it offers 60 fps.")
+            fast != best -> offer(60, refresh,
                 "$wanted fps needs ${fast.first} × ${fast.second} or smaller on this TV: pick it under Resolution to get it.")
-            else -> offer(fast, wanted, wanted)
+            else -> offer(wanted, wanted)
         }
     }
 
@@ -176,19 +188,22 @@ object DisplayCapabilities {
     /**
      * Best display mode for a stream of `fps` frames per second. Above 60:
      * the largest mode at that rate. Otherwise native size, refresh closest
-     * to 60 (or 120).
+     * to 60 (or 120). Always the TV's own 16:9 shape.
      */
     fun preferredMode(display: Display, fps: Int = 60): Display.Mode? {
         if (Build.VERSION.SDK_INT < 23) return null
-        val modes = display.supportedModes
+        val id = preferredMode(screenModes(display), fps)?.id ?: return null
+        return display.supportedModes.firstOrNull { it.modeId == id }
+    }
+
+    internal fun preferredMode(all: List<ScreenMode>, fps: Int): ScreenMode? {
+        val modes = tvShaped(all)
         if (fps > 60) {
-            modes.filter { abs(it.refreshRate - fps) < 1.5f }
-                .maxByOrNull { it.physicalWidth.toLong() * it.physicalHeight }
-                ?.let { return it }
+            modes.filter { abs(it.refreshRate - fps) < 1.5f }.maxByOrNull { it.pixels }?.let { return it }
         }
-        val maxArea = modes.maxOfOrNull { it.physicalWidth.toLong() * it.physicalHeight } ?: return null
+        val maxPixels = modes.maxOfOrNull { it.pixels } ?: return null
         return modes
-            .filter { it.physicalWidth.toLong() * it.physicalHeight == maxArea }
+            .filter { it.pixels == maxPixels }
             .minByOrNull { mode ->
                 val rate = mode.refreshRate
                 // Multiples of 60 show 60 fps evenly; prefer exactly 60 over 120.
@@ -199,4 +214,20 @@ object DisplayCapabilities {
                 }
             }
     }
+
+    /**
+     * The modes in the TV's own 16:9 shape. Boxes also list 4096 × 2160
+     * cinema modes when the TV accepts them, and the TV squeezes those into
+     * its 16:9 panel, so everything (the mirrored picture too) shows too
+     * narrow. Any other shape only counts when there's no 16:9 mode at all.
+     */
+    internal fun tvShaped(modes: List<ScreenMode>): List<ScreenMode> =
+        modes.filter { abs(it.width.toFloat() / it.height - 16f / 9f) < 0.02f }.ifEmpty { modes }
+
+    @RequiresApi(23)
+    private fun screenModes(display: Display): List<ScreenMode> =
+        (display.supportedModes.toList() + display.mode).distinctBy { it.modeId }.map {
+            ScreenMode(it.modeId, max(it.physicalWidth, it.physicalHeight), min(it.physicalWidth, it.physicalHeight),
+                it.refreshRate)
+        }
 }

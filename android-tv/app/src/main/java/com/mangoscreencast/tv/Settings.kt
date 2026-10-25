@@ -50,13 +50,6 @@ class Settings(private val context: Context) {
             if (prefs.getString(KEY_FRAME_RATE, null) == FrameRateSetting.FPS_60.name) editor.remove(KEY_FRAME_RATE)
             editor.apply()
         }
-        // 1080p is the default resolution, with an iPhone in landscape filling
-        // the screen: every TV starts there once, whatever it had; what's
-        // picked after that is kept.
-        if (!prefs.getBoolean(KEY_RESOLUTION_1080_DEFAULT, false)) {
-            prefs.edit().putBoolean(KEY_RESOLUTION_1080_DEFAULT, true).remove(KEY_RESOLUTION).remove(KEY_FILL_WIDE)
-                .remove(KEY_WIDE).apply()
-        }
     }
 
     /** Stable id; the AirPlay device id is derived from it. */
@@ -70,9 +63,13 @@ class Settings(private val context: Context) {
         get() = prefs.getString(KEY_NAME, null)?.takeIf { it.isNotBlank() } ?: DEFAULT_NAME
         set(value) = prefs.edit().putString(KEY_NAME, value.trim()).apply()
 
+    /**
+     * What Macs, iPhones and iPads are offered, exactly as picked; nothing
+     * resets it. Auto unless picked: the sharpest the TV decodes.
+     */
     var resolution: ResolutionSetting
         get() = runCatching { ResolutionSetting.valueOf(prefs.getString(KEY_RESOLUTION, null)!!) }
-            .getOrDefault(DEFAULT_RESOLUTION)
+            .getOrDefault(ResolutionSetting.AUTO)
         set(value) = prefs.edit().putString(KEY_RESOLUTION, value.name).apply()
 
     var frameRate: FrameRateSetting
@@ -127,8 +124,6 @@ class Settings(private val context: Context) {
         const val KEY_ID = "device_id"
         const val KEY_NAME = "tv_name"
         const val KEY_RESOLUTION = "resolution"
-        const val KEY_RESOLUTION_1080_DEFAULT = "resolution_1080_default"
-        val DEFAULT_RESOLUTION = ResolutionSetting.FHD_1080
         const val KEY_FRAME_RATE = "frame_rate"
         const val KEY_FRAME_RATE_120_DEFAULT = "frame_rate_120_default"
         const val KEY_LATENCY = "latency_mode"

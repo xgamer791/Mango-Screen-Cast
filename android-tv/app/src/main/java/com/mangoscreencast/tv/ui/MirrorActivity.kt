@@ -82,9 +82,10 @@ class MirrorActivity : Activity(), SurfaceHolder.Callback, AirPlayReceiver.Liste
 
     /**
      * Asks the TV for its game mode (no picture processing, which can add
-     * 50-100 ms) and for a native-resolution mode at 60 Hz (or 120 Hz for a
-     * 120 fps stream), so frames play evenly instead of juddering on a
-     * 50 Hz or 24 Hz setting.
+     * 50-100 ms) and for a native-resolution 16:9 mode at 60 Hz (or 120 Hz
+     * for a 120 fps stream), so frames play evenly instead of juddering on a
+     * 50 Hz or 24 Hz setting, and never in a 4096-wide cinema mode, which
+     * the TV squeezes into its screen.
      */
     private fun configureDisplay() {
         val attributes = window.attributes
@@ -97,8 +98,7 @@ class MirrorActivity : Activity(), SurfaceHolder.Callback, AirPlayReceiver.Liste
             val currentIsEven = if (fps > 60) abs(current.refreshRate - fps) < 1.5f
                 else abs(current.refreshRate - 60f) < 1f || abs(current.refreshRate - 120f) < 1f
             val currentIsNative = best == null ||
-                current.physicalWidth.toLong() * current.physicalHeight >=
-                best.physicalWidth.toLong() * best.physicalHeight
+                (current.physicalWidth == best.physicalWidth && current.physicalHeight == best.physicalHeight)
             // Switching modes blanks HDMI for a second or two, so only do it when it helps.
             if (best != null && best.modeId != current.modeId && (!currentIsEven || !currentIsNative)) {
                 attributes.preferredDisplayModeId = best.modeId
