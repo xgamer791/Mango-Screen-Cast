@@ -60,7 +60,7 @@ class LiquidGlassTest {
     fun aFlatBackdropIsTintedOverItsDarkenedColour() {
         val colour = Color.rgb(150, 110, 70)
         val context = activity
-        assertEquals(0x17000000, context.getColor(R.color.glass_tint))
+        assertEquals(0x00000000, context.getColor(R.color.glass_tint)) // rgb(0 0 0 / 0)
         val screen = render(flat(context, colour))
         assertColour(expected(colour, context.getColor(R.color.glass_tint)), screen.getPixel(400, 200))
         // Away from the glass the backdrop is untouched.
@@ -72,9 +72,9 @@ class LiquidGlassTest {
     fun inNightModeTheDarkTintIsUsed() {
         val colour = Color.rgb(150, 110, 70)
         val context = activity
-        assertEquals(0x4F09090C, context.getColor(R.color.glass_tint))
+        assertEquals(0x3809090C, context.getColor(R.color.glass_tint)) // rgb(9 9 12 / 0.22)
         val screen = render(flat(context, colour))
-        assertColour(expected(colour, 0x4F09090C), screen.getPixel(400, 200))
+        assertColour(expected(colour, 0x3809090C), screen.getPixel(400, 200))
     }
 
     @Test
@@ -121,6 +121,61 @@ class LiquidGlassTest {
         val tint = behind.context.getColor(R.color.glass_tint)
         assertEquals(expected(Color.WHITE, tint)[0].toDouble(), Color.red(screen.getPixel(140, 200)).toDouble(), 3.0)
         assertEquals(expected(Color.BLACK, tint)[0].toDouble(), Color.red(screen.getPixel(660, 200)).toDouble(), 3.0)
+    }
+
+    /** A 200 x 100 image whose red, green and blue all say where they are: 2 * x + y. */
+    private fun ramp(w: Int = 200, h: Int = 100) = IntArray(w * h) { i ->
+        val v = (2 * (i % w) + (i / w)).coerceAtMost(255); Color.rgb(v, v, v)
+    }
+
+    private fun channels(c: Int) = listOf(Color.red(c), Color.green(c), Color.blue(c))
+
+    @Test
+    fun atTheRimEachColourComesFromFurtherInByHalfItsScale() {
+        // One px of the page per pixel. At the left edge the map is at its most, 1: red, green and
+        // blue come from 18, 21 and 24 times (1 - 0.5) further right, x + 9, 10.5 and 12.
+        val pixels = ramp(); LiquidGlassLayout.refract(pixels, 200, 100, 1f)
+        val y = 50
+        assertEquals(listOf(18 + y, 21 + y, 24 + y), channels(pixels[y * 200 + 0]))
+        // At the right edge they come from as far to the left: x = 199 reads 190, 188.5, 187.
+        val right = pixels[y * 200 + 199]
+        assertEquals(listOf(2 * 190 + y, (2 * 188.5 + y).toInt(), 2 * 187 + y).map { it.coerceAtMost(255) }, channels(right))
+    }
+
+    @Test
+    fun theTopEdgeBendsDownwardTheSameWay() {
+        // Vertical ramp: value = 2 * y. At the top edge, red/green/blue read rows 9, 10.5, 12.
+        val w = 200; val h = 100
+        val pixels = IntArray(w * h) { i -> val v = 2 * (i / w); Color.rgb(v, v, v) }
+        LiquidGlassLayout.refract(pixels, w, h, 1f)
+        assertEquals(listOf(18, 21, 24), channels(pixels[0 * w + 100]))
+    }
+
+    @Test
+    fun inTheMiddleNothingMovesAndAFlatBackdropStaysFlat() {
+        val pixels = ramp(); val before = pixels.copyOf()
+        LiquidGlassLayout.refract(pixels, 200, 100, 1f)
+        // 11 px blur: the bend fades within a few times that of the rim.
+        for (x in 60..140) assertEquals("x $x", before[50 * 200 + x], pixels[50 * 200 + x])
+        val flat = IntArray(200 * 100) { Color.rgb(150, 110, 70) }
+        LiquidGlassLayout.refract(flat, 200, 100, 1f)
+        assertTrue(flat.all { it == Color.rgb(150, 110, 70) })
+    }
+
+    @Test
+    fun theBendFadesInward() {
+        val pixels = ramp(); LiquidGlassLayout.refract(pixels, 200, 100, 1f)
+        val shifts = listOf(0, 5, 10, 20, 30).map { x -> (Color.blue(pixels[50 * 200 + x]) - 50) / 2.0 - x }
+        assertTrue("blue's shift should shrink going in: $shifts", shifts.zipWithNext().all { (a, b) -> b <= a })
+        assertEquals(12.0, shifts.first(), 0.01)
+        assertTrue("still bent at 30 px: $shifts", shifts.last() < 1.0)
+    }
+
+    @Test
+    fun phiIsTheNormalCdf() {
+        assertEquals(0.5f, LiquidGlassLayout.phi(0f), 1e-6f)
+        assertEquals(0.841345f, LiquidGlassLayout.phi(1f), 1e-5f)
+        assertEquals(0.022750f, LiquidGlassLayout.phi(-2f), 1e-5f)
     }
 
     @Test

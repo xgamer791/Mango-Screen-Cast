@@ -12,8 +12,8 @@
     <color name="status_error">#FF5C5C</color>
     <color name="overlay">#B3000000</color>
 
-    <!-- Mango Liquid Glass, light: rgb(0 0 0 / 0.09) over the frosted backdrop; rgb(205 205 207 / 0.9) without one.
+    <!-- Mango Liquid Glass, light: no tint (rgb(0 0 0 / 0)) over the frosted backdrop; rgb(205 205 207 / 0.9) without one.
          The dark values (values-night) are what a TV in night mode shows. -->
-    <color name="glass_tint">#17000000</color>
+    <color name="glass_tint">#00000000</color>
     <color name="glass_fallback">#E6CDCDCF</color>
 </resources>
