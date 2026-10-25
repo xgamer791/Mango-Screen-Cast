@@ -71,15 +71,16 @@
         android:textColor="#D9FFFFFF"
         android:textSize="12sp" />
 
+    <!-- The logo, on the wallpaper itself, centred where the badge used to be. -->
     <FrameLayout
         android:id="@+id/badge"
         android:layout_width="213dp"
         android:layout_height="213dp"
         android:layout_marginStart="627dp"
-        android:layout_marginTop="25.5dp"
-        android:background="@drawable/cast_badge">
+        android:layout_marginTop="25.5dp">
 
         <ImageView
+            android:id="@+id/logo"
             android:layout_width="92dp"
             android:layout_height="92dp"
             android:layout_gravity="center"
