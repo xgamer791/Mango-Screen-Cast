@@ -72,6 +72,18 @@ final class MirrorProfileTests: XCTestCase {
         XCTAssertTrue(MirrorProfile.make(screen: CGSize(width: 1179, height: 2556), landscape: true, hevc: true).isNative)
     }
 
+    /// The 10.2-inch iPad (2160 x 1620, 4:3): its native size and twelve
+    /// smaller ones, every one exactly 4:3.
+    func testATenPointTwoInchIPadGetsNativeAndTwelveSmallerFourByThreeSizes() {
+        let sizes = MirrorProfile.choices(screen: classic, landscape: true, hevc: true).map { [$0.width, $0.height] }
+        XCTAssertEqual(sizes, [[2160, 1620], [2048, 1536], [1944, 1458], [1832, 1374], [1728, 1296], [1616, 1212],
+                               [1512, 1134], [1424, 1068], [1296, 972], [1184, 888], [1080, 810], [968, 726],
+                               [864, 648]])
+        for size in sizes {
+            XCTAssertEqual(size[0] * 3, size[1] * 4, "\(size[0]) x \(size[1])")
+        }
+    }
+
     func testFitKeepsTheShapeAndEvenSizes() {
         XCTAssertTrue(MirrorProfile.fit(4000, 3000, within: 3840, 2160) == (2880, 2160))
         XCTAssertTrue(MirrorProfile.fit(2361, 1641, within: 3840, 2160) == (2360, 1640))
