@@ -21,6 +21,8 @@ APP = "MangoScreenCast"
 CORE = "MangoCore"
 TESTS = "MangoScreenCastTests"
 UI_TESTS = "MangoScreenCastUITests"
+REMOTE = "MangoCastRemote"   # the Mac helper for trackpad/keyboard control
+SHARED = "Shared"            # Swift shared by the iOS app and the Mac helper
 BUNDLE_ID = "com.mangoscreencast.ios"
 DEPLOYMENT_TARGET = "16.0"
 
@@ -37,7 +39,8 @@ PLIST_SOURCES = ["base64.c", "bplist.c", "bytearray.c", "common.c", "hashtable.c
                  "time64.c", "xplist.c"]
 # App sources the (host-less) unit tests compile too.
 TESTED_APP_SOURCES = ["Media/NalUnits.swift", "Media/AudioCookie.swift", "Media/VideoRenderer.swift",
-                      "AirPlay/MirrorProfile.swift", "Updates/ReleaseFeed.swift"]
+                      "AirPlay/MirrorProfile.swift", "Updates/ReleaseFeed.swift", "Remote/MacKeys.swift",
+                      "Remote/ScreenGestures.swift", "Remote/TypingField.swift"]
 
 FILE_TYPES = {
     ".swift": "sourcecode.swift",
@@ -112,6 +115,9 @@ def folder_group(directory, key):
 app_group, app_files = folder_group(os.path.join(IOS, APP), APP)
 tests_group, test_files = folder_group(os.path.join(IOS, TESTS), TESTS)
 ui_tests_group, ui_test_files = folder_group(os.path.join(IOS, UI_TESTS), UI_TESTS)
+remote_group, remote_files = folder_group(os.path.join(IOS, REMOTE), REMOTE)
+shared_swift_group, shared_swift_files = folder_group(os.path.join(IOS, SHARED), SHARED)
+shared_swift = [ref for path, ref in sorted(shared_swift_files.items()) if path.endswith(".swift")]
 
 # --- MangoCore: the bridge plus the shared AirPlay core --------------------
 
@@ -151,8 +157,12 @@ tests_product = add("PBXFileReference", "product:" + TESTS, explicitFileType="wr
                     includeInIndex="0", path=TESTS + ".xctest", sourceTree="BUILT_PRODUCTS_DIR")
 ui_tests_product = add("PBXFileReference", "product:" + UI_TESTS, explicitFileType="wrapper.cfbundle",
                        includeInIndex="0", path=UI_TESTS + ".xctest", sourceTree="BUILT_PRODUCTS_DIR")
-products_group = group("Products", [app_product, core_product, tests_product, ui_tests_product], name="Products")
-main_group = group("Main", [app_group, core_group, tests_group, ui_tests_group, products_group])
+remote_product = add("PBXFileReference", "product:" + REMOTE, explicitFileType="wrapper.application",
+                     includeInIndex="0", path=REMOTE + ".app", sourceTree="BUILT_PRODUCTS_DIR")
+products_group = group("Products", [app_product, core_product, tests_product, ui_tests_product, remote_product],
+                       name="Products")
+main_group = group("Main", [app_group, shared_swift_group, core_group, remote_group, tests_group, ui_tests_group,
+                            products_group])
 
 package = add("XCRemoteSwiftPackageReference", "OpenSSL", repositoryURL=OPENSSL_PACKAGE,
               requirement=dict(kind="upToNextMajorVersion", minimumVersion=OPENSSL_VERSION))
@@ -240,6 +250,23 @@ CORE_SETTINGS = {
                        "-Wno-comma", "-Wno-strict-prototypes", "-Wno-parentheses",
                        "-Wno-incompatible-pointer-types-discards-qualifiers"],
 }
+REMOTE_SETTINGS = {
+    "ASSETCATALOG_COMPILER_APPICON_NAME": "AppIcon",
+    "CODE_SIGN_STYLE": "Automatic",
+    "COMBINE_HIDPI_IMAGES": "YES",
+    "CURRENT_PROJECT_VERSION": "1",
+    "DEVELOPMENT_TEAM": "",
+    "ENABLE_HARDENED_RUNTIME": "NO",
+    "ENABLE_PREVIEWS": "NO",
+    "INFOPLIST_FILE": REMOTE + "/Info.plist",
+    "LD_RUNPATH_SEARCH_PATHS": ["$(inherited)", "@executable_path/../Frameworks"],
+    "MACOSX_DEPLOYMENT_TARGET": "13.0",
+    "MARKETING_VERSION": "1.0",
+    "PRODUCT_BUNDLE_IDENTIFIER": "com.mangoscreencast.remote",
+    "PRODUCT_NAME": "$(TARGET_NAME)",
+    "SDKROOT": "macosx",
+    "SUPPORTED_PLATFORMS": "macosx",
+}
 TESTS_SETTINGS = {
     "CODE_SIGN_STYLE": "Automatic",
     "GENERATE_INFOPLIST_FILE": "YES",
@@ -286,7 +313,8 @@ core_proxy = add("PBXContainerItemProxy", "core", containerPortal=project_id, pr
                  remoteGlobalIDString=core_target, remoteInfo=CORE)
 core_dependency = add("PBXTargetDependency", "core", target=core_target, targetProxy=core_proxy)
 
-app_sources = [build_file(APP, ref) for path, ref in sorted(app_files.items()) if path.endswith(".swift")]
+app_sources = ([build_file(APP, ref) for path, ref in sorted(app_files.items()) if path.endswith(".swift")]
+               + [build_file(APP, ref) for ref in shared_swift])
 app_resources = [build_file(APP, app_files["Assets.xcassets"])]
 app_frameworks = [build_file(APP, core_product), add("PBXBuildFile", APP + ":openssl", productRef=openssl_for[APP])]
 app_target = target(
@@ -297,7 +325,8 @@ app_target = target(
     dependencies=[core_dependency], packages=[openssl_for[APP]])
 
 test_sources = ([build_file(TESTS, ref) for path, ref in sorted(test_files.items()) if path.endswith(".swift")]
-                + [build_file(TESTS, app_files[p]) for p in TESTED_APP_SOURCES])
+                + [build_file(TESTS, app_files[p]) for p in TESTED_APP_SOURCES]
+                + [build_file(TESTS, ref) for ref in shared_swift])
 tests_target = target(
     TESTS, "com.apple.product-type.bundle.unit-test", tests_product, TESTS_SETTINGS,
     [phase("PBXSourcesBuildPhase", TESTS, test_sources),
@@ -318,11 +347,20 @@ ui_tests_target = target(
      phase("PBXResourcesBuildPhase", UI_TESTS, [])],
     dependencies=[app_dependency])
 
+remote_target = target(
+    REMOTE, "com.apple.product-type.application", remote_product, REMOTE_SETTINGS,
+    [phase("PBXSourcesBuildPhase", REMOTE,
+           [build_file(REMOTE, ref) for path, ref in sorted(remote_files.items()) if path.endswith(".swift")]
+           + [build_file(REMOTE, ref) for ref in shared_swift]),
+     phase("PBXFrameworksBuildPhase", REMOTE, []),
+     phase("PBXResourcesBuildPhase", REMOTE, [build_file(REMOTE, remote_files["Assets.xcassets"])])])
+
 objects[project_id] = dict(
     isa="PBXProject",
     attributes=dict(BuildIndependentTargetsInParallel="1", LastSwiftUpdateCheck="1600", LastUpgradeCheck="1600",
                     TargetAttributes={t: dict(CreatedOnToolsVersion="16.0")
-                                      for t in (app_target, core_target, tests_target, ui_tests_target)}),
+                                      for t in (app_target, core_target, tests_target, ui_tests_target,
+                                                remote_target)}),
     buildConfigurationList=config_list("Project", PROJECT_SETTINGS),
     compatibilityVersion="Xcode 15.0",
     developmentRegion="en",
@@ -333,7 +371,7 @@ objects[project_id] = dict(
     productRefGroup=products_group,
     projectDirPath="",
     projectRoot="",
-    targets=[app_target, core_target, tests_target, ui_tests_target],
+    targets=[app_target, core_target, tests_target, ui_tests_target, remote_target],
 )
 
 # --- Serialisation (Xcode's old-style property list) ------------------------
@@ -562,6 +600,51 @@ def write_screenshots_scheme():
         f.write(scheme)
 
 
+def write_remote_scheme():
+    """Builds and runs the Mac helper."""
+    remote = buildable(remote_target, REMOTE, REMOTE + ".app")
+    scheme = f'''<?xml version="1.0" encoding="UTF-8"?>
+<Scheme
+   LastUpgradeVersion = "1600"
+   version = "1.7">
+   <BuildAction
+      parallelizeBuildables = "YES"
+      buildImplicitDependencies = "YES">
+      <BuildActionEntries>
+         <BuildActionEntry
+            buildForTesting = "NO"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+{remote}         </BuildActionEntry>
+      </BuildActionEntries>
+   </BuildAction>
+   <LaunchAction
+      buildConfiguration = "Release"
+      selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
+      selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
+      launchStyle = "0"
+      useCustomWorkingDirectory = "NO"
+      ignoresPersistentStateOnLaunch = "NO"
+      debugDocumentVersioning = "YES"
+      debugServiceExtension = "internal"
+      allowLocationSimulation = "YES">
+      <BuildableProductRunnable
+         runnableDebuggingMode = "0">
+{remote}      </BuildableProductRunnable>
+   </LaunchAction>
+   <ArchiveAction
+      buildConfiguration = "Release"
+      revealArchiveInOrganizer = "YES">
+   </ArchiveAction>
+</Scheme>
+'''
+    path = os.path.join(PROJECT, "xcshareddata", "xcschemes", REMOTE + ".xcscheme")
+    with open(path, "w") as f:
+        f.write(scheme)
+
+
 def write_workspace():
     path = os.path.join(PROJECT, "project.xcworkspace", "contents.xcworkspacedata")
     os.makedirs(os.path.dirname(path), exist_ok=True)
@@ -574,5 +657,6 @@ if __name__ == "__main__":
     write_pbxproj()
     write_scheme()
     write_screenshots_scheme()
+    write_remote_scheme()
     write_workspace()
     print("wrote", os.path.relpath(PROJECT, ROOT))

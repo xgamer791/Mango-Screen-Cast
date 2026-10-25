@@ -11,6 +11,14 @@
 			isa = PBXBuildFile;
 			fileRef = F4CFACAF740F1F9BD51E1877 /* libplist/src/plist.c */;
 		};
+		00E1C4F8F6340E76627EF3DE /* RemoteProtocol.swift in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = E8AFEBA2AD940C050E02D3BF /* RemoteProtocol.swift */;
+		};
+		0336B00032EA6C685A39DA66 /* InputInjector.swift in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = 781E45E8637470068833FA54 /* InputInjector.swift */;
+		};
 		04F17FA284229721132EB75D /* libplist/src/xplist.c in Sources */ = {
 			isa = PBXBuildFile;
 			fileRef = CF16AC772457C85E10BBD1A1 /* libplist/src/xplist.c */;
@@ -39,6 +47,10 @@
 			isa = PBXBuildFile;
 			fileRef = 9523147EF3861616EA05EF16 /* MirrorProfile.swift */;
 		};
+		0C63E9DF012714AAA30F9CCA /* RemoteProtocol.swift in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = E8AFEBA2AD940C050E02D3BF /* RemoteProtocol.swift */;
+		};
 		0D8EBD1BBC028891A8A34457 /* AudioPlayer.swift in Sources */ = {
 			isa = PBXBuildFile;
 			fileRef = 07C82DD87630E6884BF38D8D /* AudioPlayer.swift */;
@@ -59,6 +71,10 @@
 			isa = PBXBuildFile;
 			fileRef = BBA83105F0E4994DE3C7D61E /* uxplay/httpd.c */;
 		};
+		1EBA1B34809A29E23D8E51D0 /* ScreenGesturesTests.swift in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = D772BEC45BB7105ADD669D23 /* ScreenGesturesTests.swift */;
+		};
 		1FAEC0737B42CD680023AFDB /* uxplay/compat.c in Sources */ = {
 			isa = PBXBuildFile;
 			fileRef = FC9B108732ECDBABF88A17DB /* uxplay/compat.c */;
@@ -67,6 +83,10 @@
 			isa = PBXBuildFile;
 			fileRef = 79E721B20DB850F527E28154 /* ScreenshotTests.swift */;
 		};
+		25A6334E791FBE8FCED3FBDE /* Assets.xcassets in Resources */ = {
+			isa = PBXBuildFile;
+			fileRef = 11799F3F425ACAA5AA6769FD /* Assets.xcassets */;
+		};
 		2ED6BDF3DD7B6663515E1966 /* uxplay/dns_sd/dns_sd.c in Sources */ = {
 			isa = PBXBuildFile;
 			fileRef = C38F450146D4CF773889FD1B /* uxplay/dns_sd/dns_sd.c */;
@@ -74,6 +94,10 @@
 		3028B4C43D1BD88552DF2026 /* uxplay/raop_rtp.c in Sources */ = {
 			isa = PBXBuildFile;
 			fileRef = 65D4ADC21910573FF82BAB5D /* uxplay/raop_rtp.c */;
+		};
+		3702E69272B6345A2563F86D /* TypingField.swift in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = 36DA268C39A3066B27190066 /* TypingField.swift */;
 		};
 		3744DD39FE87428622A60841 /* uxplay/crypto.c in Sources */ = {
 			isa = PBXBuildFile;
@@ -102,6 +126,14 @@
 		45CBCAB64D2F3CC0D2C6B09C /* uxplay/byteutils.c in Sources */ = {
 			isa = PBXBuildFile;
 			fileRef = 791F6A6EF289E71AFAF00BEA /* uxplay/byteutils.c */;
+		};
+		4821F1AF43AADB236B81CE31 /* MacKeys.swift in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = 1D6FBC87EFE044403D1CD1BA /* MacKeys.swift */;
+		};
+		4D30A86007E2ACE6D5DA51E7 /* RemoteServer.swift in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = 62ACD8E8FA86BEDB8655414A /* RemoteServer.swift */;
 		};
 		535777A04BCC77238A7C2F92 /* Fixtures.swift in Sources */ = {
 			isa = PBXBuildFile;
@@ -151,6 +183,10 @@
 			isa = PBXBuildFile;
 			fileRef = DFC88DCC451C7DF57D4F5C3A /* libplist/src/oplist.c */;
 		};
+		73004D7F5D848671CB3F15B0 /* MangoCastRemoteApp.swift in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = BF7CD6943E3BB0900CA6FD7B /* MangoCastRemoteApp.swift */;
+		};
 		774F398DFEBF17EDAAAE724C /* uxplay/http_request.c in Sources */ = {
 			isa = PBXBuildFile;
 			fileRef = 7DB1D6ED6783A6417F26163D /* uxplay/http_request.c */;
@@ -162,6 +198,10 @@
 		79AD3B53505DBF16131343C7 /* Assets.xcassets in Resources */ = {
 			isa = PBXBuildFile;
 			fileRef = CB9299A3A63F89FD4A5A1C26 /* Assets.xcassets */;
+		};
+		7DD5F113331A0AAC34730995 /* ScreenGestures.swift in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = 4A96B3FC37E59453EE4CABBB /* ScreenGestures.swift */;
 		};
 		7EFA1B6D6ACCE1DFFC07A1A3 /* uxplay/logger.c in Sources */ = {
 			isa = PBXBuildFile;
@@ -207,9 +247,17 @@
 			isa = PBXBuildFile;
 			fileRef = BE649C1CFBD2DD43C088B14F /* DecodeTests.swift */;
 		};
+		9A0A02F7409433C6EC6830F0 /* ControlsUITests.swift in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = 9386B104E22CF1321225C779 /* ControlsUITests.swift */;
+		};
 		9CC7EB3AD50447A75332257E /* MangoScreenCastApp.swift in Sources */ = {
 			isa = PBXBuildFile;
 			fileRef = 26ED4D03850022678A5CB0E7 /* MangoScreenCastApp.swift */;
+		};
+		A390CFD6063371BD44132140 /* MacKeys.swift in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = 1D6FBC87EFE044403D1CD1BA /* MacKeys.swift */;
 		};
 		A43E94DA88C46421F13C4306 /* uxplay/llhttp/api.c in Sources */ = {
 			isa = PBXBuildFile;
@@ -227,6 +275,14 @@
 			isa = PBXBuildFile;
 			fileRef = 70252C5B07C05771F091BD46 /* Settings.swift */;
 		};
+		B16B8393E9D87C15539E0145 /* TypingField.swift in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = 36DA268C39A3066B27190066 /* TypingField.swift */;
+		};
+		B400EF52B489452D5FEABF68 /* RemoteProtocolTests.swift in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = AB47D7B76A7271F7744B263C /* RemoteProtocolTests.swift */;
+		};
 		B7DF6301E14BB9A9F411ABDA /* MirrorProfileTests.swift in Sources */ = {
 			isa = PBXBuildFile;
 			fileRef = 8312D0C41899E2431E3C58D1 /* MirrorProfileTests.swift */;
@@ -234,6 +290,14 @@
 		BB11816C7853D9687911F2F9 /* AudioCookieTests.swift in Sources */ = {
 			isa = PBXBuildFile;
 			fileRef = 34E566E0AC688DC5B489B5B1 /* AudioCookieTests.swift */;
+		};
+		BBBCE30DA7E2518FF2C4642F /* ScreenView.swift in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = 136E5DDFCE26D4CB85F3B4AF /* ScreenView.swift */;
+		};
+		C2A4C8E52E2DF2092188CDF0 /* RemoteControl.swift in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = 4CC04C2F4B4DB79611F86A98 /* RemoteControl.swift */;
 		};
 		C2FE1454164512A8B31D3D95 /* uxplay/playfair/modified_md5.c in Sources */ = {
 			isa = PBXBuildFile;
@@ -246,6 +310,10 @@
 		C4CF54C03C1D76FC821C7F7D /* ServiceAdvertiser.swift in Sources */ = {
 			isa = PBXBuildFile;
 			fileRef = A23E8E0D17DD7499BA6042D1 /* ServiceAdvertiser.swift */;
+		};
+		CA682BC811DD9C0F9D4A3D91 /* TypingSyncTests.swift in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = 5AE6ACDDC44C727320E6D7B5 /* TypingSyncTests.swift */;
 		};
 		CA9839EB0E5096538EC71F18 /* libplist/src/out-plutil.c in Sources */ = {
 			isa = PBXBuildFile;
@@ -266,6 +334,10 @@
 		D6B417A17022AA043A69543A /* NalUnits.swift in Sources */ = {
 			isa = PBXBuildFile;
 			fileRef = D2901938D18BD10743B7BA04 /* NalUnits.swift */;
+		};
+		D96D495CBD61EBB8FD31384C /* ScreenGestures.swift in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = 4A96B3FC37E59453EE4CABBB /* ScreenGestures.swift */;
 		};
 		D973956F665A3980BE8E830C /* uxplay/llhttp/llhttp.c in Sources */ = {
 			isa = PBXBuildFile;
@@ -311,9 +383,17 @@
 			isa = PBXBuildFile;
 			fileRef = C5A9D21015DE0ED90EFA6E2F /* libplist/src/base64.c */;
 		};
+		F4CCFAB5A6DB154089837C12 /* RemoteViews.swift in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = E252DED60B057618EB2934E8 /* RemoteViews.swift */;
+		};
 		F64C29856E8C2B443F5F9F79 /* libplist/src/jsmn.c in Sources */ = {
 			isa = PBXBuildFile;
 			fileRef = 9E5A80970E3888F06CD95BAD /* libplist/src/jsmn.c */;
+		};
+		F95F009F4E5640E58026C55A /* RemoteProtocol.swift in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = E8AFEBA2AD940C050E02D3BF /* RemoteProtocol.swift */;
 		};
 		FC84570015A004435ED16CE0 /* uxplay/http_response.c in Sources */ = {
 			isa = PBXBuildFile;
@@ -353,6 +433,18 @@
 			path = AudioPlayer.swift;
 			sourceTree = "<group>";
 		};
+		11799F3F425ACAA5AA6769FD /* Assets.xcassets */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = folder.assetcatalog;
+			path = Assets.xcassets;
+			sourceTree = "<group>";
+		};
+		136E5DDFCE26D4CB85F3B4AF /* ScreenView.swift */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			path = ScreenView.swift;
+			sourceTree = "<group>";
+		};
 		1922E7E812951706B566A5ED /* Receiver.swift */ = {
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.swift;
@@ -377,6 +469,12 @@
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.swift;
 			path = AudioCookie.swift;
+			sourceTree = "<group>";
+		};
+		1D6FBC87EFE044403D1CD1BA /* MacKeys.swift */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			path = MacKeys.swift;
 			sourceTree = "<group>";
 		};
 		1E434FECC7D8CFEECEED0279 /* uxplay/raop_buffer.c */ = {
@@ -412,6 +510,12 @@
 			path = "../android-tv/third_party/uxplay/lib/crypto.c";
 			sourceTree = SOURCE_ROOT;
 		};
+		30B6FB1A886E7C6F409A9A48 /* Info.plist */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = text.plist.xml;
+			path = Info.plist;
+			sourceTree = "<group>";
+		};
 		333BF1D6BF2F76DA8892602A /* uxplay/pairing.c */ = {
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.c.c;
@@ -438,6 +542,12 @@
 			name = libplist/src/common.c;
 			path = "../android-tv/third_party/libplist/src/common.c";
 			sourceTree = SOURCE_ROOT;
+		};
+		36DA268C39A3066B27190066 /* TypingField.swift */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			path = TypingField.swift;
+			sourceTree = "<group>";
 		};
 		3A556112264ABB6F13A05C6C /* libplist/src/out-limd.c */ = {
 			isa = PBXFileReference;
@@ -474,12 +584,36 @@
 			path = "../android-tv/third_party/uxplay/lib/raop_rtp_mirror.c";
 			sourceTree = SOURCE_ROOT;
 		};
+		4A96B3FC37E59453EE4CABBB /* ScreenGestures.swift */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			path = ScreenGestures.swift;
+			sourceTree = "<group>";
+		};
+		4CC04C2F4B4DB79611F86A98 /* RemoteControl.swift */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			path = RemoteControl.swift;
+			sourceTree = "<group>";
+		};
 		568B760BAEDF4512A0494170 /* uxplay/playfair/modified_md5.c */ = {
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.c.c;
 			name = uxplay/playfair/modified_md5.c;
 			path = "../android-tv/third_party/uxplay/lib/playfair/modified_md5.c";
 			sourceTree = SOURCE_ROOT;
+		};
+		5AE6ACDDC44C727320E6D7B5 /* TypingSyncTests.swift */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			path = TypingSyncTests.swift;
+			sourceTree = "<group>";
+		};
+		62ACD8E8FA86BEDB8655414A /* RemoteServer.swift */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			path = RemoteServer.swift;
+			sourceTree = "<group>";
 		};
 		62D0BB2E27C166CC63A3BA36 /* uxplay/logger.c */ = {
 			isa = PBXFileReference;
@@ -520,6 +654,19 @@
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.swift;
 			path = Settings.swift;
+			sourceTree = "<group>";
+		};
+		76DCBC1DD2B2B6E78F4421F5 /* MangoCastRemote.app */ = {
+			isa = PBXFileReference;
+			explicitFileType = wrapper.application;
+			includeInIndex = 0;
+			path = MangoCastRemote.app;
+			sourceTree = BUILT_PRODUCTS_DIR;
+		};
+		781E45E8637470068833FA54 /* InputInjector.swift */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			path = InputInjector.swift;
 			sourceTree = "<group>";
 		};
 		791F6A6EF289E71AFAF00BEA /* uxplay/byteutils.c */ = {
@@ -606,6 +753,12 @@
 			path = "../android-tv/app/src/main/cpp/mango_server.c";
 			sourceTree = SOURCE_ROOT;
 		};
+		9386B104E22CF1321225C779 /* ControlsUITests.swift */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			path = ControlsUITests.swift;
+			sourceTree = "<group>";
+		};
 		9523147EF3861616EA05EF16 /* MirrorProfile.swift */ = {
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.swift;
@@ -659,6 +812,12 @@
 			path = NalUnitsTests.swift;
 			sourceTree = "<group>";
 		};
+		AB47D7B76A7271F7744B263C /* RemoteProtocolTests.swift */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			path = RemoteProtocolTests.swift;
+			sourceTree = "<group>";
+		};
 		AB6184959352F959845FC990 /* MirrorView.swift */ = {
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.swift;
@@ -689,6 +848,12 @@
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.swift;
 			path = DecodeTests.swift;
+			sourceTree = "<group>";
+		};
+		BF7CD6943E3BB0900CA6FD7B /* MangoCastRemoteApp.swift */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			path = MangoCastRemoteApp.swift;
 			sourceTree = "<group>";
 		};
 		BFF3CE8B0C2E803C4B3A8A49 /* MangoScreenCastUITests.xctest */ = {
@@ -757,6 +922,12 @@
 			path = RootView.swift;
 			sourceTree = "<group>";
 		};
+		D772BEC45BB7105ADD669D23 /* ScreenGesturesTests.swift */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			path = ScreenGesturesTests.swift;
+			sourceTree = "<group>";
+		};
 		D833A2401C974A26FC7F8143 /* UpdateChecker.swift */ = {
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.swift;
@@ -811,6 +982,12 @@
 			path = "../android-tv/third_party/uxplay/lib/airplay_video.c";
 			sourceTree = SOURCE_ROOT;
 		};
+		E252DED60B057618EB2934E8 /* RemoteViews.swift */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			path = RemoteViews.swift;
+			sourceTree = "<group>";
+		};
 		E3C929ED90AA1CF176D9F1C4 /* uxplay/llhttp/llhttp.c */ = {
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.c.c;
@@ -831,6 +1008,12 @@
 			name = uxplay/fairplay_playfair.c;
 			path = "../android-tv/third_party/uxplay/lib/fairplay_playfair.c";
 			sourceTree = SOURCE_ROOT;
+		};
+		E8AFEBA2AD940C050E02D3BF /* RemoteProtocol.swift */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			path = RemoteProtocol.swift;
+			sourceTree = "<group>";
 		};
 		EA678134DE4DBDB8F7E065EA /* uxplay/raop_ntp.c */ = {
 			isa = PBXFileReference;
@@ -892,6 +1075,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		694A95BA40C89C599DF86BE3 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		E9AD61BB85AF52786038DE51 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -910,6 +1100,19 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		018BAB73A383D1F6DCE0DEC2 /* Remote */ = {
+			isa = PBXGroup;
+			children = (
+				1D6FBC87EFE044403D1CD1BA /* MacKeys.swift */,
+				4CC04C2F4B4DB79611F86A98 /* RemoteControl.swift */,
+				E252DED60B057618EB2934E8 /* RemoteViews.swift */,
+				4A96B3FC37E59453EE4CABBB /* ScreenGestures.swift */,
+				136E5DDFCE26D4CB85F3B4AF /* ScreenView.swift */,
+				36DA268C39A3066B27190066 /* TypingField.swift */,
+			);
+			path = Remote;
+			sourceTree = "<group>";
+		};
 		0ACACDE51BB2F046E791E653 /* Products */ = {
 			isa = PBXGroup;
 			children = (
@@ -917,6 +1120,7 @@
 				6CB20C4BC9696047F5CA5B1E /* libMangoCore.a */,
 				66F8F7FC52639EF9C1C6D93B /* MangoScreenCastTests.xctest */,
 				BFF3CE8B0C2E803C4B3A8A49 /* MangoScreenCastUITests.xctest */,
+				76DCBC1DD2B2B6E78F4421F5 /* MangoCastRemote.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -929,6 +1133,14 @@
 				A23E8E0D17DD7499BA6042D1 /* ServiceAdvertiser.swift */,
 			);
 			path = AirPlay;
+			sourceTree = "<group>";
+		};
+		6F53C0A15EAA94B0BEE96B1F /* Shared */ = {
+			isa = PBXGroup;
+			children = (
+				E8AFEBA2AD940C050E02D3BF /* RemoteProtocol.swift */,
+			);
+			path = Shared;
 			sourceTree = "<group>";
 		};
 		720481B02A26324A49FAC621 /* Shared AirPlay core */ = {
@@ -986,11 +1198,25 @@
 			name = "Shared AirPlay core";
 			sourceTree = "<group>";
 		};
+		7B0D2239A6A071DA84ED982F /* MangoCastRemote */ = {
+			isa = PBXGroup;
+			children = (
+				11799F3F425ACAA5AA6769FD /* Assets.xcassets */,
+				30B6FB1A886E7C6F409A9A48 /* Info.plist */,
+				781E45E8637470068833FA54 /* InputInjector.swift */,
+				BF7CD6943E3BB0900CA6FD7B /* MangoCastRemoteApp.swift */,
+				62ACD8E8FA86BEDB8655414A /* RemoteServer.swift */,
+			);
+			path = MangoCastRemote;
+			sourceTree = "<group>";
+		};
 		8B6E0E1F13CF408BB6BFC45C = {
 			isa = PBXGroup;
 			children = (
 				BF26E6BE873B013450E336A2 /* MangoScreenCast */,
+				6F53C0A15EAA94B0BEE96B1F /* Shared */,
 				B4063EC772534333C810DCCE /* MangoCore */,
+				7B0D2239A6A071DA84ED982F /* MangoCastRemote */,
 				D40EF620259600F65F0248A8 /* MangoScreenCastTests */,
 				95AA0C79EA567C2D75E8916C /* MangoScreenCastUITests */,
 				0ACACDE51BB2F046E791E653 /* Products */,
@@ -1011,6 +1237,7 @@
 		95AA0C79EA567C2D75E8916C /* MangoScreenCastUITests */ = {
 			isa = PBXGroup;
 			children = (
+				9386B104E22CF1321225C779 /* ControlsUITests.swift */,
 				79E721B20DB850F527E28154 /* ScreenshotTests.swift */,
 			);
 			path = MangoScreenCastUITests;
@@ -1044,6 +1271,7 @@
 				C712C402730B996CC807C64D /* MangoScreenCast-Bridging-Header.h */,
 				26ED4D03850022678A5CB0E7 /* MangoScreenCastApp.swift */,
 				DF681E0BF6ABCF58F4B4B443 /* Media */,
+				018BAB73A383D1F6DCE0DEC2 /* Remote */,
 				70252C5B07C05771F091BD46 /* Settings.swift */,
 				B4CCF690B80EA160054DF016 /* Updates */,
 				8CFEA836ED2AC03501E875D2 /* Views */,
@@ -1060,6 +1288,9 @@
 				8312D0C41899E2431E3C58D1 /* MirrorProfileTests.swift */,
 				A71B8DB044EDCC3196DD75C8 /* NalUnitsTests.swift */,
 				F86FCFA8408ECCCD24B70B00 /* ReleaseFeedTests.swift */,
+				AB47D7B76A7271F7744B263C /* RemoteProtocolTests.swift */,
+				D772BEC45BB7105ADD669D23 /* ScreenGesturesTests.swift */,
+				5AE6ACDDC44C727320E6D7B5 /* TypingSyncTests.swift */,
 			);
 			path = MangoScreenCastTests;
 			sourceTree = "<group>";
@@ -1153,6 +1384,23 @@
 			productReference = BFF3CE8B0C2E803C4B3A8A49 /* MangoScreenCastUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
+		EF31CC07278D7FD27487AF01 /* MangoCastRemote */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 03BD6E14916F975EBE0693E6 /* Build configuration list for PBXNativeTarget "MangoCastRemote" */;
+			buildPhases = (
+				F4FFC6105F9EE758673E469D /* Sources */,
+				694A95BA40C89C599DF86BE3 /* Frameworks */,
+				1997D190E4D4455A85FFBC66 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = MangoCastRemote;
+			productName = MangoCastRemote;
+			productReference = 76DCBC1DD2B2B6E78F4421F5 /* MangoCastRemote.app */;
+			productType = "com.apple.product-type.application";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -1173,6 +1421,9 @@
 						CreatedOnToolsVersion = 16.0;
 					};
 					DD5A91B4DCA1063FFBE5C2D6 = {
+						CreatedOnToolsVersion = 16.0;
+					};
+					EF31CC07278D7FD27487AF01 = {
 						CreatedOnToolsVersion = 16.0;
 					};
 				};
@@ -1197,11 +1448,20 @@
 				0A26C2C5D03B539C572657FD /* MangoCore */,
 				996C4715DD027D7F8A6CEF97 /* MangoScreenCastTests */,
 				DD5A91B4DCA1063FFBE5C2D6 /* MangoScreenCastUITests */,
+				EF31CC07278D7FD27487AF01 /* MangoCastRemote */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		1997D190E4D4455A85FFBC66 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				25A6334E791FBE8FCED3FBDE /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		6CFE723C1F2EEE3FDD1C89CC /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -1231,6 +1491,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9A0A02F7409433C6EC6830F0 /* ControlsUITests.swift in Sources */,
 				2036B35C3C3E12B9560802AB /* ScreenshotTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1301,11 +1562,18 @@
 				B7DF6301E14BB9A9F411ABDA /* MirrorProfileTests.swift in Sources */,
 				5E73247FC2FC196CE55BC189 /* NalUnitsTests.swift in Sources */,
 				55A9F607CAD67B6D5E2641B1 /* ReleaseFeedTests.swift in Sources */,
+				B400EF52B489452D5FEABF68 /* RemoteProtocolTests.swift in Sources */,
+				1EBA1B34809A29E23D8E51D0 /* ScreenGesturesTests.swift in Sources */,
+				CA682BC811DD9C0F9D4A3D91 /* TypingSyncTests.swift in Sources */,
 				D6B417A17022AA043A69543A /* NalUnits.swift in Sources */,
 				3BA316D82E5B93655287C37F /* AudioCookie.swift in Sources */,
 				3749B09B9124D7649A9919A2 /* VideoRenderer.swift in Sources */,
 				0B7BD122B11363F827E52DF4 /* MirrorProfile.swift in Sources */,
 				87428C1E9428475BE8927150 /* ReleaseFeed.swift in Sources */,
+				4821F1AF43AADB236B81CE31 /* MacKeys.swift in Sources */,
+				D96D495CBD61EBB8FD31384C /* ScreenGestures.swift in Sources */,
+				3702E69272B6345A2563F86D /* TypingField.swift in Sources */,
+				F95F009F4E5640E58026C55A /* RemoteProtocol.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1321,6 +1589,12 @@
 				0D8EBD1BBC028891A8A34457 /* AudioPlayer.swift in Sources */,
 				5FC7A95FA9CD59176A3FC56F /* NalUnits.swift in Sources */,
 				0A13737D6F201A5BE0506E60 /* VideoRenderer.swift in Sources */,
+				A390CFD6063371BD44132140 /* MacKeys.swift in Sources */,
+				C2A4C8E52E2DF2092188CDF0 /* RemoteControl.swift in Sources */,
+				F4CCFAB5A6DB154089837C12 /* RemoteViews.swift in Sources */,
+				7DD5F113331A0AAC34730995 /* ScreenGestures.swift in Sources */,
+				BBBCE30DA7E2518FF2C4642F /* ScreenView.swift in Sources */,
+				B16B8393E9D87C15539E0145 /* TypingField.swift in Sources */,
 				B08B441909D2F8BDFB3465AB /* Settings.swift in Sources */,
 				4085A47F46B0ABDA62FA182C /* ReleaseFeed.swift in Sources */,
 				0A2C6ABD3009FBDEC66C62EF /* UpdateChecker.swift in Sources */,
@@ -1328,6 +1602,18 @@
 				6D3E809906C5855DE7ABAA0C /* MirrorView.swift in Sources */,
 				1C275174E235C79E30B17168 /* RootView.swift in Sources */,
 				900A17B1B734EF23CF188E18 /* SettingsView.swift in Sources */,
+				0C63E9DF012714AAA30F9CCA /* RemoteProtocol.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		F4FFC6105F9EE758673E469D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0336B00032EA6C685A39DA66 /* InputInjector.swift in Sources */,
+				73004D7F5D848671CB3F15B0 /* MangoCastRemoteApp.swift in Sources */,
+				4D30A86007E2ACE6D5DA51E7 /* RemoteServer.swift in Sources */,
+				00E1C4F8F6340E76627EF3DE /* RemoteProtocol.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1535,6 +1821,54 @@
 			};
 			name = Debug;
 		};
+		A15578B9649D4AC5A15DA5BE /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_HARDENED_RUNTIME = NO;
+				ENABLE_PREVIEWS = NO;
+				INFOPLIST_FILE = MangoCastRemote/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.mangoscreencast.remote;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SUPPORTED_PLATFORMS = macosx;
+			};
+			name = Release;
+		};
+		A397A05C435F45C0307CF216 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_HARDENED_RUNTIME = NO;
+				ENABLE_PREVIEWS = NO;
+				INFOPLIST_FILE = MangoCastRemote/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 13.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = com.mangoscreencast.remote;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = macosx;
+				SUPPORTED_PLATFORMS = macosx;
+			};
+			name = Debug;
+		};
 		EB00CA297BCB4F41AA982481 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -1589,6 +1923,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		03BD6E14916F975EBE0693E6 /* Build configuration list for PBXNativeTarget "MangoCastRemote" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A397A05C435F45C0307CF216 /* Debug */,
+				A15578B9649D4AC5A15DA5BE /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		5AAE38FE161A15A9D280C10D /* Build configuration list for PBXNativeTarget "MangoScreenCast" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

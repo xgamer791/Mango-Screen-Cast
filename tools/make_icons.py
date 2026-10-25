@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Draws the Mango Screen Cast logo, launcher icons and Android TV banner,
-and the iOS app icon and logo.
+the iOS app icon and logo, and the Mac remote app's icon.
 
-    python3 tools/make_icons.py [android] [ios]   (both by default)
+    python3 tools/make_icons.py [android] [ios] [mac]   (all by default)
 """
 import json
 import math
@@ -14,6 +14,7 @@ from PIL import Image, ImageDraw, ImageFilter, ImageFont
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RES = os.path.join(ROOT, "android-tv", "app", "src", "main", "res")
 ASSETS = os.path.join(ROOT, "ios", "MangoScreenCast", "Assets.xcassets")
+MAC_ASSETS = os.path.join(ROOT, "ios", "MangoCastRemote", "Assets.xcassets")
 BG = (14, 13, 18, 255)
 SS = 4  # supersampling
 
@@ -105,6 +106,17 @@ def ios_icon(size):
     return img.convert("RGB")
 
 
+def mac_icon(size):
+    """macOS icon grid: a rounded square inset by about a tenth, on transparency."""
+    s = size * SS
+    img = Image.new("RGBA", (s, s), (0, 0, 0, 0))
+    inset = s * 100 / 1024
+    ImageDraw.Draw(img).rounded_rectangle((inset, inset, s - inset, s - inset), radius=s * 185 / 1024, fill=BG)
+    fruit = mango(int(size * 0.66)).resize((int(s * 0.66), int(s * 0.66)), Image.LANCZOS)
+    img.alpha_composite(fruit, (int(s * 0.17), int(s * 0.17)))
+    return img.resize((size, size), Image.LANCZOS)
+
+
 def save(img, *parts, root=RES):
     path = os.path.join(root, *parts)
     os.makedirs(os.path.dirname(path), exist_ok=True)
@@ -112,8 +124,8 @@ def save(img, *parts, root=RES):
     print("wrote", os.path.relpath(path, ROOT))
 
 
-def save_json(data, *parts):
-    path = os.path.join(ASSETS, *parts)
+def save_json(data, *parts, root=None):
+    path = os.path.join(root or ASSETS, *parts)
     os.makedirs(os.path.dirname(path), exist_ok=True)
     with open(path, "w") as f:
         json.dump(data, f, indent=2)
@@ -143,9 +155,24 @@ def ios():
         "LaunchBackground.colorset", "Contents.json")
 
 
+def mac():
+    info = {"author": "xcode", "version": 1}
+    save_json({"info": info}, "Contents.json", root=MAC_ASSETS)
+    images = []
+    for points in (16, 32, 128, 256, 512):
+        for scale in (1, 2):
+            px = points * scale
+            name = f"icon-{points}@{scale}x.png"
+            save(mac_icon(px), "AppIcon.appiconset", name, root=MAC_ASSETS)
+            images.append({"filename": name, "idiom": "mac", "scale": f"{scale}x", "size": f"{points}x{points}"})
+    save_json({"images": images, "info": info}, "AppIcon.appiconset", "Contents.json", root=MAC_ASSETS)
+
+
 if __name__ == "__main__":
-    targets = sys.argv[1:] or ["android", "ios"]
+    targets = sys.argv[1:] or ["android", "ios", "mac"]
     if "android" in targets:
         android()
     if "ios" in targets:
         ios()
+    if "mac" in targets:
+        mac()

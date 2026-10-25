@@ -215,6 +215,8 @@ TestFlight are the only way; this repository doesn't set that up.
    Settings → Displays → **Add Display**.
 3. Tap the iPad's screen while mirroring to show who's mirroring, **Fill** /
    **Fit**, a **Stop** button and live stats. Double-tap to switch Fill / Fit.
+   Pinch to zoom in. To tap, scroll and type on the Mac instead, see
+   [Control the Mac from the iPad](#control-the-mac-from-the-ipad).
 
 Keep Mango Cast open. iOS pauses apps in the background, so the iPad is only in
 Screen Mirroring lists while Mango Cast is on screen. It keeps the screen on
@@ -231,7 +233,54 @@ while it waits, because a locked iPad drops out of the list too.
 | Show stats while mirroring | Resolution, codec, frame rate and bitrate in a corner. |
 | Keep the screen on while waiting | On by default. It always stays on while mirroring. |
 | Updates | The version you have, Check for updates, and a button that adds the update source to AltStore or SideStore. |
+| Mac control | Pair with a Mac running Mango Cast Remote, forget paired Macs, and turn controlling on or off. |
 | Diagnostics | What the iPad offers and the recent AirPlay log, with a Share button. |
+
+### Control the Mac from the iPad
+
+AirPlay only carries the picture and sound, one way. To work on the Mac from
+the iPad, run **Mango Cast Remote** on the Mac: a small menu bar app that plays
+the iPad's taps and typing there. The controls are the same as Holli Bot's
+Screen on iOS. There's no trackpad on the picture; the picture is the Mac's
+screen:
+
+| On the iPad | On the Mac |
+|---|---|
+| Tap | Clicks there. Two quick taps double-click, three triple-click. |
+| Swipe with one finger | Scrolls where the finger is, up and down or sideways (whichever way it went most). The page follows the finger, and a quick swipe carries on and slows down. |
+| Pinch | Zooms the iPad's picture, up to 6×, about the fingers (nothing happens on the Mac). Zoomed in, a finger moves the picture around and a tap still clicks exactly what's under it. The zoom button (**2.5×**, say) shows the whole screen again. |
+| Keyboard button | The iPad's keyboard types on the Mac as you type: suggestions, dictation, emoji and other languages included. Return, Backspace and, on a keyboard attached to the iPad, Tab, Esc, the arrows, F1–F12 and shortcuts like ⌘C, ⌘Tab or ⌃C are pressed on the Mac. ⌘V pastes what the iPad copied, as typing. |
+| Mouse or trackpad attached to the iPad | The pointer follows it; click, right-click (two-finger click), drag and scroll. |
+
+**Set it up once:**
+
+1. Download `MangoCastRemote-mac.zip` from the
+   [`ios-latest` pre-release](../../releases/tag/ios-latest), open it, and
+   move **MangoCastRemote** to Applications. (Or build the **MangoCastRemote**
+   scheme in Xcode.) It's signed ad hoc, not by Apple, so the first time,
+   Control-click it → **Open**, or allow it under System Settings → Privacy &
+   Security → **Open Anyway**.
+2. It appears in the menu bar (a pointer icon). Click it, choose **Ask for
+   permission** and turn on **Mango Cast Remote** in System Settings → Privacy
+   & Security → **Accessibility**: macOS only lets apps it lists there click
+   and type. Allow **Local Network** too, if asked.
+3. In the menu, choose **Pair an iPad…**. The Mac shows a 6-digit code.
+4. On the iPad: Settings → **Mac control** → **Pair with a Mac…** (or the
+   **Control Mac** button while mirroring), pick the Mac and enter the code.
+
+From then on, while that Mac mirrors to the iPad, the iPad connects to it by
+itself and the **Controlling** button shows at the top. Tap it to turn
+controlling off (taps then show the controls again, as without it).
+**Open at login** in the menu keeps it running.
+
+Everything goes over your Wi-Fi only, encrypted (TLS with a key only paired
+devices hold). The code is only accepted while the Mac shows it, for five
+minutes. **Forget paired iPads** on the Mac makes a new key, so every iPad has
+to pair again.
+
+**After updating Mango Cast Remote**, macOS may see it as a new app: if taps
+stop working and the iPad says to allow it under Accessibility, remove
+Mango Cast Remote from the Accessibility list with **−** and allow it again.
 
 **Sidecar:** if your Mac and iPad are signed in to the same Apple ID and both
 support it, macOS's built-in Sidecar also puts the Mac's screen on the iPad

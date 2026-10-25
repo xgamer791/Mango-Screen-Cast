@@ -11,6 +11,7 @@ struct HomeView: View {
     @EnvironmentObject private var receiver: Receiver
     @EnvironmentObject private var settings: Settings
     @EnvironmentObject private var updates: UpdateChecker
+    @EnvironmentObject private var remote: RemoteControl
     @State private var showSettings = false
 
     /// Below this width (iPhones, narrow Split View panes) everything gets smaller.
@@ -69,6 +70,7 @@ struct HomeView: View {
                 .environmentObject(receiver)
                 .environmentObject(settings)
                 .environmentObject(updates)
+                .environmentObject(remote)
         }
     }
 

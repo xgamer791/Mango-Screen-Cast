@@ -42,6 +42,12 @@ final class VideoRenderer {
     /// The picture's size, kept on the main thread for updateGravity().
     private var pictureSize = CGSize.zero
 
+    /// The picture's size, once a stream has given it. Main thread.
+    var shownPictureSize: CGSize? { pictureSize.width > 0 ? pictureSize : nil }
+
+    /// Told on the main thread when the picture's size changes.
+    var onPictureSize: ((CGSize) -> Void)?
+
     /// Receives one line per notable event (stream start, format change, recovery).
     var log: ((String) -> Void)?
 
@@ -209,6 +215,7 @@ final class VideoRenderer {
             DispatchQueue.main.async {
                 self.pictureSize = CGSize(width: width, height: height)
                 self.updateGravity()
+                self.onPictureSize?(self.pictureSize)
             }
         }
     }

@@ -6,6 +6,7 @@ struct MangoScreenCastApp: App {
     @StateObject private var settings: Settings
     @StateObject private var receiver: Receiver
     @StateObject private var updates = UpdateChecker()
+    @StateObject private var remote = RemoteControl()
 
     init() {
         let settings = Settings()
@@ -19,6 +20,7 @@ struct MangoScreenCastApp: App {
                 .environmentObject(settings)
                 .environmentObject(receiver)
                 .environmentObject(updates)
+                .environmentObject(remote)
                 .preferredColorScheme(.dark)
                 .onAppear {
                     receiver.start()

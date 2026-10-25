@@ -78,6 +78,18 @@ jobs:
           tail -n 25 build.log
           exit "${status:-0}"
 
+      # The Mac helper that plays the iPad's taps, swipes and typing on the
+      # Mac. Ad-hoc signed, as no Apple ID is involved; see the README.
+      - name: Build Mango Cast Remote for the Mac
+        run: |
+          xcodebuild build -project ios/MangoScreenCast.xcodeproj -scheme MangoCastRemote -configuration Release \
+            -destination "generic/platform=macOS" -derivedDataPath build/mac \
+            MARKETING_VERSION="$MANGO_VERSION" CURRENT_PROJECT_VERSION="$MANGO_BUILD" \
+            CODE_SIGN_STYLE=Manual CODE_SIGN_IDENTITY="-" DEVELOPMENT_TEAM="" > mac.log 2>&1 || status=$?
+          grep -E "error:|warning: .*/ios/" mac.log | sort -u | head -100
+          tail -n 15 mac.log
+          exit "${status:-0}"
+
       - name: Package IPA and update feed
         run: |
           app=build/device/Build/Products/Release-iphoneos/MangoScreenCast.app
@@ -97,6 +109,10 @@ jobs:
             --ipa-size "$(stat -f %z "dist/MangoCast-$MANGO_VERSION.ipa")" \
             --icon-url "https://raw.githubusercontent.com/$GITHUB_REPOSITORY/$GITHUB_SHA/ios/MangoScreenCast/Assets.xcassets/AppIcon.appiconset/icon-1024.png" \
             --notes "$(git log -1 --pretty=%s)" > dist/altstore-source.json
+          mac=build/mac/Build/Products/Release/MangoCastRemote.app
+          lipo -info "$mac/Contents/MacOS/MangoCastRemote"
+          codesign --verify --verbose "$mac"
+          ditto -c -k --keepParent "$mac" dist/MangoCastRemote-mac.zip
           ls -l dist
 
       # A rolling pre-release, so it never becomes the "latest" release the
@@ -113,11 +129,13 @@ jobs:
           notes="Mango Cast $MANGO_VERSION for iPad and iPhone, unsigned: $(git log -1 --pretty=%s) (built from ${GITHUB_SHA::7}).
 
           For updates, add this source to AltStore or SideStore: $source
-          See the README for other ways to install it."
+          See the README for other ways to install it.
+
+          MangoCastRemote-mac.zip is Mango Cast Remote, the Mac app that lets the iPad tap, scroll and type on the Mac it mirrors."
           # Replace the previous build, tag included, so the tag points at this commit.
           gh release delete ios-latest --cleanup-tag --yes --repo "$GITHUB_REPOSITORY" 2> /dev/null || true
           gh release create ios-latest dist/MangoScreenCast-unsigned.ipa "dist/MangoCast-$MANGO_VERSION.ipa" \
-            dist/altstore-source.json --repo "$GITHUB_REPOSITORY" \
+            dist/altstore-source.json dist/MangoCastRemote-mac.zip --repo "$GITHUB_REPOSITORY" \
             --target "$GITHUB_SHA" --prerelease --latest=false \
             --title "Mango Cast $MANGO_VERSION for iPad and iPhone" --notes "$notes"
 
@@ -125,14 +143,17 @@ jobs:
         continue-on-error: true
         with:
           name: MangoScreenCast-ios-unsigned
-          path: dist/MangoScreenCast-unsigned.ipa
+          path: |
+            dist/MangoScreenCast-unsigned.ipa
+            dist/MangoCastRemote-mac.zip
           retention-days: 30
 
   # Screenshots of the home and Settings screens in both orientations on one
-  # iPad of each screen shape (and an iPhone), to check the layout.
+  # iPad of each screen shape (and an iPhone), to check the layout, and the
+  # touch controls and keyboard tested on each (ControlsUITests).
   screenshots:
     runs-on: macos-15
-    timeout-minutes: 60
+    timeout-minutes: 80
     steps:
       - uses: actions/checkout@v4
         with:
@@ -169,16 +190,21 @@ jobs:
                       print(devices[names[-1]], names[-1])
                       break' > devices.txt
           cat devices.txt
+          failed=""
           while read -r udid name; do
             echo "::group::$name"
             TEST_RUNNER_SCREENSHOT_DIR="$PWD/screenshots" xcodebuild test-without-building \
               -project ios/MangoScreenCast.xcodeproj -scheme Screenshots -destination "id=$udid" \
               -derivedDataPath build/ui -resultBundlePath "results/$udid.xcresult" < /dev/null > "ui-$udid.log" 2>&1 \
-              || { echo "screenshots failed on $name"; tail -n 30 "ui-$udid.log"; }
+              || { echo "::error::UI tests failed on $name"; failed="$failed, $name"
+                   grep -E "error:|Test Case .*(passed|failed)" "ui-$udid.log" | sort -u | head -40
+                   tail -n 30 "ui-$udid.log"; }
             xcrun simctl shutdown "$udid" < /dev/null > /dev/null 2>&1 || true
             echo "::endgroup::"
           done < devices.txt
           ls -1 screenshots
+          # The controls tests drive taps, swipes, pinches and typing; they must pass on every device.
+          if [ -n "$failed" ]; then echo "UI tests failed on: ${failed#, }"; exit 1; fi
 
       - uses: actions/upload-artifact@v4
         if: always()

@@ -80,6 +80,13 @@ final class Settings: ObservableObject {
         set { change(Keys.awake, newValue) }
     }
 
+    /// With a Mac to control, taps and swipes on the picture go to the Mac.
+    /// Off, they only show the controls, as without one.
+    var controlMac: Bool {
+        get { defaults.object(forKey: Keys.controlMac) as? Bool ?? true }
+        set { change(Keys.controlMac, newValue) }
+    }
+
     /// AirPlay identifies receivers by a MAC-style id. iOS doesn't expose
     /// the real one, so make a random, locally administered one and keep it.
     var deviceId: [UInt8] {
@@ -105,6 +112,7 @@ final class Settings: ObservableObject {
         static let stats = "showStats"
         static let awake = "keepAwake"
         static let fill = "fillScreen"
+        static let controlMac = "controlMac"
         static let deviceId = "deviceId"
     }
 }

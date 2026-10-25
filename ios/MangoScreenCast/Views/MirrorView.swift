@@ -1,51 +1,96 @@
 import SwiftUI
 import UIKit
 
-/// The mirrored screen, edge to edge. Tap to show who's mirroring, a Stop
-/// button and live stats; they hide again after a few seconds. Double-tap
-/// switches between showing the whole picture and filling the screen.
+/// The mirrored screen, edge to edge.
+///
+/// With Mango Cast Remote on the Mac, the picture is the Mac's screen to
+/// work with, as Holli Bot's Screen is (ScreenView): tap to click, swipe to
+/// scroll, pinch to zoom, and the keyboard button types on the Mac. The ⋯
+/// button shows the controls (Control, Fill, Stop).
+///
+/// Without it, a tap shows or hides the controls and a double tap switches
+/// between showing the whole picture and filling the screen; pinching still
+/// zooms.
 struct MirrorView: View {
     @EnvironmentObject private var receiver: Receiver
     @EnvironmentObject private var settings: Settings
+    @EnvironmentObject private var remote: RemoteControl
+    /// The controls demo for UI tests: a stand-in picture, nothing sent.
+    var demo = false
+
+    @StateObject private var screen = ScreenController()
+    @State private var typingField = TypingField()
     @State private var controlsVisible = true
     @State private var stats: VideoRenderer.Stats?
+    @State private var typing = false
+    @State private var showPairing = false
 
     private let ticker = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
+
+    private var controlling: Bool { remote.isConnected && settings.controlMac }
 
     var body: some View {
         ZStack {
             Color.black.ignoresSafeArea()
-            VideoLayerView(renderer: receiver.video)
+            ScreenSurface(renderer: demo ? nil : receiver.video, controller: screen, controlling: controlling,
+                          demo: demo, send: remote.send, onTap: toggleControls, onDoubleTap: toggleFill,
+                          onClick: { typingField.clear() })
                 .ignoresSafeArea()
+            TypingBox(isActive: $typing, send: remote.send, field: typingField)
+                .frame(width: 1, height: 1)
+                .opacity(0.01)
             if receiver.status.paused {
                 Label("Paused on \(receiver.status.clientName ?? "the other device")", systemImage: "pause.circle.fill")
                     .font(.title3.weight(.semibold))
                     .padding(.horizontal, 20)
                     .padding(.vertical, 12)
                     .background(.ultraThinMaterial, in: Capsule())
+                    .allowsHitTesting(false)
             }
             if let check = receiver.resolutionCheck {
                 ResolutionCheckCard(check: check, keep: receiver.keepResolution,
                                     goBack: { receiver.revertResolution() })
                     .transition(.scale.combined(with: .opacity))
             }
-            VStack(spacing: 0) {
+            VStack(spacing: 12) {
                 if controlsVisible {
                     topBar.transition(.move(edge: .top).combined(with: .opacity))
                 }
+                if remote.isConnected && settings.controlMac && !remote.canControl {
+                    Label("On the Mac, allow Mango Cast Remote under System Settings → Privacy & Security → Accessibility.",
+                          systemImage: "exclamationmark.triangle.fill")
+                        .font(.footnote.weight(.semibold))
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 8)
+                        .background(.ultraThinMaterial, in: Capsule())
+                }
                 Spacer()
-                if settings.showStats || controlsVisible, let stats {
-                    statsText(stats).transition(.opacity)
+                HStack(alignment: .bottom) {
+                    if settings.showStats || controlsVisible, let stats, !demo {
+                        statsText(stats).transition(.opacity)
+                    }
+                    Spacer(minLength: 0)
+                    dock
                 }
             }
             .padding(16)
+            if demo {
+                Text(remote.demoLog.joined(separator: "\n"))
+                    .font(.system(.caption, design: .monospaced))
+                    .padding(8)
+                    .background(Color.black.opacity(0.6))
+                    .accessibilityIdentifier("controlLog")
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomLeading)
+                    .padding(16)
+                    .allowsHitTesting(false)
+            }
         }
-        .contentShape(Rectangle())
-        .onTapGesture(count: 2, perform: toggleFill)
-        .onTapGesture {
-            withAnimation(.easeInOut(duration: 0.2)) { controlsVisible.toggle() }
+        .animation(.easeInOut(duration: 0.2), value: screen.zoom)
+        .sheet(isPresented: $showPairing) {
+            PairMacView()
+                .environmentObject(remote)
+                .environmentObject(settings)
         }
-        .onAppear { receiver.video.fillsScreen = settings.fillScreen }
         .task(id: controlsVisible) {
             guard controlsVisible else { return }
             try? await Task.sleep(nanoseconds: 4_000_000_000)
@@ -56,20 +101,96 @@ struct MirrorView: View {
         .onReceive(ticker) { _ in
             stats = receiver.video.stats()
         }
-        .onAppear { stats = receiver.video.stats() }
+        .onAppear {
+            stats = receiver.video.stats()
+            receiver.video.fillsScreen = settings.fillScreen
+            if demo {
+                remote.startDemo()
+            } else {
+                remote.activate(preferring: receiver.status.clientName, as: settings.receiverName)
+            }
+        }
+        .onDisappear {
+            typing = false
+            remote.deactivate()
+        }
+        .onChange(of: receiver.status.clientName) { name in
+            remote.activate(preferring: name, as: settings.receiverName)
+        }
+        .onChange(of: controlling) { on in
+            if !on { typing = false }
+        }
         .statusBarHidden(true)
         .persistentSystemOverlays(.hidden)
         .foregroundColor(.white)
+    }
+
+    private func toggleControls() {
+        withAnimation(.easeInOut(duration: 0.2)) { controlsVisible.toggle() }
+    }
+
+    /// Fill zooms in to cover the screen when the picture's shape differs
+    /// from it (a mirrored Mac on an iPad), cutting off the edges.
+    private func toggleFill() {
+        settings.fillScreen.toggle()
+        receiver.video.fillsScreen = settings.fillScreen
+    }
+
+    /// Round buttons in the corner, as Holli Bot's Screen has: how far it's
+    /// zoomed (tap for the whole screen), the keyboard, and ⋯ for the controls.
+    private var dock: some View {
+        HStack(spacing: 10) {
+            if screen.zoom > 1 {
+                Button {
+                    screen.showWholeScreen()
+                } label: {
+                    Text(String(format: "%.1f×", screen.zoom))
+                        .font(.subheadline.weight(.bold).monospacedDigit())
+                        .frame(minWidth: 44, minHeight: 44)
+                        .padding(.horizontal, 6)
+                }
+                .background(.ultraThinMaterial, in: Capsule())
+                .accessibilityIdentifier("zoomBadge")
+                .accessibilityLabel("Show the whole screen")
+                .transition(.scale.combined(with: .opacity))
+            }
+            if controlling {
+                dockButton("keyboard", on: typing, id: "keyboardButton", label: "Keyboard") { typing.toggle() }
+                dockButton("ellipsis", on: controlsVisible, id: "moreButton", label: "More") { toggleControls() }
+            }
+        }
+    }
+
+    private func dockButton(_ symbol: String, on: Bool, id: String, label: String,
+                            action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            Image(systemName: symbol)
+                .font(.title3.weight(.semibold))
+                .foregroundColor(on ? .black : .white)
+                .frame(width: 48, height: 48)
+                .background(on ? AnyShapeStyle(Theme.mango) : AnyShapeStyle(Material.ultraThinMaterial), in: Circle())
+        }
+        .accessibilityIdentifier(id)
+        .accessibilityLabel(label)
     }
 
     private var topBar: some View {
         HStack(spacing: 12) {
             Image(systemName: "dot.radiowaves.left.and.right")
                 .foregroundColor(Theme.ready)
-            Text("Mirroring \(receiver.status.clientName ?? "a device")")
+            Text("Mirroring \(receiver.status.clientName ?? (demo ? "Demo Mac" : "a device"))")
                 .font(.headline)
                 .lineLimit(1)
             Spacer(minLength: 12)
+            Button {
+                if remote.isConnected { settings.controlMac.toggle() } else { showPairing = true }
+            } label: {
+                Label(controlTitle, systemImage: controlling ? "hand.tap.fill" : "hand.tap")
+                    .font(.headline)
+            }
+            .buttonStyle(.bordered)
+            .tint(controlling ? Theme.mango : .white)
+            .accessibilityIdentifier("controlButton")
             Button(action: toggleFill) {
                 Label(settings.fillScreen ? "Fit" : "Fill",
                       systemImage: settings.fillScreen ? "arrow.down.right.and.arrow.up.left"
@@ -93,11 +214,13 @@ struct MirrorView: View {
         .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
     }
 
-    /// Fill zooms in to cover the screen when the picture's shape differs
-    /// from it (a mirrored Mac on an iPad), cutting off the edges.
-    private func toggleFill() {
-        settings.fillScreen.toggle()
-        receiver.video.fillsScreen = settings.fillScreen
+    /// What the Control button says: controlling, paused, or how to set it up.
+    private var controlTitle: String {
+        switch remote.state {
+        case .connected: return settings.controlMac ? "Controlling" : "Control off"
+        case .connecting, .searching: return "Finding Mac…"
+        case .notPaired, .off, .failed: return "Control Mac"
+        }
     }
 
     private func statsText(_ v: VideoRenderer.Stats) -> some View {
@@ -113,7 +236,7 @@ struct MirrorView: View {
         .padding(.horizontal, 12)
         .padding(.vertical, 8)
         .background(Color.black.opacity(0.6), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
-        .frame(maxWidth: .infinity, alignment: .leading)
+        .allowsHitTesting(false)
     }
 }
 
@@ -161,59 +284,5 @@ private struct ResolutionCheckCard: View {
         .frame(maxWidth: 420)
         .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
         .padding(24)
-    }
-}
-
-/// Hosts the renderer's AVSampleBufferDisplayLayer. The layer belongs to the
-/// renderer and outlives this view, so leaving and coming back to the
-/// player never interrupts decoding.
-struct VideoLayerView: UIViewRepresentable {
-    let renderer: VideoRenderer
-
-    func makeUIView(context: Context) -> LayerHostView {
-        let view = LayerHostView()
-        view.backgroundColor = .black
-        view.renderer = renderer
-        return view
-    }
-
-    func updateUIView(_ view: LayerHostView, context: Context) {
-        view.renderer = renderer
-    }
-
-    static func dismantleUIView(_ view: LayerHostView, coordinator: ()) {
-        view.release()
-    }
-}
-
-final class LayerHostView: UIView {
-    private weak var hosted: CALayer?
-
-    /// Hosts the renderer's layer and tells it the view's size.
-    weak var renderer: VideoRenderer? {
-        didSet { if let renderer { host(renderer.layer) } }
-    }
-
-    private func host(_ sublayer: CALayer) {
-        guard sublayer.superlayer !== layer else { return }
-        sublayer.removeFromSuperlayer()
-        layer.addSublayer(sublayer)
-        hosted = sublayer
-        setNeedsLayout()
-    }
-
-    /// Lets go of the layer unless another view has already taken it.
-    func release() {
-        if let hosted, hosted.superlayer === layer { hosted.removeFromSuperlayer() }
-        hosted = nil
-    }
-
-    override func layoutSubviews() {
-        super.layoutSubviews()
-        CATransaction.begin()
-        CATransaction.setDisableActions(true)
-        hosted?.frame = bounds
-        CATransaction.commit()
-        renderer?.viewSize = bounds.size
     }
 }

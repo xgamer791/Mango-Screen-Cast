@@ -7,7 +7,9 @@ struct RootView: View {
 
     var body: some View {
         ZStack {
-            if receiver.status.state == .mirroring {
+            if Self.controlsDemo {
+                MirrorView(demo: true)
+            } else if receiver.status.state == .mirroring {
                 MirrorView()
                     .transition(.opacity)
             } else {
@@ -26,6 +28,16 @@ struct RootView: View {
         .onChange(of: receiver.status.state) { _ in updateIdleTimer() }
         .onChange(of: settings.keepAwake) { _ in updateIdleTimer() }
     }
+
+    /// The controls demo, for UI tests (MangoScreenCastUITests): the mirrored
+    /// screen with a stand-in picture, listing what would go to the Mac.
+    private static let controlsDemo: Bool = {
+        #if DEBUG
+        return ProcessInfo.processInfo.arguments.contains("-MangoControlsDemo")
+        #else
+        return false
+        #endif
+    }()
 
     /// The screen stays on while mirroring and, unless turned off in
     /// Settings, while waiting: a locked device drops out of Screen Mirroring.
