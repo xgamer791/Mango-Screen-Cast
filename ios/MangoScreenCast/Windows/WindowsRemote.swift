@@ -201,7 +201,7 @@ final class WindowsRemote: ObservableObject {
                 case .ready:
                     channel.send(.linkRequest(name: ownName))
                 case .waiting(let error), .failed(let error):
-                    self.linkFailed("Couldn’t reach \(pc) (\(error.localizedDescription)). \(WindowsRemote.reachHint)")
+                    self.linkFailed("Couldn’t reach \(pc): \(error.localizedDescription)")
                 default:
                     break
                 }
@@ -226,13 +226,9 @@ final class WindowsRemote: ObservableObject {
         channel.start(queue: queue)
         DispatchQueue.main.asyncAfter(deadline: .now() + 10) { [weak self, weak channel] in
             guard let self, let channel, self.linkChannel === channel else { return }
-            self.linkFailed("\(pc) didn’t answer. \(WindowsRemote.reachHint)")
+            self.linkFailed("\(pc) didn’t answer. Check that it’s on the same Wi-Fi network as this iPhone.")
         }
     }
-
-    /// Why a PC that's open might not answer.
-    static let reachHint = "Check that it’s on the same Wi-Fi as this iPhone. If Windows Firewall is in the way, "
-        + "the PC app’s iPhone control row says so: click it to allow."
 
     private func linkFailed(_ text: String) {
         linkChannel?.cancel()
