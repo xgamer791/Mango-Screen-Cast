@@ -11,11 +11,6 @@
   --text: #ffffff;
   --cast-blue: #3770fa;
 
-  /* Center glass strip. --glass-base is the swappable frosted layer. */
-  --glass-base: rgba(0, 0, 0, 0.22);
-  --glass-blur: 36px;
-  --glass-rim: rgba(255, 255, 255, 0.13);
-
   --tile-indigo-top: #555cfb;
   --tile-indigo-bottom: #525edf;
   --tile-blue-top: #4272fa;
@@ -141,38 +136,14 @@ body {
   top: 699px;
   width: 2252px;
   height: 343px;
-  border-radius: 34px;
   isolation: isolate;
 }
 
-.glass__base,
-.glass__sheen,
-.glass__rim {
+/* The frosted layer is Mango Liquid Glass (liquid-glass.css). */
+.glass__base {
   position: absolute;
   inset: 0;
-  border-radius: inherit;
   pointer-events: none;
-}
-
-/* Black frosted layer. Swap this block for the supplied glass code. */
-.glass__base {
-  background: var(--glass-base);
-  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.25);
-  backdrop-filter: blur(var(--glass-blur)) saturate(1.25);
-}
-
-.glass__sheen {
-  background: linear-gradient(180deg,
-              rgba(255, 255, 255, 0.11) 0%,
-              rgba(255, 255, 255, 0.035) 38%,
-              rgba(255, 255, 255, 0) 62%,
-              rgba(255, 255, 255, 0.03) 100%);
-}
-
-.glass__rim {
-  box-shadow: inset 0 0 0 2px var(--glass-rim),
-              inset 0 2px 0 0 rgba(255, 255, 255, 0.18),
-              inset 0 -2px 0 0 rgba(0, 0, 0, 0.16);
 }
 
 /* Column dividers sit where the reference has them (not equal thirds). */

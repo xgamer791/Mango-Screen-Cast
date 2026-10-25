@@ -1,0 +1,93 @@
+/* Mango Liquid Glass. Add class="liquid-glass" to any element;
+   tune one element by overriding its --lg-* properties. */
+.liquid-glass {
+  --lg-radius: 0px;
+  --lg-blur: 19.5px;
+  --lg-saturate: 125%;
+  --lg-brightness: 70%;
+  --lg-tint: rgb(10 10 16 / 0.63);
+  --lg-grain: none;
+  --lg-light: 0deg; /* where light comes from, 0deg = top */
+  --lg-rim: 0;
+  --lg-rim-width: 1.5px;
+  --lg-rim-blur: 0px;
+  --lg-sheen: 0;
+  --lg-depth: 0;
+  --lg-shadow: none;
+  --lg-text: #ffffff;
+  --lg-fallback: rgb(22 22 28 / 0.9); /* used without backdrop-filter */
+
+  isolation: isolate;
+  border-radius: var(--lg-radius);
+  background: transparent;
+  color: var(--lg-text);
+  box-shadow: var(--lg-shadow);
+}
+
+/* zero specificity, so your own position/border always win */
+:where(.liquid-glass) {
+  position: relative;
+  border: 0;
+}
+
+.liquid-glass::before,
+.liquid-glass::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+/* Layer 1, Chromium only: bend the sharp backdrop at the edges.
+   Other engines skip this line and the glass stays frosted.
+   Thin controls can point --lg-refract-filter at a tighter filter. */
+.liquid-glass::before {
+  backdrop-filter: var(--lg-refract-filter, url(#lg-refract));
+}
+
+/* Layer 2: frost, tint, rim light, sheen and depth, steered by --lg-light.
+   The solid --lg-fallback shows where backdrop-filter is missing. */
+.liquid-glass::after {
+  background:
+    linear-gradient(calc(var(--lg-light) + 180deg),
+      rgb(255 255 255 / var(--lg-sheen)),
+      rgb(255 255 255 / 0) 40% 70%,
+      rgb(255 255 255 / calc(var(--lg-sheen) * 0.3))),
+    var(--lg-grain),
+    var(--lg-fallback);
+  box-shadow:
+    inset calc(sin(var(--lg-light)) * var(--lg-rim-width) * -1) calc(cos(var(--lg-light)) * var(--lg-rim-width)) var(--lg-rim-blur) rgb(255 255 255 / var(--lg-rim)),
+    inset calc(sin(var(--lg-light)) * var(--lg-rim-width)) calc(cos(var(--lg-light)) * var(--lg-rim-width) * -1) var(--lg-rim-blur) rgb(255 255 255 / calc(var(--lg-rim) * 0.45)),
+    inset 0 0 0 1px rgb(255 255 255 / calc(var(--lg-rim) * 0.18)),
+    inset calc(sin(var(--lg-light)) * 12px) calc(cos(var(--lg-light)) * -12px) 24px -12px rgb(0 0 0 / var(--lg-depth)),
+    inset 0 0 18px rgb(255 255 255 / calc(var(--lg-sheen) * 0.2));
+}
+@supports (backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px)) {
+  .liquid-glass::after {
+    background-color: var(--lg-tint);
+    -webkit-backdrop-filter: blur(var(--lg-blur)) saturate(var(--lg-saturate)) brightness(var(--lg-brightness));
+    backdrop-filter: blur(var(--lg-blur)) saturate(var(--lg-saturate)) brightness(var(--lg-brightness));
+  }
+}
+
+/* Phones: cap the blur radius at 16px so scrolling stays smooth. */
+@media (hover: none) and (pointer: coarse) {
+  @supports (backdrop-filter: blur(min(1px, 2px))) or (-webkit-backdrop-filter: blur(min(1px, 2px))) {
+    .liquid-glass::after {
+      -webkit-backdrop-filter: blur(min(var(--lg-blur), 16px)) saturate(var(--lg-saturate)) brightness(var(--lg-brightness));
+      backdrop-filter: blur(min(var(--lg-blur), 16px)) saturate(var(--lg-saturate)) brightness(var(--lg-brightness));
+    }
+  }
+}
+
+/* Honour "Reduce transparency". */
+@media (prefers-reduced-transparency: reduce) {
+  .liquid-glass::before { backdrop-filter: none; }
+  .liquid-glass::after {
+    background-color: var(--lg-fallback);
+    -webkit-backdrop-filter: none;
+    backdrop-filter: none;
+  }
+}
