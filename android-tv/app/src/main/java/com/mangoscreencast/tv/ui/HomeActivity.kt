@@ -41,7 +41,8 @@ class HomeActivity : Activity(), AirPlayReceiver.Listener, AppUpdater.Listener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_home)
+        // Drawn at 1440p, whatever size the TV draws its screens at.
+        Canvas1440Layout.setContentView(this, R.layout.activity_home)
         statusView = findViewById(R.id.status)
         subtitleView = findViewById(R.id.subtitle)
         detailView = findViewById(R.id.status_detail)

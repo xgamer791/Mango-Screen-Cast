@@ -38,7 +38,8 @@ class SettingsActivity : Activity(), AppUpdater.Listener {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_settings)
+        // Drawn at 1440p, whatever size the TV draws its screens at.
+        Canvas1440Layout.setContentView(this, R.layout.activity_settings)
         list = findViewById(R.id.settings_list)
         findViewById<TextView>(R.id.about).text = getString(R.string.about, BuildConfig.VERSION_NAME)
     }

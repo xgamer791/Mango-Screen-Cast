@@ -27,6 +27,11 @@ iPad: put your Mac's screen on it, or use it as a second display. See
   Video, Hulu, Disney+ and Tubi. **OK** on a tile opens the app. One the TV
   doesn't have opens its page in Google Play (the Amazon Appstore on a Fire
   TV) to install it, and opens on the next press after that.
+- **Sharp screens:** the home screen and Settings are drawn at 1440p
+  (2560 × 1440) whatever size the TV runs its menus at. Most 4K TVs run apps
+  at 1920 × 1080 and stretch them 2× onto the panel; these two pages go to a
+  2560 × 1440 surface instead, which the TV scales once. Their dialogs are
+  drawn at the TV's own size.
 
 ## Requirements
 
