@@ -78,21 +78,21 @@
   <svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false">
     <filter id="lg-refract" x="0" y="0" width="1" height="1" color-interpolation-filters="sRGB">
       <feFlood flood-color="#fff" result="fill"/>
-      <feGaussianBlur in="fill" stdDeviation="14" result="h"/>
-      <feOffset in="h" dx="-3" result="h1"/>
-      <feOffset in="h" dx="3" result="h2"/>
-      <feComposite in="h1" in2="h2" operator="arithmetic" k2="2.8" k3="-2.8" k4="0.5" result="sx"/>
-      <feOffset in="h" dy="-3" result="h3"/>
-      <feOffset in="h" dy="3" result="h4"/>
-      <feComposite in="h3" in2="h4" operator="arithmetic" k2="2.8" k3="-2.8" k4="0.5" result="sy"/>
+      <feGaussianBlur in="fill" stdDeviation="24" result="h"/>
+      <feOffset in="h" dx="-5" result="h1"/>
+      <feOffset in="h" dx="5" result="h2"/>
+      <feComposite in="h1" in2="h2" operator="arithmetic" k2="2.88" k3="-2.88" k4="0.5" result="sx"/>
+      <feOffset in="h" dy="-5" result="h3"/>
+      <feOffset in="h" dy="5" result="h4"/>
+      <feComposite in="h3" in2="h4" operator="arithmetic" k2="2.88" k3="-2.88" k4="0.5" result="sy"/>
       <feColorMatrix in="sx" values="0 0 0 1 0  0 0 0 0 0  0 0 0 0 0  0 0 0 0 1" result="mx"/>
       <feColorMatrix in="sy" values="0 0 0 0 0  0 0 0 1 0  0 0 0 0 .5  0 0 0 0 1" result="my"/>
       <feComposite in="mx" in2="my" operator="arithmetic" k2="1" k3="1" result="map"/>
-      <feDisplacementMap in="SourceGraphic" in2="map" scale="30" xChannelSelector="R" yChannelSelector="G" result="dr"/>
+      <feDisplacementMap in="SourceGraphic" in2="map" scale="79" xChannelSelector="R" yChannelSelector="G" result="dr"/>
       <feColorMatrix in="dr" values="1 0 0 0 0  0 0 0 0 0  0 0 0 0 0  0 0 0 1 0" result="r"/>
-      <feDisplacementMap in="SourceGraphic" in2="map" scale="36" xChannelSelector="R" yChannelSelector="G" result="dg"/>
+      <feDisplacementMap in="SourceGraphic" in2="map" scale="122" xChannelSelector="R" yChannelSelector="G" result="dg"/>
       <feColorMatrix in="dg" values="0 0 0 0 0  0 1 0 0 0  0 0 0 0 0  0 0 0 1 0" result="g"/>
-      <feDisplacementMap in="SourceGraphic" in2="map" scale="42" xChannelSelector="R" yChannelSelector="G" result="db"/>
+      <feDisplacementMap in="SourceGraphic" in2="map" scale="165" xChannelSelector="R" yChannelSelector="G" result="db"/>
       <feColorMatrix in="db" values="0 0 0 0 0  0 0 0 0 0  0 0 1 0 0  0 0 0 1 0" result="b"/>
       <feComposite in="r" in2="g" operator="arithmetic" k2="1" k3="1" result="rg"/>
       <feComposite in="rg" in2="b" operator="arithmetic" k2="1" k3="1"/>

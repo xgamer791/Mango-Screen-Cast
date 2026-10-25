@@ -146,6 +146,9 @@ body {
   pointer-events: none;
 }
 
+/* With the device cards' corners; two classes, so it wins over liquid-glass.css, which loads after this. */
+.glass__base.liquid-glass { --lg-radius: 22px; }
+
 /* Column dividers sit where the reference has them (not equal thirds). */
 .glass::before,
 .glass::after {
