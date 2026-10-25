@@ -36,10 +36,13 @@ def fetch_info(port):
         return plistlib.loads(body)
 
 
-def run_case(harness, width, height, hevc, fps=60):
+def run_case(harness, width, height, hevc, fps=60, offer=None):
+    """`offer` (width, height, fps): what the display is changed to once the server runs."""
     with tempfile.TemporaryDirectory() as tmp:
         keyfile = os.path.join(tmp, "airplay.key")
-        proc = subprocess.Popen([harness, keyfile, "3", str(width), str(height), str(int(hevc)), str(fps)],
+        args = [harness, keyfile, "3", str(width), str(height), str(int(hevc)), str(fps)]
+        args += [str(value) for value in offer or ()]
+        proc = subprocess.Popen(args,
                                 stdout=subprocess.PIPE, stderr=subprocess.DEVNULL, text=True)
         services, txt = {}, {}
         port = None
@@ -69,12 +72,14 @@ def run_case(harness, width, height, hevc, fps=60):
     assert info["features"] == advertised, (info["features"], advertised)
 
     display = info["displays"][0]
-    assert (display["width"], display["height"]) == (width, height), display
-    assert display["maxFPS"] == fps, display
-    # Sent as a frame period, the way Apple TVs report it.
+    shown_width, shown_height, shown_fps = offer or (width, height, fps)
+    assert (display["width"], display["height"]) == (shown_width, shown_height), display
+    assert (display["widthPixels"], display["heightPixels"]) == (shown_width, shown_height), display
+    assert display["maxFPS"] == shown_fps, display
+    # Sent as a frame period, the way Apple TVs report it; an offer keeps the TV's refresh rate.
     assert abs(display["refreshRate"] - 1 / fps) < 1e-6, display
     assert info["deviceID"] == "02:11:22:33:44:55", info["deviceID"]
-    print(f"ok: {width}x{height} @ {display['maxFPS']} fps, HEVC={hevc}, features={features}")
+    print(f"ok: {shown_width}x{shown_height} @ {display['maxFPS']} fps, HEVC={hevc}, features={features}")
 
 
 def main():
@@ -82,6 +87,8 @@ def main():
     run_case(harness, 3840, 2160, True)
     run_case(harness, 1920, 1080, False)
     run_case(harness, 2560, 1440, True, fps=120)
+    # An iPhone 16 Pro Max is offered a square as big as its screen.
+    run_case(harness, 3840, 2160, True, offer=(2868, 2868, 60))
 
 
 if __name__ == "__main__":

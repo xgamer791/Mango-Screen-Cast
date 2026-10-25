@@ -44,6 +44,12 @@ object DecoderSelection {
         return video.isSizeSupported(width, height) || video.isSizeSupported(height, width)
     }
 
+    /** True if a hardware decoder handles `width`x`height` exactly this way round. */
+    fun supportsExactly(mime: String, width: Int, height: Int): Boolean {
+        val info = hardwareDecoder(mime) ?: return false
+        return info.getCapabilitiesForType(mime).videoCapabilities?.isSizeSupported(width, height) == true
+    }
+
     /** One line per video decoder relevant to AirPlay, for diagnostics. */
     fun describe(): List<String> {
         val lines = mutableListOf<String>()

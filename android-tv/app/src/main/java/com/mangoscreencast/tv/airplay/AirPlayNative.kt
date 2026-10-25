@@ -91,4 +91,12 @@ object AirPlayNative {
     /** Drops every connected device. */
     @JvmStatic
     external fun nativeDisconnectClients()
+
+    /**
+     * The display offered from now on. Senders read it right after the
+     * connection request, so calling this from [AirPlayCallbacks.onClientRequest]
+     * sizes that device's stream. Only call it from there.
+     */
+    @JvmStatic
+    external fun nativeOfferDisplay(width: Int, height: Int, maxFps: Int)
 }

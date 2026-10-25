@@ -1,7 +1,9 @@
 /*
  * Starts the TV's AirPlay server exactly as the app does (mango_server_start)
  * and prints what it would advertise. Usage:
- *   server_harness KEYFILE SECONDS WIDTH HEIGHT HEVC(0|1)
+ *   server_harness KEYFILE SECONDS WIDTH HEIGHT HEVC(0|1) [FPS [OFFER_WIDTH OFFER_HEIGHT OFFER_FPS]]
+ * With an offer, it then changes the display offered, as the app does when
+ * an iPhone connects.
  */
 #include <stdio.h>
 #include <stdlib.h>
@@ -58,6 +60,8 @@ int main(int argc, char **argv) {
     callbacks.audio_set_client_volume = client_volume;
 
     int port = mango_server_start(&config, &callbacks, log_message, on_register, on_unregister);
+    /* No device is connected yet, so nothing can stop the server meanwhile. */
+    if (port > 0 && argc > 9) mango_server_offer_display(atoi(argv[7]), atoi(argv[8]), atoi(argv[9]));
     printf("PORT %d\n", port);
     fflush(stdout);
     if (port <= 0) return 1;

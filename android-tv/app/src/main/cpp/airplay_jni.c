@@ -455,3 +455,11 @@ Java_com_mangoscreencast_tv_airplay_AirPlayNative_nativeDisconnectClients(JNIEnv
     (void) env; (void) clazz;
     mango_server_disconnect_clients();
 }
+
+/* Only from AirPlayCallbacks.onClientRequest; see mango_server_offer_display. */
+JNIEXPORT void JNICALL
+Java_com_mangoscreencast_tv_airplay_AirPlayNative_nativeOfferDisplay(JNIEnv *env, jclass clazz, jint width,
+                                                                     jint height, jint max_fps) {
+    (void) env; (void) clazz;
+    mango_server_offer_display(width, height, max_fps);
+}

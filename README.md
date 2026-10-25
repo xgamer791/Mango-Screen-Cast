@@ -14,10 +14,13 @@ iPad: put your Mac's screen on it, or use it as a second display. See
   can show it (60 otherwise), and the size picked under Resolution, exactly
   as picked: by default 4K (3840 × 2160) with HEVC whenever its decoder takes
   it, so the Mac renders for the full panel instead of 1080p.
-- **iPhone and iPad:** they send the sharpest picture they're able to. Devices
-  that can send HEVC go above 1080p: an iPhone held upright sends about
-  1000 × 2160 to a 4K offer, twice as sharp as the 500 × 1080 it sends at
-  1080p, and shows at full height in its own shape, never squeezed.
+- **iPhone:** it sends its screen at its own resolution, every pixel,
+  upright or sideways: 1320 × 2868 and 2868 × 1320 from an iPhone 16 Pro Max,
+  where a 4K offer gets 994 × 2160 upright. The TV shows the whole picture in
+  its own shape, never cropped (unless you pick Fill for landscape) or squeezed.
+  This takes HEVC, which every iPhone from the 8 on sends.
+- **iPad:** it sends the sharpest picture it's able to. iPads that can send
+  HEVC go above 1080p.
 - **Sound** plays on the TV.
 
 ## Requirements
@@ -94,7 +97,7 @@ cd Mango-Screen-Cast/android-tv
 | Setting | What it does |
 |---|---|
 | TV name | The name Apple devices show. *Mango Screen Cast For macOS/iOS* unless you change it. |
-| Resolution | *Auto* (default), *4K* (3840 × 2160), *2K* (1440p) or *1080p* (1920 × 1080). What you pick is what the TV offers Macs, iPhones and iPads, exactly as picked: nothing resets it or lowers it. *Auto* is the sharpest the TV's video decoder takes, 4K whenever it can, whatever resolution the TV's menus run at. Apple devices size their picture to fit it, in their own shape, never stretched: an iPhone held upright fills the TV's height, about 1000 × 2160 at 4K against 500 × 1080 at 1080p. On a Mac, leave the TV's display at its default in System Settings → Displays, which follows what the TV offers. |
+| Resolution | *Auto* (default), *4K* (3840 × 2160), *2K* (1440p) or *1080p* (1920 × 1080). What you pick is what the TV offers Macs and iPads, exactly as picked: nothing resets it or lowers it. *Auto* is the sharpest the TV's video decoder takes, 4K whenever it can, whatever resolution the TV's menus run at. Apple devices size their picture to fit it, in their own shape, never stretched. On a Mac, leave the TV's display at its default in System Settings → Displays, which follows what the TV offers. iPhones don't use this setting: each is offered a square as big as its own screen's long side (2868 × 2868 for a 16 Pro Max), the one size that fits its screen exactly both ways round, so it sends every pixel of it, upright and sideways, nothing scaled. Only if the TV's video decoder can't take that size is it cut to the most the decoder takes (Diagnostics says so). |
 | Frame rate | The most frames per second Apple devices may send: *120 fps* (default), *60 fps* or *30 fps*. 120 needs a 120 Hz mode on the TV's screen and a decoder rated for it; a TV without them offers 60. The resolution comes first: if the decoder isn't rated for 120 at that size, the TV offers 60 (pick a smaller Resolution to get 120). Apple devices treat this as an upper limit and may still send 60; *Show stats* shows what arrives. |
 | Frame pacing | *Balanced* (default) shows each frame right away, one per screen refresh. *Fastest* shows frames the moment they're decoded. *Smoothest* holds one frame back to absorb Wi-Fi jitter. |
 | iPhone in landscape | *Fill the screen* (default), *Fit whole picture* or *Stretch to the screen*. iPhones are wider than a TV, so the whole picture leaves black bars above and below; Fill zooms in to cover the TV and cuts off the left and right edges (a 16:9 video then fills the TV exactly); Stretch pulls the picture out to the whole screen, nothing cut off and no bars, but everything a little wider. Mac screens and portrait phones are never cropped or stretched. While mirroring, press **Up** (Fit → Fill → Stretch) or **Down** to switch. |
