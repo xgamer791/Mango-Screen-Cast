@@ -220,15 +220,9 @@ class SettingsActivity : Activity(), AppUpdater.Listener {
 
     private fun overlayCommand() = "adb shell appops set $packageName SYSTEM_ALERT_WINDOW allow"
 
-    private fun resolutionLabel(): String {
-        val auto = receiver.status.profile?.takeIf { settings.resolution == ResolutionSetting.AUTO }
-        return when (settings.resolution) {
-            ResolutionSetting.AUTO -> if (auto != null) getString(R.string.resolution_auto_value, auto.sizeName)
-                else getString(R.string.resolution_auto)
-            ResolutionSetting.UHD_2160 -> "4K (3840 × 2160)"
-            ResolutionSetting.QHD_1440 -> "2K / 1440p (2560 × 1440)"
-            ResolutionSetting.FHD_1080 -> "1080p (1920 × 1080)"
-        }
+    /** What Auto offers is worked out now: the server still offers the pick before until it restarts. */
+    private fun resolutionLabel(): String = ResolutionLabel.of(this, settings.resolution) {
+        DisplayCapabilities.profile(this, ResolutionSetting.AUTO, settings.frameRate).sizeName
     }
 
     /** What this TV will actually offer at the chosen rate, worked out now rather than after the restart. */
