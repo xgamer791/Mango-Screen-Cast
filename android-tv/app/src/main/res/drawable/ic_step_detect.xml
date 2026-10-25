@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- The Detect step: Lucide's "wifi" (lucide-static 1.61.0, ISC; see
-     android-tv/third_party/lucide/LICENSE), its 24-unit grid scaled into the step's 60. -->
+<!-- The Detect step: Lucide's "signal-high" (lucide-static 1.61.0, ISC; see
+     android-tv/third_party/lucide/LICENSE), its 24-unit grid scaled into the step's 60
+     like the other steps. Lucide draws it left of centre, leaving room for "signal"'s
+     fourth bar, so it moves 2.5 units right and 2 up to sit centred in the tile. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="54dp"
     android:height="54dp"
@@ -9,10 +11,10 @@
     <group
         android:scaleX="1.6"
         android:scaleY="1.6"
-        android:translateX="10.8"
-        android:translateY="10.8">
+        android:translateX="14.8"
+        android:translateY="7.6">
         <path
-            android:pathData="M12 20h0.01M2 8.82a15 15 0 0 1 20 0M5 12.859a10 10 0 0 1 14 0M8.5 16.429a5 5 0 0 1 7 0"
+            android:pathData="M2 20h0.01M7 20v-4M12 20v-8M17 20V8"
             android:strokeColor="#FFFFFF"
             android:strokeWidth="2"
             android:strokeLineCap="round"
