@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Settings' pop-ups (Diagnostics, the TV's name), with the app tiles' corners: a shade
+     lighter than the app's surface, so their buttons (button_bg) show as boxes on it. -->
+<inset xmlns:android="http://schemas.android.com/apk/res/android"
+    android:inset="16dp">
+    <shape>
+        <solid android:color="@color/surface_focused" />
+        <corners android:radius="@dimen/card_radius" />
+    </shape>
+</inset>
