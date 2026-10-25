@@ -217,6 +217,24 @@ jobs:
         with:
           submodules: recursive
 
+      # The Xcode the app ships with (the build job's), so the screenshots and
+      # the controls tests are of the app as it is on TestFlight (Liquid Glass
+      # needs the iOS 26 SDK).
+      - name: Xcode
+        run: |
+          xcode=$(python3 -c '
+          import glob, re
+          found = [([int(n) for n in m.group(1).split(".")], path) for path in glob.glob("/Applications/Xcode_*.app")
+                   for m in [re.fullmatch(r"/Applications/Xcode_(\d+(?:\.\d+)*)\.app", path)] if m]
+          newest = max(found, default=None)
+          print(newest[1] if newest and newest[0][0] >= 26 else "")')
+          if [ -z "$xcode" ]; then
+            echo "::error::No Xcode 26 or later on this runner."
+            exit 1
+          fi
+          echo "DEVELOPER_DIR=$xcode/Contents/Developer" >> "$GITHUB_ENV"
+          DEVELOPER_DIR="$xcode/Contents/Developer" xcodebuild -version
+
       - name: Build for simulators
         run: |
           xcodebuild build-for-testing -project ios/MangoScreenCast.xcodeproj -scheme Screenshots \

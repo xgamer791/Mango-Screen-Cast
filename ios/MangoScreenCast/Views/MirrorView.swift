@@ -273,14 +273,23 @@ struct MirrorView: View {
 private extension View {
     /// Liquid Glass in `shape`: the glass of the iPad's Home Screen and its
     /// Dock (iOS 26), reacting to a finger, tinted with `tint` if given.
-    /// Before iOS 26 there's no Liquid Glass: a material, or the tint.
+    /// Before iOS 26 there's no Liquid Glass: a material, or the tint. Built
+    /// with an Xcode older than 26 (no iOS 26 SDK), always that.
     @ViewBuilder
     func homeScreenGlass<S: Shape>(in shape: S, tint: Color? = nil) -> some View {
+        #if compiler(>=6.2)
         if #available(iOS 26.0, *) {
             glassEffect((tint.map { Glass.regular.tint($0) } ?? .regular).interactive(), in: shape)
         } else {
-            background(tint.map { AnyShapeStyle($0) } ?? AnyShapeStyle(Material.ultraThinMaterial), in: shape)
+            noGlass(in: shape, tint: tint)
         }
+        #else
+        noGlass(in: shape, tint: tint)
+        #endif
+    }
+
+    private func noGlass<S: Shape>(in shape: S, tint: Color?) -> some View {
+        background(tint.map { AnyShapeStyle($0) } ?? AnyShapeStyle(Material.ultraThinMaterial), in: shape)
     }
 
     /// No highlight round it from the iPad's pointer (a trackpad or a mouse).
