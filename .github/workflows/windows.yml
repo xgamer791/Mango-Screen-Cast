@@ -11,63 +11,38 @@ on:
       - "windows/**"
       - "protocol/**"
       - ".github/workflows/windows.yml"
+  workflow_dispatch:
+
+# Publishing the Windows build needs write access to the repository's contents.
+permissions:
+  contents: write
 
 concurrency:
   group: windows-${{ github.ref }}
   cancel-in-progress: false
 
 jobs:
-  probe:
+  build:
     runs-on: windows-latest
-    timeout-minutes: 30
+    timeout-minutes: 40
+    defaults:
+      run:
+        shell: pwsh
     steps:
       - uses: actions/checkout@v4
 
-      - name: Runner
-        shell: pwsh
+      - name: Build
         run: |
-          [Environment]::OSVersion
-          whoami
-          "Interactive: $([Environment]::UserInteractive)"
-          quser 2>&1
-          Get-CimInstance Win32_VideoController | Format-List Name, DriverVersion, CurrentHorizontalResolution, CurrentVerticalResolution, CurrentRefreshRate
-          Get-CimInstance Win32_SoundDevice | Format-List Name, Status
-          Get-Service Audiosrv, AudioEndpointBuilder, Dnscache | Format-Table Name, Status, StartType
-          Get-ChildItem C:\Windows\System32\mfh264enc.dll, C:\Windows\System32\mfplat.dll -ErrorAction SilentlyContinue | Format-Table Name, Length
-          python --version
-          Get-ChildItem "C:\Program Files (x86)\Windows Kits\10\Include" | Format-Table Name
+          cmake -S windows -B build -A x64
+          cmake --build build --config Release --parallel -- /p:CL_MPCount=4 /v:minimal
 
-      - name: Build probe
-        shell: pwsh
+      - name: Unit tests
+        run: ctest --test-dir build -C Release --output-on-failure
+
+      - name: What the runner can do
         run: |
-          cmake -S windows/probe -B build/probe -A x64
-          cmake --build build/probe --config Release
-
-      - name: Probe
-        shell: pwsh
-        run: build/probe/Release/probe.exe
-
-      - name: Probe with something moving on screen
-        shell: pwsh
-        run: |
-          $p = Start-Process powershell -ArgumentList '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File', 'windows/tests/moving.ps1', '-Seconds', '60' -PassThru
-          Start-Sleep 5
-          build/probe/Release/probe.exe
-          Stop-Process $p -ErrorAction SilentlyContinue
-
-      - name: Virtual sound device
-        continue-on-error: true
-        uses: LABSN/sound-ci-helpers@v1
-
-      - name: Probe after adding a sound device
-        shell: pwsh
-        run: |
-          Get-CimInstance Win32_SoundDevice | Format-List Name, Status
-          Get-Service Audiosrv | Format-Table Name, Status
-          build/probe/Release/probe.exe
-
-      - name: Python packages
-        shell: pwsh
-        run: |
-          python -m pip install --quiet zeroconf av
-          python -c "import av, zeroconf; print('av', av.__version__, 'zeroconf', zeroconf.__version__); print(sorted(av.codecs_available & {'h264', 'hevc'}))"
+          $exe = "build/Release/MangoCast.exe"
+          Get-Item $exe | Format-Table Name, Length
+          & $exe --version | Out-Host
+          & $exe --diagnose | Out-Host
+          & $exe --monitors | Out-Host
