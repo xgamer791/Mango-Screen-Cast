@@ -71,7 +71,7 @@ class MirrorActivity : Activity(), SurfaceHolder.Callback, AirPlayReceiver.Liste
         surfaceView.holder.addCallback(this)
     }
 
-    /** The frame rate the TV offered Apple devices (60 unless Settings > Frame rate got 120). */
+    /** The frame rate the TV offered Apple devices (120 when the TV can take it, else 60 or 30). */
     private val streamFps get() = receiver.status.profile?.maxFps ?: 60
 
     /**

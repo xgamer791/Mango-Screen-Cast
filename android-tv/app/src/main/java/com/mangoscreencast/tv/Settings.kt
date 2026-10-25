@@ -30,6 +30,16 @@ enum class UpdateMode {
 class Settings(private val context: Context) {
     private val prefs = context.getSharedPreferences("mango", Context.MODE_PRIVATE)
 
+    init {
+        // 120 fps took over from 60 as the default. A 60 saved before then was
+        // most likely passed on the way to another choice, so it goes, once.
+        if (!prefs.getBoolean(KEY_FRAME_RATE_120_DEFAULT, false)) {
+            val editor = prefs.edit().putBoolean(KEY_FRAME_RATE_120_DEFAULT, true)
+            if (prefs.getString(KEY_FRAME_RATE, null) == FrameRateSetting.FPS_60.name) editor.remove(KEY_FRAME_RATE)
+            editor.apply()
+        }
+    }
+
     /** Stable id; the AirPlay device id is derived from it. */
     val deviceId: String
         get() = prefs.getString(KEY_ID, null) ?: UUID.randomUUID().toString().also {
@@ -48,7 +58,7 @@ class Settings(private val context: Context) {
 
     var frameRate: FrameRateSetting
         get() = runCatching { FrameRateSetting.valueOf(prefs.getString(KEY_FRAME_RATE, null)!!) }
-            .getOrDefault(FrameRateSetting.FPS_60)
+            .getOrDefault(FrameRateSetting.FPS_120)
         set(value) = prefs.edit().putString(KEY_FRAME_RATE, value.name).apply()
 
     var latencyMode: LatencyMode
@@ -100,6 +110,7 @@ class Settings(private val context: Context) {
         const val KEY_NAME = "tv_name"
         const val KEY_RESOLUTION = "resolution"
         const val KEY_FRAME_RATE = "frame_rate"
+        const val KEY_FRAME_RATE_120_DEFAULT = "frame_rate_120_default"
         const val KEY_LATENCY = "latency_mode"
         const val KEY_SOUND = "sound"
         const val KEY_FILL_WIDE = "fill_wide"

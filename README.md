@@ -10,8 +10,9 @@ iPad: put your Mac's screen on it, or use it as a second display. See
 [iPad and iPhone](#ipad-and-iphone).
 
 - **Mac:** mirror the screen, or choose **Use As Separate Display** to use the
-  TV as a second monitor. The TV offers 4K (3840 × 2160) at 60 fps with HEVC
-  whenever its decoder can take it, so the Mac renders for the full panel
+  TV as a second monitor. The TV offers 120 fps when its screen and decoder
+  can show it (60 otherwise), and 4K (3840 × 2160) with HEVC whenever its
+  decoder takes it at that rate, so the Mac renders for the full panel
   instead of 1080p.
 - **iPhone and iPad:** they send the sharpest picture they're able to. Devices
   that can send HEVC go above 1080p.
@@ -92,7 +93,7 @@ cd Mango-Screen-Cast/android-tv
 |---|---|
 | TV name | The name Apple devices show. *Mango Screen Cast* unless you change it. |
 | Resolution | Auto offers the most the TV can decode, up to 4K. You can also pick 4K, 2K (1440p) or 1080p. |
-| Frame rate | The most frames per second Apple devices may send: *60 fps* (default), *120 fps* or *30 fps*. 120 needs a 120 Hz mode on the TV's screen and a decoder rated for it; with Resolution on Auto the picture shrinks (usually to 1440p) until it is. Apple devices treat this as an upper limit and may still send 60; *Show stats* shows what arrives. |
+| Frame rate | The most frames per second Apple devices may send: *120 fps* (default), *60 fps* or *30 fps*. 120 needs a 120 Hz mode on the TV's screen and a decoder rated for it; a TV without them offers 60. With Resolution on Auto the picture shrinks (usually to 1440p) until the decoder is rated for 120; choose *60 fps* to keep 4K on such a TV. Apple devices treat this as an upper limit and may still send 60; *Show stats* shows what arrives. |
 | Frame pacing | *Balanced* (default) shows each frame right away, one per screen refresh. *Fastest* shows frames the moment they're decoded. *Smoothest* holds one frame back to absorb Wi-Fi jitter. |
 | iPhone in landscape | *Fill the screen* (default) or *Fit whole picture*. iPhones are wider than a TV, so the whole picture leaves black bars above and below; Fill zooms in to cover the TV and cuts off the left and right edges (a 16:9 video then fills the TV exactly). Mac screens and portrait phones are never cropped. While mirroring, press **Up** or **Down** to switch. |
 | Sound | Play the device's audio on the TV. |
@@ -250,8 +251,9 @@ The app removes as much delay as the TV side can:
   Qualcomm, MediaTek, Realtek, HiSilicon).
 - **Game mode.** The player asks the TV for ALLM / minimal post-processing.
   TV picture processing can otherwise add a lot of delay.
-- **60 Hz output.** If the TV is set to 50 Hz or 24 Hz, the player switches it
-  to a 60 Hz native-resolution mode so 60 fps plays evenly.
+- **120 Hz output.** For a 120 fps stream the player switches the TV to its
+  largest 120 Hz mode. At 60 fps, if the TV is set to 50 Hz or 24 Hz, it
+  switches to a 60 Hz native-resolution mode so frames play evenly.
 - **Frame pacing** that never shows two frames in one refresh, without adding
   a buffer by default.
 - A **low-latency Wi-Fi lock** while mirroring, so the TV's Wi-Fi doesn't drop
@@ -328,8 +330,8 @@ out: decoded video and audio go to Android's MediaCodec instead.
 
 The service records that make the TV show up in Screen Mirroring are built by
 UxPlay and published through Android's NsdManager. The TV offers
-`width × height @ 60 fps` from its panel and decoders, and adds HEVC when it
-can decode it. That's what lets Apple devices send more than 1080p.
+`width × height @ 120 fps` (or 60) from its panel and decoders, and adds HEVC
+when it can decode it. That's what lets Apple devices send more than 1080p.
 
 **Tests:** `./gradlew testDebugUnitTest` runs the Kotlin unit tests.
 `android-tv/native-test` builds the AirPlay core on Linux. It checks the

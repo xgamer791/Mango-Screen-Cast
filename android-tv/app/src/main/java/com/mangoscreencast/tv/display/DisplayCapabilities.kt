@@ -19,10 +19,13 @@ enum class ResolutionSetting(val maxHeight: Int) {
     FHD_1080(1080),
 }
 
-/** The most frames per second Apple devices are told they may send. */
+/**
+ * The most frames per second Apple devices are told they may send. 120 is
+ * the default; a TV that can't show or decode it offers 60 instead.
+ */
 enum class FrameRateSetting(val fps: Int) {
-    FPS_60(60),
     FPS_120(120),
+    FPS_60(60),
     FPS_30(30),
 }
 
@@ -101,7 +104,7 @@ object DisplayCapabilities {
     }
 
     fun profile(
-        context: Context, setting: ResolutionSetting, frameRate: FrameRateSetting = FrameRateSetting.FPS_60,
+        context: Context, setting: ResolutionSetting, frameRate: FrameRateSetting = FrameRateSetting.FPS_120,
     ): MirrorProfile = choose(setting, frameRate, panel(context), maxRefreshRate(context), SystemDecoders)
 
     /**
