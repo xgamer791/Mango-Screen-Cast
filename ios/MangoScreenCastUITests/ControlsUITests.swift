@@ -113,30 +113,53 @@ final class ControlsUITests: XCTestCase {
         XCTAssertTrue(turns.allSatisfy { $0.dx > 0 && $0.dy == 0 }, "\(turns)")
     }
 
-    func testPinchingZoomsAndATapStillClicksWhereItIs() {
+    /// Where the last line's click was on the picture, if it's a click.
+    private func click(_ line: String?) -> (x: Double, y: Double)? {
+        guard let parts = line?.split(separator: " "), parts.count == 5, parts[0] == "click",
+              let x = Double(parts[1]), let y = Double(parts[2]) else { return nil }
+        return (x, y)
+    }
+
+    func testPinchingZoomsAndFingersMoveAroundAndATapClicksWhatsUnderIt() throws {
         XCTAssertFalse(zoomBadge.exists)
         screen.pinch(withScale: 3, velocity: 2)
         XCTAssertTrue(zoomBadge.waitForExistence(timeout: 5), "zoomed in, the badge shows how far")
         snap("5 controls zoomed")
 
-        // Zoomed in, a finger moves the picture, not the Mac's wheel.
+        // Zoomed in about the middle, a tap right of the middle clicks only a
+        // little right of the picture's middle: what's under the finger.
         Thread.sleep(forTimeInterval: 0.6)
+        point(0.6, 0.5).tap()
+        let lines = waitForLog("a click, zoomed in") { click($0.last).map { $0.x > 0.5 && $0.x < 0.6 } ?? false }
+        let first = click(lines.last)!
+        XCTAssertEqual(first.y, 0.5, accuracy: 0.05)
+
+        // Zoomed in, a finger moves the picture around (and doesn't turn the Mac's wheel)...
         let before = log
         point(0.4, 0.5).press(forDuration: 0.05, thenDragTo: point(0.6, 0.5), withVelocity: .slow,
                               thenHoldForDuration: 0.2)
         Thread.sleep(forTimeInterval: 0.6)
         XCTAssertTrue(wheels(in: log, after: before).isEmpty, "log:\n\(log.joined(separator: "\n"))")
+        XCTAssertEqual(log, before, "moving the picture sends nothing to the Mac")
 
-        // A tap clicks the point under the finger: zoomed in, a tap near the
-        // middle lands near the middle of the picture, not out at its edge.
+        // ...so the same spot on the screen is now further left on the picture.
         point(0.6, 0.5).tap()
-        waitForLog("a click, zoomed in") { lines in
-            guard let last = lines.last, last.hasPrefix("click ") else { return false }
-            let parts = last.split(separator: " ")
-            guard let x = Double(parts[1]), let y = Double(parts[2]) else { return false }
-            return x > 0.2 && x < 0.8 && abs(y - 0.5) < 0.15
-        }
+        let moved = waitForLog("a click after moving the picture") { $0 != before }
+        let second = try XCTUnwrap(click(moved.last))
+        XCTAssertLessThan(second.x, first.x - 0.02, "the picture moved right with the finger")
+        XCTAssertEqual(second.y, first.y, accuracy: 0.02)
 
+        // Up and down too.
+        Thread.sleep(forTimeInterval: 0.6)
+        point(0.6, 0.4).press(forDuration: 0.05, thenDragTo: point(0.6, 0.6), withVelocity: .slow,
+                              thenHoldForDuration: 0.2)
+        Thread.sleep(forTimeInterval: 0.6)
+        let beforeTap = log
+        point(0.6, 0.5).tap()
+        let third = try XCTUnwrap(click(waitForLog("a click after moving it down") { $0 != beforeTap }.last))
+        XCTAssertLessThan(third.y, second.y - 0.02, "the picture moved down with the finger")
+
+        // The badge goes back to the whole screen, where the middle is the middle.
         zoomBadge.tap()
         XCTAssertTrue(zoomBadge.waitForNonExistence(timeout: 5), "the badge goes back to the whole screen")
         point(0.5, 0.5).tap()

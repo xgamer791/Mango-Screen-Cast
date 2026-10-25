@@ -78,7 +78,9 @@ struct MirrorView: View {
             }
             .padding(16)
             if demo {
-                Text(remote.demoLog.joined(separator: "\n"))
+                // The last few lines show; the tests read all of them.
+                Text(remote.demoLog.suffix(12).joined(separator: "\n"))
+                    .accessibilityLabel(remote.demoLog.joined(separator: "\n"))
                     .font(.system(.caption, design: .monospaced))
                     .padding(8)
                     .background(Color.black.opacity(0.6))

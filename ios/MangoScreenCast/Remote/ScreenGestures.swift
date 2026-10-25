@@ -12,6 +12,8 @@ import Foundation
 ///    sideways (the way it went most), the page following the finger; let go
 ///    of while moving, it carries on a moment, slowing to a stop.
 ///  - A tap clicks there (and not the tap that ends a pinch, drag or swipe).
+///  - A trackpad's pinch zooms too; zoomed in, a mouse drags the picture
+///    around, or, working the Mac, moves it along near the frame's edges.
 enum ScreenGestures {
     static let maxZoom: CGFloat = 6
     /// How far a finger goes before it's moving, not tapping (points).
@@ -28,7 +30,22 @@ enum ScreenGestures {
     static let doubleTapTime: TimeInterval = 0.45
     static let doubleTapDistance: CGFloat = 24
 
+    /// Zoomed in, the picture moves along when a mouse's pointer comes this
+    /// close to the frame's edge (points), at up to this many frames a second.
+    static let edgeReach: CGFloat = 56
+    static let edgeSpeed: CGFloat = 1.2
+
     static func fitZoom(_ z: CGFloat) -> CGFloat { min(maxZoom, max(1, z)) }
+
+    /// How the picture moves along with the pointer at `point` in a frame of
+    /// `size` (−1 to 1 each way, harder the nearer the edge): toward the
+    /// edge it's near, showing what's past it. Zero away from the edges.
+    static func edgePush(at point: CGPoint, in size: CGSize) -> CGVector {
+        let reach = min(edgeReach, size.width / 5, size.height / 5)
+        guard reach > 0 else { return .zero }
+        func push(_ gap: CGFloat) -> CGFloat { gap < reach ? 1 - max(0, gap) / reach : 0 }
+        return CGVector(dx: push(point.x) - push(size.width - point.x), dy: push(point.y) - push(size.height - point.y))
+    }
 
     /// The picture's place in its frame: zoom `z`, and where its top-left
     /// corner is, as shares of the frame's width and height (1 − z to 0).

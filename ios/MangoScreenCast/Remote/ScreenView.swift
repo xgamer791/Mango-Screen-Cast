@@ -99,6 +99,12 @@ final class ScreenView: UIView {
         scroll.allowedScrollTypesMask = .all
         scroll.allowedTouchTypes = []
         addGestureRecognizer(scroll)
+        // A trackpad's pinch (fingers on the screen are the touches below).
+        let pinch = UIPinchGestureRecognizer(target: self, action: #selector(trackpadPinched(_:)))
+        pinch.allowedTouchTypes = [NSNumber(value: UITouch.TouchType.indirectPointer.rawValue)]
+        pinch.cancelsTouchesInView = false
+        pinch.delaysTouchesEnded = false
+        addGestureRecognizer(pinch)
     }
 
     required init?(coder: NSCoder) { fatalError("not used") }
@@ -116,6 +122,7 @@ final class ScreenView: UIView {
     /// Lets go of the video layer unless another view has already taken it.
     func release() {
         stopFling()
+        stopEdge()
         if let hosted, hosted.superlayer === layer, demoSize == nil { hosted.removeFromSuperlayer() }
         if renderer?.onPictureSize != nil { renderer?.onPictureSize = nil }
     }
@@ -136,6 +143,7 @@ final class ScreenView: UIView {
     }
 
     func showWholeScreen() {
+        stopEdge()
         picture = .whole
         onZoom?(1)
     }
@@ -373,8 +381,14 @@ final class ScreenView: UIView {
 
     @objc private func hovered(_ hover: UIHoverGestureRecognizer) {
         hoverPoint = hover.location(in: self)
-        guard controlling, hover.state == .changed || hover.state == .began else { return }
-        movePointer(to: hoverPoint)
+        guard controlling else { return }
+        switch hover.state {
+        case .began, .changed:
+            movePointer(to: hoverPoint)
+            followEdge(hoverPoint)
+        default:
+            if pointerButton == nil { stopEdge() }
+        }
     }
 
     /// The Mac's pointer goes where this one is, at most about 60 times a second.
@@ -387,7 +401,11 @@ final class ScreenView: UIView {
     private func pointerDown(_ touch: UITouch, event: UIEvent?) {
         let point = touch.location(in: self)
         hoverPoint = point
-        guard controlling else { return }
+        guard controlling else {
+            // Zoomed in, the mouse drags the picture around.
+            if picture.zoomedIn { pointerDrag = (point, picture, false) }
+            return
+        }
         guard let at = share(of: point) else { return }
         let button: RemoteProtocol.MouseButton = event?.buttonMask.contains(.secondary) == true ? .right : .left
         let quick = now - lastPress.time < 0.5 && hypot(point.x - lastPress.point.x, point.y - lastPress.point.y) < 6
@@ -399,21 +417,101 @@ final class ScreenView: UIView {
 
     private func pointerMoved(_ touch: UITouch) {
         hoverPoint = touch.location(in: self)
+        if var drag = pointerDrag, bounds.width > 0, bounds.height > 0 {
+            let dx = hoverPoint.x - drag.start.x
+            let dy = hoverPoint.y - drag.start.y
+            guard drag.moved || hypot(dx, dy) >= 4 else { return }
+            drag.moved = true
+            pointerDrag = drag
+            picture = drag.view.panned(dx / bounds.width, dy / bounds.height)
+            return
+        }
         guard controlling, pointerButton != nil else { return }
         movePointer(to: hoverPoint)
+        followEdge(hoverPoint)
     }
 
     private func pointerUp(_ touch: UITouch, cancelled: Bool) {
         let point = touch.location(in: self)
+        if let drag = pointerDrag {
+            pointerDrag = nil
+            if drag.moved { return settle() }
+        }
         guard controlling else {
             if !cancelled { plainTap() }
             return
         }
+        stopEdge()
         guard let button = pointerButton else { return }
         pointerButton = nil
         let at = share(of: point, clamped: true) ?? .zero
         send?(.press(fx: Double(at.x), fy: Double(at.y), button: button, down: false, count: lastPress.count))
         onClick?()
+    }
+
+    // MARK: - Zoomed in, with a mouse (Holli Bot's useZoom and useMouse)
+
+    /// Dragging the zoomed-in picture with the mouse: where it started.
+    private var pointerDrag: (start: CGPoint, view: ScreenGestures.View, moved: Bool)?
+    private var pinchStart: (view: ScreenGestures.View, fx: CGFloat, fy: CGFloat)?
+    private var edgeLink: CADisplayLink?
+    private var edgePush = CGVector.zero
+    private var edgeTime: CFTimeInterval = 0
+    private var edgeMoved = false
+
+    /// A trackpad's pinch zooms the picture about the pointer, as fingers do.
+    @objc private func trackpadPinched(_ pinch: UIPinchGestureRecognizer) {
+        guard bounds.width > 0, bounds.height > 0 else { return }
+        switch pinch.state {
+        case .began:
+            stopFling()
+            let at = pinch.location(in: self)
+            pinchStart = (picture, at.x / bounds.width, at.y / bounds.height)
+        case .changed:
+            guard let start = pinchStart else { return }
+            picture = start.view.zoomed(to: start.view.z * pinch.scale, at: start.fx, start.fy)
+        default:
+            guard pinchStart != nil else { return }
+            pinchStart = nil
+            picture = picture.settled
+            onZoom?(picture.z)
+        }
+    }
+
+    /// Zoomed in and working the Mac with a mouse, the picture moves along
+    /// while the pointer is near the frame's edge, so all of it can be reached.
+    private func followEdge(_ point: CGPoint) {
+        guard controlling, picture.zoomedIn else { return stopEdge() }
+        edgePush = ScreenGestures.edgePush(at: point, in: bounds.size)
+        guard edgePush != .zero else { return stopEdge() }
+        guard edgeLink == nil else { return }
+        edgeTime = 0
+        let link = CADisplayLink(target: self, selector: #selector(edgeStep(_:)))
+        link.add(to: .main, forMode: .common)
+        edgeLink = link
+    }
+
+    @objc private func edgeStep(_ link: CADisplayLink) {
+        let dt = edgeTime > 0 ? min(0.05, link.timestamp - edgeTime) : 0
+        edgeTime = link.timestamp
+        guard dt > 0 else { return }
+        let before = picture
+        picture = picture.panned(edgePush.dx * ScreenGestures.edgeSpeed * CGFloat(dt),
+                                 edgePush.dy * ScreenGestures.edgeSpeed * CGFloat(dt))
+        // At the picture's edge already: nothing more to show.
+        guard picture != before else { return stopEdge() }
+        edgeMoved = true
+        // The Mac's pointer goes to what's under this one now.
+        movePointer(to: hoverPoint)
+    }
+
+    private func stopEdge() {
+        edgeLink?.invalidate()
+        edgeLink = nil
+        if edgeMoved {
+            edgeMoved = false
+            onZoom?(picture.z)
+        }
     }
 
     /// Two fingers on a trackpad, or a mouse's wheel: the Mac scrolls where

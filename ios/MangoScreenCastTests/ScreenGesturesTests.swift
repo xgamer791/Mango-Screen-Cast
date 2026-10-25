@@ -86,4 +86,20 @@ final class ScreenGesturesTests: XCTestCase {
         XCTAssertGreaterThan(total, 0.1)
         XCTAssertGreaterThan(steps, 5)
     }
+
+    func testThePointerNearAnEdgeMovesThePictureThatWay() {
+        let size = CGSize(width: 1000, height: 800)
+        XCTAssertEqual(ScreenGestures.edgePush(at: CGPoint(x: 500, y: 400), in: size), .zero)
+        // At the left edge: the picture moves right, showing what's left of it.
+        XCTAssertEqual(ScreenGestures.edgePush(at: CGPoint(x: 0, y: 400), in: size), CGVector(dx: 1, dy: 0))
+        XCTAssertEqual(ScreenGestures.edgePush(at: CGPoint(x: 1000, y: 400), in: size), CGVector(dx: -1, dy: 0))
+        // Halfway into the edge's reach, half as hard; corners go both ways.
+        let half = ScreenGestures.edgePush(at: CGPoint(x: 28, y: 800), in: size)
+        XCTAssertEqual(half.dx, 0.5, accuracy: 0.001)
+        XCTAssertEqual(half.dy, -1, accuracy: 0.001)
+        // A small frame has a smaller reach (a fifth of it).
+        XCTAssertEqual(ScreenGestures.edgePush(at: CGPoint(x: 45, y: 100), in: CGSize(width: 200, height: 200)), .zero)
+        XCTAssertEqual(ScreenGestures.edgePush(at: CGPoint(x: 30, y: 100), in: CGSize(width: 200, height: 200)).dx, 0.25,
+                       accuracy: 0.001)
+    }
 }

@@ -93,7 +93,7 @@ final class RemoteControl: ObservableObject {
         if demo {
             // Sent from view updates too, which mustn't publish changes themselves.
             let line = message.summary
-            DispatchQueue.main.async { self.demoLog = Array((self.demoLog + [line]).suffix(12)) }
+            DispatchQueue.main.async { self.demoLog = Array((self.demoLog + [line]).suffix(500)) }
             return
         }
         guard isConnected else { return }
