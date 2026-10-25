@@ -31,7 +31,7 @@
         android:layout_gravity="top|start"
         android:layout_margin="32dp"
         android:background="@drawable/overlay_bg"
-        android:fontFamily="monospace"
+        android:fontFamily="@font/geist_mono_regular"
         android:padding="12dp"
         android:textColor="@android:color/white"
         android:textSize="16sp"

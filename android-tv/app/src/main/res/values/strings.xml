@@ -76,7 +76,7 @@
     <string name="overlay_message">To start mirroring while another app is open, Android needs Mango Screen Cast For macOS/iOS to have “Display over other apps” permission. If this TV has no settings screen for it, run this once from your Mac:\n\n%1$s</string>
     <string name="overlay_open">Open settings</string>
     <string name="overlay_later">Not now</string>
-    <string name="about">Mango Screen Cast For macOS/iOS %1$s. Built on UxPlay (GPL-3.0), libplist (LGPL-2.1) and OpenSSL. AirPlay is a trademark of Apple Inc.</string>
+    <string name="about">Mango Screen Cast For macOS/iOS %1$s. Built on UxPlay (GPL-3.0), libplist (LGPL-2.1) and OpenSSL; set in Geist (SIL OFL). AirPlay is a trademark of Apple Inc.</string>
 
     <!-- Updates -->
     <string name="version_label">Version %1$s</string>

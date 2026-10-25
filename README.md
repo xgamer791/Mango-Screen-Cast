@@ -90,6 +90,8 @@ cd Mango-Screen-Cast/android-tv
    the menu bar under System Settings → **Menu Bar**. Without it, use System
    Settings → Displays → **Add Display** and pick the TV.
 3. On an **iPhone or iPad**: Control Center → Screen Mirroring → your TV.
+   The screen is set in [Geist](https://vercel.com/font) (SIL Open Font
+   License; see `android-tv/third_party/geist-font/OFL.txt`).
    **Two names for one TV?** Hisense, Sony and some other Android TVs have
    Apple's AirPlay built in, listed under the TV's own name (*Master Bedroom
    TV*, say). That one mirrors at 1080p. Pick the app's name for the full

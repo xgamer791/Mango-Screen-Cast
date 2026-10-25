@@ -52,11 +52,15 @@ class HomeActivity : Activity(), AirPlayReceiver.Listener, AppUpdater.Listener {
             }
         }
         findViewById<Button>(R.id.settings_button).apply {
-            setOnClickListener { startActivity(Intent(this@HomeActivity, SettingsActivity::class.java)) }
+            setOnClickListener { openSettings() }
             requestFocus()
         }
+        // The tiles let the remote walk the dashboard; +More is the way into Settings from the row.
+        findViewById<View>(R.id.tile_more).setOnClickListener { openSettings() }
         ReceiverService.sync(this)
     }
+
+    private fun openSettings() = startActivity(Intent(this, SettingsActivity::class.java))
 
     override fun onStart() {
         super.onStart()

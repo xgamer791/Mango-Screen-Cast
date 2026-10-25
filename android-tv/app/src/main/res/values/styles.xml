@@ -1,7 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- The app's one typeface, Geist, as the default for text, buttons and fields. -->
+    <style name="Mango.TextView" parent="@android:style/Widget.DeviceDefault.TextView">
+        <item name="android:fontFamily">@font/geist</item>
+    </style>
+
+    <style name="Mango.ButtonBase" parent="@android:style/Widget.DeviceDefault.Button">
+        <item name="android:fontFamily">@font/geist_medium</item>
+    </style>
+
+    <style name="Mango.EditText" parent="@android:style/Widget.DeviceDefault.EditText">
+        <item name="android:fontFamily">@font/geist</item>
+    </style>
+
     <style name="Mango.Button" parent="@android:style/Widget.DeviceDefault.Button.Borderless">
         <item name="android:background">@drawable/button_bg</item>
+        <item name="android:fontFamily">@font/geist_medium</item>
         <item name="android:textColor">@color/text_primary</item>
         <item name="android:textSize">20sp</item>
         <item name="android:textAllCaps">false</item>
@@ -11,12 +25,41 @@
         <item name="android:focusable">true</item>
     </style>
 
-    <!-- Home screen: the three steps in the glass strip. -->
+    <!-- Home screen: one column of the glass strip, its icon and text centred both ways. -->
+    <style name="Mango.StepColumn" parent="">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:gravity">center</item>
+        <item name="android:orientation">horizontal</item>
+    </style>
+
+    <!-- The icon and text of one step, centred in the column as a pair. -->
+    <style name="Mango.StepRow" parent="">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:orientation">horizontal</item>
+    </style>
+
+    <!-- The icon tile sits level with the top of the title's capitals (Geist: 0.295 em of ascent above them). -->
+    <style name="Mango.StepIcon" parent="">
+        <item name="android:layout_width">54dp</item>
+        <item name="android:layout_height">54dp</item>
+        <item name="android:layout_gravity">top</item>
+        <item name="android:layout_marginTop">7dp</item>
+    </style>
+
+    <style name="Mango.StepText" parent="">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginStart">20dp</item>
+        <item name="android:orientation">vertical</item>
+    </style>
+
     <style name="Mango.StepTitle" parent="">
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
-        <item name="android:layout_marginTop">25.7dp</item>
-        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:fontFamily">@font/geist_semibold</item>
         <item name="android:includeFontPadding">false</item>
         <item name="android:maxLines">1</item>
         <item name="android:textColor">#FFFFFF</item>
@@ -26,21 +69,29 @@
     <style name="Mango.StepBody" parent="">
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
-        <item name="android:layout_marginTop">59.9dp</item>
-        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:layout_marginTop">4dp</item>
+        <item name="android:fontFamily">@font/geist_regular</item>
         <item name="android:includeFontPadding">false</item>
-        <item name="android:lineSpacingExtra">5dp</item>
+        <item name="android:lineSpacingExtra">2dp</item>
         <item name="android:maxLines">2</item>
-        <item name="android:textColor">#FFFFFF</item>
+        <item name="android:textColor">#F2FFFFFF</item>
         <item name="android:textSize">18sp</item>
     </style>
 
-    <!-- Home screen: a white Supported Devices tile. -->
+    <style name="Mango.StepDivider" parent="">
+        <item name="android:layout_width">1dp</item>
+        <item name="android:layout_height">56dp</item>
+        <item name="android:layout_gravity">center_vertical</item>
+        <item name="android:background">#1FFFFFFF</item>
+    </style>
+
+    <!-- Home screen: a Supported Devices tile. Focusable, so the remote can walk the row. -->
     <style name="Mango.DeviceTile" parent="">
-        <item name="android:layout_width">148dp</item>
-        <item name="android:layout_height">57.75dp</item>
-        <item name="android:layout_marginTop">453dp</item>
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">56dp</item>
+        <item name="android:layout_weight">1</item>
         <item name="android:background">@drawable/device_tile</item>
+        <item name="android:focusable">true</item>
     </style>
 
     <!-- Home screen: the small corner buttons (Settings, Update). -->
@@ -48,13 +99,14 @@
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:background">@drawable/home_button_bg</item>
+        <item name="android:fontFamily">@font/geist_medium</item>
         <item name="android:textColor">@color/home_button_text</item>
         <item name="android:textSize">14sp</item>
         <item name="android:textAllCaps">false</item>
         <item name="android:minWidth">0dp</item>
         <item name="android:minHeight">34dp</item>
-        <item name="android:paddingStart">14dp</item>
-        <item name="android:paddingEnd">14dp</item>
+        <item name="android:paddingStart">16dp</item>
+        <item name="android:paddingEnd">16dp</item>
         <item name="android:paddingTop">0dp</item>
         <item name="android:paddingBottom">0dp</item>
         <item name="android:focusable">true</item>
