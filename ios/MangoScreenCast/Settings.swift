@@ -28,9 +28,31 @@ final class Settings: ObservableObject {
         set { change(Keys.name, String(newValue.trimmingCharacters(in: .whitespacesAndNewlines).prefix(60))) }
     }
 
-    var resolution: ResolutionSetting {
-        get { defaults.string(forKey: Keys.resolution).flatMap(ResolutionSetting.init) ?? .native }
-        set { change(Keys.resolution, newValue.rawValue) }
+    /// The picture size offered, as percent of full (see MirrorProfile.scales).
+    /// 100, the screen's own pixels, unless changed.
+    var resolutionScale: Int {
+        get {
+            if let scale = defaults.object(forKey: Keys.scale) as? Int { return scale }
+            // Earlier versions had a "1080p" choice; about two thirds is closest.
+            return defaults.string(forKey: Keys.oldResolution) == "hd1080" ? 66 : 100
+        }
+        set { change(Keys.scale, newValue) }
+    }
+
+    /// The last picture size that was kept (or never in question). A
+    /// different `resolutionScale` is on trial until it's kept.
+    var confirmedResolutionScale: Int {
+        get { defaults.object(forKey: Keys.confirmedScale) as? Int ?? resolutionScale }
+        set { change(Keys.confirmedScale, newValue) }
+    }
+
+    var resolutionOnTrial: Bool { resolutionScale != confirmedResolutionScale }
+
+    /// A mirroring session started with a size on trial and hasn't ended.
+    /// Still set at launch means the app stopped mid-trial.
+    var resolutionTrialInUse: Bool {
+        get { defaults.bool(forKey: Keys.trialInUse) }
+        set { change(Keys.trialInUse, newValue) }
     }
 
     /// Zoom the picture to cover the whole screen when its shape differs
@@ -75,7 +97,10 @@ final class Settings: ObservableObject {
 
     private enum Keys {
         static let name = "receiverName"
-        static let resolution = "resolution"
+        static let oldResolution = "resolution"
+        static let scale = "resolutionScale"
+        static let confirmedScale = "confirmedResolutionScale"
+        static let trialInUse = "resolutionTrialInUse"
         static let sound = "sound"
         static let stats = "showStats"
         static let awake = "keepAwake"

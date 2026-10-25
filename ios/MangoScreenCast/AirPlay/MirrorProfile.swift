@@ -1,21 +1,14 @@
 import CoreGraphics
 
-enum ResolutionSetting: String, CaseIterable, Identifiable {
-    /// Automatic: the most this device shows, which is its screen's own
-    /// pixels (e.g. 2360 × 1640 on an iPad Air).
-    case native
-    /// About 1080p in the screen's shape: less data for a busy Wi-Fi network.
-    case hd1080
-
-    var id: String { rawValue }
-}
-
 /// What this device tells Macs, iPhones and iPads it can show. They size
 /// their stream to it; a Mac's Use As Separate Display creates a display of
 /// exactly this size.
 ///
-/// Every choice keeps the screen's shape, in the orientation the device is
-/// held, so the picture fills the screen with no black bars.
+/// Every size on offer has the screen's own shape (to within a pixel), in
+/// the orientation the device is held, so the picture fills the screen with
+/// no black bars. The full size is the screen's own pixels; smaller ones
+/// trade sharpness for less data over Wi-Fi (and, on a Mac's separate
+/// display, bigger text).
 struct MirrorProfile: Equatable {
     var width: Int
     var height: Int
@@ -26,25 +19,43 @@ struct MirrorProfile: Equatable {
     /// The screen in pixels, in the orientation the profile was made for.
     var screenWidth: Int
     var screenHeight: Int
+    /// Percent of the largest size on offer (100 = full).
+    var scale = 100
 
     var codecs: String { h265 ? "HEVC + H.264" : "H.264" }
+    var sizeText: String { "\(width) × \(height)" }
+
+    /// The steps offered, as percent of the full size.
+    static let scales = [100, 90, 80, 75, 66, 60, 50]
 
     /// - Parameters:
     ///   - screen: the screen's size in pixels, either orientation.
     ///   - landscape: whether the device is held in landscape.
     ///   - hevc: whether the device decodes HEVC in hardware.
-    static func make(screen: CGSize, landscape: Bool, hevc: Bool, setting: ResolutionSetting) -> MirrorProfile {
+    ///   - scale: percent of the full size, 50 to 100.
+    static func make(screen: CGSize, landscape: Bool, hevc: Bool, scale: Int = 100) -> MirrorProfile {
         let longSide = Int(max(screen.width, screen.height).rounded())
         let shortSide = Int(min(screen.width, screen.height).rounded())
         let screenWidth = landscape ? longSide : shortSide
         let screenHeight = landscape ? shortSide : longSide
-        // HEVC: up to 4K's size. H.264 (or the lighter setting): about 1080p,
-        // which every sender can encode.
-        let (limitLong, limitShort) = setting == .native && hevc ? (3840, 2160) : (1920, 1080)
-        let size = fit(screenWidth, screenHeight,
+        // HEVC: up to 4K's size. H.264: about 1080p, which every sender can encode.
+        let (limitLong, limitShort) = hevc ? (3840, 2160) : (1920, 1080)
+        let full = fit(screenWidth, screenHeight,
                        within: landscape ? limitLong : limitShort, landscape ? limitShort : limitLong)
+        let percent = min(100, max(scales.last!, scale))
+        let size = percent == 100
+            ? full
+            : scaled(full.height, percent: percent, shape: screenWidth, screenHeight)
         return MirrorProfile(width: size.width, height: size.height, h265: hevc,
-                             screenWidth: screenWidth, screenHeight: screenHeight)
+                             screenWidth: screenWidth, screenHeight: screenHeight, scale: percent)
+    }
+
+    /// Every size on offer, largest first.
+    static func choices(screen: CGSize, landscape: Bool, hevc: Bool) -> [MirrorProfile] {
+        var seen = Set<Int>()
+        return scales
+            .map { make(screen: screen, landscape: landscape, hevc: hevc, scale: $0) }
+            .filter { min($0.width, $0.height) >= 480 && seen.insert($0.width * 100_000 + $0.height).inserted }
     }
 
     /// The largest size with the same shape that fits, rounded down to even
@@ -57,5 +68,25 @@ struct MirrorProfile: Equatable {
             return (maxWidth & ~1, (height * maxWidth / width) & ~1)
         }
         return ((width * maxHeight / height) & ~1, maxHeight & ~1)
+    }
+
+    /// `percent` of a picture `fullHeight` tall, in the shape
+    /// `shapeWidth` × `shapeHeight`, with even sides. Looks a few pixels
+    /// either side of the exact size for the one whose shape matches best,
+    /// so the picture still fills the screen.
+    static func scaled(_ fullHeight: Int, percent: Int, shape shapeWidth: Int, _ shapeHeight: Int) -> (width: Int, height: Int) {
+        let aspect = Double(shapeWidth) / Double(shapeHeight)
+        let target = Double(fullHeight) * Double(percent) / 100
+        let center = Int(target / 2) * 2
+        var best = (width: 0, height: 0, error: Double.infinity)
+        for height in stride(from: max(2, center - 8), through: center + 8, by: 2) {
+            let width = Int((Double(height) * aspect / 2).rounded()) * 2
+            let error = abs(Double(width) / Double(height) - aspect)
+            let closer = abs(Double(height) - target) < abs(Double(best.height) - target)
+            if error < best.error - 1e-9 || (abs(error - best.error) <= 1e-9 && closer) {
+                best = (width, height, error)
+            }
+        }
+        return (best.width, best.height)
     }
 }

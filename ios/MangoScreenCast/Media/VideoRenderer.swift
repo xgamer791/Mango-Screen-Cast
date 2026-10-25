@@ -31,8 +31,16 @@ final class VideoRenderer {
     /// Zoom the picture to cover the whole screen, cutting off what doesn't
     /// fit, instead of showing all of it. Main thread.
     var fillsScreen = false {
-        didSet { layer.videoGravity = fillsScreen ? .resizeAspectFill : .resizeAspect }
+        didSet { updateGravity() }
     }
+
+    /// The size of the view showing the layer. Main thread.
+    var viewSize = CGSize.zero {
+        didSet { if viewSize != oldValue { updateGravity() } }
+    }
+
+    /// The picture's size, kept on the main thread for updateGravity().
+    private var pictureSize = CGSize.zero
 
     /// Receives one line per notable event (stream start, format change, recovery).
     var log: ((String) -> Void)?
@@ -198,6 +206,10 @@ final class VideoRenderer {
         if width != size.width || height != size.height {
             size = (width, height)
             log?("video \(width)x\(height) \(h265 ? "HEVC" : "H.264")")
+            DispatchQueue.main.async {
+                self.pictureSize = CGSize(width: width, height: height)
+                self.updateGravity()
+            }
         }
     }
 
@@ -294,6 +306,21 @@ final class VideoRenderer {
         let boolean: CFBoolean = value ? kCFBooleanTrue! : kCFBooleanFalse!
         CFDictionarySetValue(dictionary, Unmanaged.passUnretained(key).toOpaque(),
                              Unmanaged.passUnretained(boolean).toOpaque())
+    }
+
+    /// A picture of the screen's own shape fills it exactly. The sizes on
+    /// offer can be a pixel or two off, which would leave a hairline bar, so
+    /// within 1% it's filled (losing at most that pixel). Other shapes are
+    /// shown whole unless `fillsScreen`.
+    private func updateGravity() {
+        var sameShape = false
+        if pictureSize.width > 0, pictureSize.height > 0, viewSize.width > 0, viewSize.height > 0 {
+            let picture = pictureSize.width / pictureSize.height
+            let view = viewSize.width / viewSize.height
+            sameShape = abs(picture - view) / view < 0.01
+        }
+        let gravity: AVLayerVideoGravity = fillsScreen || sameShape ? .resizeAspectFill : .resizeAspect
+        if layer.videoGravity != gravity { layer.videoGravity = gravity }
     }
 
     // MARK: - Renderer (sampleBufferRenderer from iOS 17)

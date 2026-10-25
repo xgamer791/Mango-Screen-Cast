@@ -23,6 +23,19 @@ final class Receiver: ObservableObject {
 
     @Published private(set) var status = Status()
 
+    /// A picture size being tried. While mirroring with it, the person is
+    /// asked to keep it before `deadline`; otherwise it goes back.
+    struct ResolutionCheck: Equatable {
+        let trying: MirrorProfile
+        let previous: MirrorProfile
+        /// Set once the picture is up; nil while waiting for it.
+        var deadline: Date?
+    }
+
+    @Published private(set) var resolutionCheck: ResolutionCheck?
+    /// Something to tell the person on the home screen (e.g. a size went back).
+    @Published var notice: String?
+
     let settings: Settings
     let video = VideoRenderer()
     let audio = AudioPlayer()
@@ -34,6 +47,12 @@ final class Receiver: ObservableObject {
     private var current = Status()
     private var running = false
     private var shapeChange: DispatchWorkItem?
+    private var checkTimer: Timer?
+    private var checkStarted = Date()
+    /// How long the picture may take to appear at a new size, and how long
+    /// the person has to keep it once it's up.
+    private static let pictureTimeout: TimeInterval = 15
+    private static let keepTimeout: TimeInterval = 20
     private let logLock = NSLock()
     private var recentLog: [String] = []
     private var statsTimer: DispatchSourceTimer?
@@ -55,6 +74,14 @@ final class Receiver: ObservableObject {
         advertiser.onPublished = { [weak self] type, name in self?.log("advertising \(type) as “\(name)”") }
         video.log = { [weak self] in self?.log($0) }
         audio.log = { [weak self] in self?.log($0) }
+        if settings.resolutionOnTrial && settings.resolutionTrialInUse {
+            // The app stopped while mirroring at a size on trial: don't
+            // start with it again. (No window yet, so no sizes in the text.)
+            settings.resolutionScale = settings.confirmedResolutionScale
+            settings.resolutionTrialInUse = false
+            notice = "Mango Cast closed while trying a new picture size, so it went back to the last one that worked."
+            log(notice!)
+        }
     }
 
     // MARK: - Control (main thread)
@@ -71,9 +98,97 @@ final class Receiver: ObservableObject {
 
     /// The most this device can show, in the shape of its screen as it's
     /// held right now.
-    func currentProfile() -> MirrorProfile {
+    func currentProfile(scale: Int? = nil) -> MirrorProfile {
         MirrorProfile.make(screen: Self.screenPixels(), landscape: Self.isLandscape(), hevc: Self.hevcSupported,
-                           setting: settings.resolution)
+                           scale: scale ?? settings.resolutionScale)
+    }
+
+    /// Every size on offer for the screen as it's held now, largest first.
+    func resolutionChoices() -> [MirrorProfile] {
+        MirrorProfile.choices(screen: Self.screenPixels(), landscape: Self.isLandscape(), hevc: Self.hevcSupported)
+    }
+
+    // MARK: - Trying a picture size (main thread)
+
+    /// Switches to another picture size. Anything but full size is a trial:
+    /// the next time a device mirrors, the person is asked to keep it, and
+    /// if they don't, or the picture doesn't work, it goes back to the last
+    /// size that did. Full size is always safe to go back to.
+    func setResolution(scale: Int) {
+        let current = settings.resolutionScale
+        guard scale != current else { return }
+        if !settings.resolutionOnTrial { settings.confirmedResolutionScale = current }
+        settings.resolutionScale = scale
+        if scale == 100 { settings.confirmedResolutionScale = 100 }
+        settings.resolutionTrialInUse = false
+        endCheck()
+        notice = nil
+        if settings.resolutionOnTrial {
+            log("trying \(currentProfile().sizeText); last kept size \(currentProfile(scale: settings.confirmedResolutionScale).sizeText)")
+        }
+        restart()
+    }
+
+    func keepResolution() {
+        guard settings.resolutionOnTrial else { return }
+        settings.confirmedResolutionScale = settings.resolutionScale
+        settings.resolutionTrialInUse = false
+        log("kept \(currentProfile().sizeText)")
+        endCheck()
+    }
+
+    /// Goes back to the last size that worked. `reason` starts the notice
+    /// shown on the home screen.
+    func revertResolution(because reason: String? = nil) {
+        guard settings.resolutionOnTrial else { return }
+        let tried = currentProfile()
+        settings.resolutionScale = settings.confirmedResolutionScale
+        settings.resolutionTrialInUse = false
+        endCheck()
+        let back = currentProfile()
+        let text = "\(reason ?? "Didn’t keep \(tried.sizeText)"), so Mango Cast went back to \(back.sizeText)."
+        notice = text
+        log(text)
+        restart()
+    }
+
+    /// Mirroring started: if the size is on trial, watch it.
+    private func beginCheck() {
+        guard settings.resolutionOnTrial, resolutionCheck == nil else { return }
+        settings.resolutionTrialInUse = true
+        resolutionCheck = ResolutionCheck(trying: status.profile ?? currentProfile(),
+                                          previous: currentProfile(scale: settings.confirmedResolutionScale))
+        checkStarted = Date()
+        checkTimer?.invalidate()
+        checkTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in self?.tickCheck() }
+    }
+
+    private func tickCheck() {
+        guard var check = resolutionCheck else { return endCheck() }
+        let stats = video.stats()
+        let size = check.trying.sizeText
+        if stats.recoveries >= 3 {
+            revertResolution(because: "The picture kept failing at \(size)")
+        } else if let deadline = check.deadline {
+            if Date() >= deadline { revertResolution(because: "\(size) wasn’t kept in time") }
+        } else if stats.frames > 0 {
+            check.deadline = Date().addingTimeInterval(Self.keepTimeout)
+            resolutionCheck = check
+        } else if Date().timeIntervalSince(checkStarted) > Self.pictureTimeout {
+            revertResolution(because: "No picture arrived at \(size)")
+        }
+    }
+
+    /// Mirroring ended. A size on trial that wasn't kept goes back.
+    private func sessionEnded() {
+        guard let check = resolutionCheck else { return }
+        revertResolution(because: "Mirroring stopped before \(check.trying.sizeText) was kept")
+    }
+
+    private func endCheck() {
+        checkTimer?.invalidate()
+        checkTimer = nil
+        resolutionCheck = nil
     }
 
     /// Called when the window changes size. After the device is turned
@@ -109,6 +224,7 @@ final class Receiver: ObservableObject {
 
     /// Drops the connected device and returns to the home screen.
     func disconnect() {
+        sessionEnded()
         control.async {
             mango_bridge_disconnect_clients()
             self.endMirroring()
@@ -268,6 +384,7 @@ final class Receiver: ObservableObject {
 
     private func connectionsChanged(_ open: Int) {
         guard open == 0 else { return }
+        DispatchQueue.main.async { self.sessionEnded() }
         endMirroring()
         update {
             if $0.state != .stopped { $0.state = .ready }
@@ -279,6 +396,7 @@ final class Receiver: ObservableObject {
     private func connectionReset(_ reason: Int) {
         let who = snapshot().clientName
         log("connection reset (reason \(reason))")
+        DispatchQueue.main.async { self.sessionEnded() }
         endMirroring()
         update {
             if $0.state != .stopped { $0.state = .ready }
@@ -293,6 +411,7 @@ final class Receiver: ObservableObject {
         if h265 && snapshot().profile?.h265 == false { return -1 }
         video.start(h265: h265)
         startStatsTimer()
+        DispatchQueue.main.async { self.beginCheck() }
         update {
             $0.state = .mirroring
             $0.paused = false
@@ -303,6 +422,7 @@ final class Receiver: ObservableObject {
     private func videoStop(reason: Int) {
         // The sender stopped mirroring, or another device took over.
         log("mirroring stopped (reset type \(reason))")
+        DispatchQueue.main.async { self.sessionEnded() }
         stopStatsTimer()
         video.stop()
         update {

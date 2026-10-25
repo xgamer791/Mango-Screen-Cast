@@ -128,8 +128,8 @@ jobs:
           path: dist/MangoScreenCast-unsigned.ipa
           retention-days: 30
 
-  # Screenshots of the home and Settings screens on every iPad simulator (and
-  # an iPhone), in both orientations, to check the layout on each screen size.
+  # Screenshots of the home and Settings screens in both orientations on one
+  # iPad of each screen shape (and an iPhone), to check the layout.
   screenshots:
     runs-on: macos-15
     timeout-minutes: 60
@@ -158,11 +158,16 @@ jobs:
             "$runtime" > /dev/null 2>&1 || true
           xcrun simctl list devices available --json | RUNTIME="$runtime" python3 -c '
           import json, os, sys
-          devices = json.load(sys.stdin)["devices"].get(os.environ["RUNTIME"], [])
-          ipads = sorted({d["name"]: d["udid"] for d in devices if d["name"].startswith("iPad")}.items())
-          iphones = [(d["name"], d["udid"]) for d in devices if d["name"].startswith("iPhone")][:1]
-          for name, udid in ipads + iphones:
-              print(udid, name)' > devices.txt
+          devices = {d["name"]: d["udid"] for d in json.load(sys.stdin)["devices"].get(os.environ["RUNTIME"], [])}
+          # 10.2" 4:3, mini, 11" base, 11" Air, 13", and an iPhone; the newest of each.
+          groups = [["iPad (9th generation)"], ["iPad mini"], ["iPad (A16)", "iPad (10th generation)"],
+                    ["iPad Air 11"], ["iPad Pro 13", "iPad Air 13"], ["iPhone 17 Pro", "iPhone 16 Pro", "iPhone"]]
+          for prefixes in groups:
+              for prefix in prefixes:
+                  names = sorted(n for n in devices if n.startswith(prefix))
+                  if names:
+                      print(devices[names[-1]], names[-1])
+                      break' > devices.txt
           cat devices.txt
           while read -r udid name; do
             echo "::group::$name"
@@ -176,6 +181,7 @@ jobs:
           ls -1 screenshots
 
       - uses: actions/upload-artifact@v4
+        if: always()
         continue-on-error: true
         with:
           name: ios-screenshots
