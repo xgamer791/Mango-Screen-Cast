@@ -120,7 +120,9 @@ class AirPlayReceiver(private val context: Context, private val settings: Settin
         if (s.state == State.MIRRORING) {
             val v = video.stats()
             appendLine("Video: ${v.width}x${v.height} ${v.codec} via ${v.decoder}, " +
-                "${"%.1f".format(v.fps)} fps, ${"%.1f".format(v.megabitsPerSecond)} Mbit/s, ${v.restarts} restarts")
+                "${"%.1f".format(v.fps)} fps in, ${"%.1f".format(v.shownFps)} shown, " +
+                "${"%.1f".format(v.megabitsPerSecond)} Mbit/s, ${v.droppedFrames} dropped, " +
+                "${v.skippedFrames} skipped, ${v.restarts} restarts")
         }
         appendLine()
         appendLine("Recent log:")
@@ -325,8 +327,12 @@ class AirPlayReceiver(private val context: Context, private val settings: Settin
     }
 
     override fun onLog(level: Int, message: String) {
-        // Info and above from the AirPlay server; skip its multi-line dumps.
-        message.lineSequence().firstOrNull()?.takeIf { it.isNotBlank() }?.let { log(it.trim()) }
+        // Info and above from the AirPlay server, which the JNI layer has
+        // already written to logcat whole. Its multi-line dumps (the sender's
+        // once-a-second report on its own stream, as plist XML) would only
+        // fill Diagnostics with "<?xml" lines: read those with adb.
+        if (message.contains('\n')) return
+        message.trim().takeIf { it.isNotBlank() }?.let { log(it) }
     }
 
     /** While mirroring, logs what the decoder is doing every few seconds. */
@@ -334,8 +340,10 @@ class AirPlayReceiver(private val context: Context, private val settings: Settin
         override fun run() {
             if (status.state != State.MIRRORING) return
             val v = video.stats()
-            log("stats: ${v.width}x${v.height} ${v.codec}, ${"%.1f".format(v.fps)} fps, " +
-                "${"%.1f".format(v.megabitsPerSecond)} Mbit/s, ${v.droppedFrames} dropped, ${v.restarts} restarts")
+            log("stats: ${v.width}x${v.height} ${v.codec}, ${"%.1f".format(v.fps)} fps in, " +
+                "${"%.1f".format(v.shownFps)} shown, ${"%.1f".format(v.megabitsPerSecond)} Mbit/s, " +
+                "${"%.1f".format(v.decodeMs)} ms decode, ${v.droppedFrames} dropped, ${v.skippedFrames} skipped, " +
+                "${v.restarts} restarts")
             control.postDelayed(this, STATS_INTERVAL_MS)
         }
     }

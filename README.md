@@ -16,7 +16,7 @@ iPad: put your Mac's screen on it, or use it as a second display. See
   it, so the Mac renders for the full panel instead of 1080p.
 - **iPhone and iPad:** they fit their screen inside the size the TV offers,
   keeping its shape, so with 4K an upright iPhone sends about 1000 × 2160
-  (996 × 2160 from a 15 Pro Max: every row a 4K TV has; a 1080p offer gets
+  (998 × 2160 from a 15 Pro Max: every row a 4K TV has; a 1080p offer gets
   498 × 1080) and an upright iPad 1620 × 2160.
   The TV shows the whole picture in its own shape, never cropped (unless you
   pick Fill for a landscape iPhone) or squeezed. Above 1080p takes HEVC, which
@@ -113,10 +113,10 @@ cd Mango-Screen-Cast/android-tv
 | Setting | What it does |
 |---|---|
 | TV name | The name Apple devices show. *Mango Screen Cast For macOS/iOS* unless you change it. |
-| Resolution | *Auto* (default), *4K* (3840 × 2160), *2K* (1440p) or *1080p* (1920 × 1080). What you pick is what the TV offers every Mac, iPhone and iPad, exactly as picked: nothing resets it or lowers it. *Auto* is the sharpest the TV's video decoder takes, 4K whenever it can, whatever resolution the TV's menus run at. Apple devices scale their screen to fit inside it, keeping its shape, never stretched: at 4K an upright iPhone 15 Pro Max sends 996 × 2160, which is every row a 4K TV can show, so nothing the TV could display is lost; a sideways one sends 3840 × 1772. Asking for more than the TV's own size wouldn't add a pixel on screen (the TV would scale the picture down instead of the phone), and apps that play video on a TV screen of their own, like YouTube, would get a screen that isn't the TV's shape. On a Mac, leave the TV's display at its default in System Settings → Displays, which follows what the TV offers. |
-| Frame rate | The most frames per second Apple devices may send: *120 fps* (default), *60 fps* or *30 fps*. 120 needs a 120 Hz mode on the TV's screen and a decoder rated for it; a TV without them offers 60. The resolution comes first: if the decoder isn't rated for 120 at that size, the TV offers 60 (pick a smaller Resolution to get 120). Apple devices treat this as an upper limit and may still send 60; *Show stats* shows what arrives. |
+| Resolution | *Auto* (default), *4K* (3840 × 2160), *2K* (1440p) or *1080p* (1920 × 1080). What you pick is what the TV offers every Mac, iPhone and iPad, exactly as picked: nothing resets it or lowers it. *Auto* is the sharpest the TV's video decoder takes, 4K whenever it can, whatever resolution the TV's menus run at. Apple devices scale their screen to fit inside it, keeping its shape, never stretched: at 4K an upright iPhone 15 Pro Max sends 998 × 2160, which is every row a 4K TV can show, so nothing the TV could display is lost; a sideways one sends 3840 × 1772. Asking for more than the TV's own size wouldn't add a pixel on screen (the TV would scale the picture down instead of the phone), and apps that play video on a TV screen of their own, like YouTube, would get a screen that isn't the TV's shape. On a Mac, leave the TV's display at its default in System Settings → Displays, which follows what the TV offers. |
+| Frame rate | The most frames per second Apple devices may send: *120 fps* (default), *60 fps* or *30 fps*, offered exactly as picked, whatever the TV's screen or decoder tables report. A TV with a 120 Hz mode is switched to it for a 120 fps stream; a screen Android reports at 60 Hz shows 60 of them, and the setting says so. Apple devices treat this as an upper limit and may still send 60; *Show stats* shows what arrives. |
 | Frame pacing | *Balanced* (default) shows each frame right away, one per screen refresh. *Fastest* shows frames the moment they're decoded. *Smoothest* holds one frame back to absorb Wi-Fi jitter. |
-| iPhone in landscape | *Fill the screen* (default), *Fit whole picture* or *Stretch to the screen*. iPhones are wider than a TV, so the whole picture leaves black bars above and below; Fill zooms in to cover the TV and cuts off the left and right edges (a 16:9 video then fills the TV exactly); Stretch pulls the picture out to the whole screen, nothing cut off and no bars, but everything a little wider. Mac screens and portrait phones are never cropped or stretched. While mirroring, press **Up** (Fit → Fill → Stretch) or **Down** to switch. |
+| iPhone in landscape | *Fill the screen* (default), *Fit whole picture* or *Stretch to the screen*. iPhones are wider than a TV, so the whole picture leaves black bars above and below; Fill zooms in to cover the TV and cuts off the left and right edges (a 16:9 video then fills the TV exactly); Stretch pulls the picture out to the whole screen, nothing cut off and no bars, but everything a little taller. Mac screens and portrait phones are never cropped or stretched. While mirroring, press **Up** (Fit → Fill → Stretch) or **Down** to switch. |
 | Sound | Play the device's audio on the TV. |
 | Show stats | Overlay while mirroring: resolution, codec, fps, the bitrate the sender is using, decode time. |
 | Diagnostics | What the TV detected (panel, decoders), what it offers Apple devices, and the recent AirPlay and decoder log. Include this when reporting a problem. |
@@ -314,10 +314,15 @@ The app removes as much delay as the TV side can:
 - **Game mode.** The player asks the TV for ALLM / minimal post-processing.
   TV picture processing can otherwise add a lot of delay.
 - **120 Hz output.** For a 120 fps stream the player switches the TV to its
-  largest 120 Hz mode. At 60 fps, if the TV is set to 50 Hz or 24 Hz, it
-  switches to a 60 Hz native-resolution mode so frames play evenly.
+  120 Hz mode at the screen's full size, when it has one; never to a smaller
+  size for the sake of the rate. At 60 fps, if the TV is set to 50 Hz or
+  24 Hz, it switches to a 60 Hz native-resolution mode so frames play evenly.
 - **Frame pacing** that never shows two frames in one refresh, without adding
-  a buffer by default.
+  a buffer by default. A short burst of frames Wi-Fi held back is spread
+  over the refreshes that follow; past a couple of refreshes a frame goes
+  instead, so the picture stays current. A stream faster than the screen
+  (120 fps on a 60 Hz TV) gets one frame per refresh, the rest skipped
+  before they reach the screen, so the decoder never backs up.
 - A **low-latency Wi-Fi lock** while mirroring, so the TV's Wi-Fi doesn't drop
   into power save.
 - **No restart on screen changes.** If the player goes to the background, the

@@ -23,8 +23,15 @@ class DisplayModeTest {
     }
 
     @Test
-    fun oneTwentyFramesGetTheLargest16By9ModeAtThatRate() {
-        assertEquals(fhd120, DisplayCapabilities.preferredMode(modes, fps = 120))
+    fun oneTwentyFramesNeverTradeTheScreensSizeForTheRate() {
+        // A 1080p120 mode next to 4K60: the 4K panel stays 4K.
+        assertEquals(uhd60, DisplayCapabilities.preferredMode(modes, fps = 120))
+    }
+
+    @Test
+    fun oneTwentyFramesGetTheScreensSizeAtThatRateWhenItHasIt() {
+        val uhd120 = mode(3840, 2160, 120f)
+        assertEquals(uhd120, DisplayCapabilities.preferredMode(modes + uhd120, fps = 120))
     }
 
     @Test

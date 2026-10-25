@@ -79,6 +79,10 @@ int mango_server_start(const mango_server_config_t *config, const raop_callbacks
     raop_set_plist(g_raop, "height", config->height);
     raop_set_plist(g_raop, "refreshRate", config->refresh_rate);
     raop_set_plist(g_raop, "maxFPS", config->max_fps);
+    /* Log the sender's own once-a-second report on the video it streams
+     * (its frame rate among other things), so what the device decided to
+     * send can be read with adb next to what arrived. */
+    raop_set_plist(g_raop, "clientFPSdata", 1);
 
     unsigned short port = raop_get_port(g_raop);
     if (raop_start_httpd(g_raop, &port) < 0) {

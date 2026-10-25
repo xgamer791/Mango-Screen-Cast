@@ -35,10 +35,10 @@ class FrameRateChoiceTest {
     }
 
     @Test
-    fun oneTwentyKeepsTheResolutionOnAuto() {
+    fun oneTwentyIsOfferedAsPickedWhenTheDecoderIsntRatedForItAtThatSize() {
         val p = choose(FrameRateSetting.FPS_120)
-        assertEquals(listOf(3840, 2160, 60, 60), listOf(p.width, p.height, p.maxFps, p.refreshRate))
-        assertTrue(p.note!!, p.note!!.contains("2560 × 1440"))
+        assertEquals(listOf(3840, 2160, 120, 120), listOf(p.width, p.height, p.maxFps, p.refreshRate))
+        assertTrue(p.note!!, p.note!!.contains("decoder") && p.note!!.contains("3840 × 2160"))
     }
 
     @Test
@@ -91,29 +91,39 @@ class FrameRateChoiceTest {
     }
 
     @Test
-    fun aSixtyHertzScreenStaysAtSixty() {
-        val p = choose(FrameRateSetting.FPS_120, screenHz = 60f)
-        assertEquals(listOf(3840, 2160, 60, 60), listOf(p.width, p.height, p.maxFps, p.refreshRate))
-        assertTrue(p.note!!, p.note!!.contains("60 Hz"))
+    fun aScreenAndroidReportsAtSixtyHertzStillGetsOneTwentyOffered() {
+        // Many Android TVs list one 60 Hz mode for a panel that can do more; the offer is the setting.
+        val p = choose(FrameRateSetting.FPS_120, screenHz = 60f, fastSizes = setOf(2160, 1440, 1080))
+        assertEquals(listOf(3840, 2160, 120, 120), listOf(p.width, p.height, p.maxFps, p.refreshRate))
+        assertTrue(p.note!!, p.note!!.contains("60 Hz") && p.note!!.contains("120 fps"))
+    }
+
+    @Test
+    fun aSlowScreenAndAnUnratedDecoderAreBothSaid() {
+        val p = choose(FrameRateSetting.FPS_120, screenHz = 60f, fastSizes = emptySet())
+        assertEquals(listOf(3840, 2160, 120, 120), listOf(p.width, p.height, p.maxFps, p.refreshRate))
+        assertTrue(p.note!!, p.note!!.contains("60 Hz") && p.note!!.contains("decoder") && p.note!!.contains("pick 60 fps"))
     }
 
     @Test
     fun ntscRatesCount() {
-        assertEquals(120, choose(FrameRateSetting.FPS_120, screenHz = 119.88f, fastSizes = setOf(2160, 1440, 1080)).maxFps)
+        val p = choose(FrameRateSetting.FPS_120, screenHz = 119.88f, fastSizes = setOf(2160, 1440, 1080))
+        assertEquals(120, p.maxFps)
+        assertNull(p.note)
     }
 
     @Test
-    fun aFixedResolutionIsKept() {
-        val p = choose(FrameRateSetting.FPS_120, resolution = ResolutionSetting.UHD_2160)
-        assertEquals(listOf(3840, 2160, 60), listOf(p.width, p.height, p.maxFps))
-        assertTrue(p.note!!, p.note!!.contains("Resolution"))
+    fun aFixedResolutionIsKeptAtOneTwenty() {
+        val p = choose(FrameRateSetting.FPS_120, resolution = ResolutionSetting.QHD_1440)
+        assertEquals(listOf(2560, 1440, 120, 120), listOf(p.width, p.height, p.maxFps, p.refreshRate))
+        assertNull(p.note)
     }
 
     @Test
-    fun aDecoderNotRatedForOneTwentyStaysAtSixty() {
+    fun aDecoderNotRatedForOneTwentyIsStillOfferedIt() {
         val p = choose(FrameRateSetting.FPS_120, fastSizes = emptySet())
-        assertEquals(listOf(3840, 2160, 60), listOf(p.width, p.height, p.maxFps))
-        assertTrue(p.note!!, p.note!!.contains("decoder"))
+        assertEquals(listOf(3840, 2160, 120, 120), listOf(p.width, p.height, p.maxFps, p.refreshRate))
+        assertTrue(p.note!!, p.note!!.contains("decoder") && p.note!!.contains("pick 60 fps"))
     }
 
     @Test

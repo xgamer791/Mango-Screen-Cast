@@ -44,9 +44,15 @@ class VideoDecoder internal constructor(
         val height: Int,
         val codec: String,
         val decoder: String,
+        /** Frames decoded per second: what the sender delivers. */
         val fps: Double,
+        /** Frames shown per second; fewer than [fps] when the stream is faster than the screen. */
+        val shownFps: Double,
         val megabitsPerSecond: Double,
+        /** Frames the screen couldn't show in time (bursts, or a 50 Hz screen). */
         val droppedFrames: Long,
+        /** Frames not shown because the stream is faster than the screen: expected at 120 fps on 60 Hz. */
+        val skippedFrames: Long,
         val decodeMs: Double,
         val restarts: Int,
     )
@@ -67,8 +73,11 @@ class VideoDecoder internal constructor(
     @Volatile
     private var pictureSize: Pair<Int, Int>? = null
 
-    @Volatile
-    var latencyMode: LatencyMode = LatencyMode.BALANCED
+    var latencyMode: LatencyMode
+        get() = pacer.mode
+        set(value) {
+            pacer.mode = value
+        }
 
     /** Receives one line per notable event (decoder start, restart, errors). */
     @Volatile
@@ -102,8 +111,8 @@ class VideoDecoder internal constructor(
     @Volatile
     private var needsRestart = false
 
-    @Volatile
-    private var vsyncPeriodNs = 16_666_667L
+    /** When each decoded frame is shown; it follows the screen's refresh rate. */
+    private val pacer = FramePacer()
 
     // The picture shape the player is laid out for, and the picture's. While
     // they differ (the iPhone was just turned) frames wait, so none is drawn
@@ -117,11 +126,14 @@ class VideoDecoder internal constructor(
     // Output-thread state and counters.
     @Volatile
     private var catchUpUntilUs = 0L
-    private var lastTargetNs = 0L
+    @Volatile
+    private var decoded = 0L
     @Volatile
     private var rendered = 0L
     @Volatile
     private var dropped = 0L
+    @Volatile
+    private var skipped = 0L
     @Volatile
     private var bytesReceived = 0L
     @Volatile
@@ -130,6 +142,7 @@ class VideoDecoder internal constructor(
     private var latencySamples = 0L
     private var outputWidth = 0
     private var outputHeight = 0
+    private var statsDecoded = 0L
     private var statsRendered = 0L
     private var statsBytes = 0L
     private var statsTimeNs = System.nanoTime()
@@ -158,9 +171,17 @@ class VideoDecoder internal constructor(
             bytesReceived = 0
             statsBytes = 0
         }
+        decoded = 0
         rendered = 0
         dropped = 0
+        skipped = 0
         restarts = 0
+        // The stats window starts afresh too, or its first reading would count down from the last stream's totals.
+        statsDecoded = 0
+        statsRendered = 0
+        statsTimeNs = System.nanoTime()
+        latencyTotalUs = 0
+        latencySamples = 0
         Thread({ inputLoop(next) }, "VideoInput").start()
     }
 
@@ -185,7 +206,7 @@ class VideoDecoder internal constructor(
      */
     fun setSurface(surface: Surface?, refreshRate: Float) {
         synchronized(codecLock) {
-            if (refreshRate > 1f) vsyncPeriodNs = (1_000_000_000.0 / refreshRate).toLong()
+            if (refreshRate > 1f) pacer.periodNs = (1_000_000_000.0 / refreshRate).toLong()
             if (surface === this.surface) return
             this.surface = surface
             val codec = codec
@@ -194,7 +215,7 @@ class VideoDecoder internal constructor(
                     try {
                         codec.setOutputSurface(surface ?: parking())
                         parked = surface == null
-                        lastTargetNs = 0
+                        pacer.reset()
                         return
                     } catch (e: Exception) {
                         note("couldn't move the decoder to the new screen (${e.message}); restarting it")
@@ -215,8 +236,8 @@ class VideoDecoder internal constructor(
 
     /** The display switched modes (e.g. to 60 Hz after the player asked for it). */
     fun setRefreshRate(refreshRate: Float) {
-        if (refreshRate > 1f) vsyncPeriodNs = (1_000_000_000.0 / refreshRate).toLong()
-        lastTargetNs = 0
+        if (refreshRate > 1f) pacer.periodNs = (1_000_000_000.0 / refreshRate).toLong()
+        pacer.reset()
     }
 
     /** One access unit from the sender. Copies it and returns without waiting on the decoder. */
@@ -254,10 +275,13 @@ class VideoDecoder internal constructor(
     fun stats(): Stats {
         val now = System.nanoTime()
         val elapsed = (now - statsTimeNs).coerceAtLeast(1)
+        val decodedNow = decoded
         val renderedNow = rendered
         val bytesNow = bytesReceived
-        val fps = (renderedNow - statsRendered) * 1e9 / elapsed
+        val fps = (decodedNow - statsDecoded) * 1e9 / elapsed
+        val shownFps = (renderedNow - statsRendered) * 1e9 / elapsed
         val mbps = (bytesNow - statsBytes) * 8.0 * 1e3 / elapsed
+        statsDecoded = decodedNow
         statsRendered = renderedNow
         statsBytes = bytesNow
         statsTimeNs = now
@@ -265,8 +289,8 @@ class VideoDecoder internal constructor(
         latencyTotalUs = 0
         latencySamples = 0
         val h265 = synchronized(queueLock) { stream?.h265 } ?: false
-        return Stats(outputWidth, outputHeight, if (h265) "HEVC" else "H.264", codecName, fps, mbps,
-            dropped, latency, restarts)
+        return Stats(outputWidth, outputHeight, if (h265) "HEVC" else "H.264", codecName, fps, shownFps, mbps,
+            dropped, skipped, latency, restarts)
     }
 
     // --- Input thread ------------------------------------------------------------
@@ -379,7 +403,7 @@ class VideoDecoder internal constructor(
             codecName = created.name
             parked = parkedStart
             needsRestart = false
-            lastTargetNs = 0
+            pacer.reset()
             // Replayed frames are decoded but only the newest is shown.
             catchUpUntilUs = s.gop.lastPtsUs
             outputRunning = true
@@ -488,35 +512,36 @@ class VideoDecoder internal constructor(
     private fun render(codec: VideoCodec, index: Int, info: OutputInfo) {
         val now = System.nanoTime()
         try {
-            if (parked || info.ptsUs < catchUpUntilUs || !shapeMatches(now)) {
+            if (info.ptsUs < catchUpUntilUs) {
+                // Replayed after a restart; not a new frame from the sender.
+                codec.discard(index)
+                return
+            }
+            decoded++
+            if (parked || !shapeMatches(now)) {
                 codec.discard(index)
                 return
             }
             latencyTotalUs += now / 1000 - info.ptsUs
             latencySamples++
-            val period = vsyncPeriodNs
-            when (latencyMode) {
-                LatencyMode.FASTEST -> {
+            when (val decision = pacer.decide(now)) {
+                FramePacer.Decision.Now -> {
                     codec.render(index, null)
                     rendered++
                 }
-                LatencyMode.BALANCED, LatencyMode.SMOOTHEST -> {
-                    val hold = if (latencyMode == LatencyMode.SMOOTHEST) period else 0L
-                    val limit = if (latencyMode == LatencyMode.SMOOTHEST) 3 * period else 2 * period
-                    // One frame per refresh: a frame that arrives in the same
-                    // refresh as the previous one waits for the next refresh.
-                    val target = maxOf(now + hold, lastTargetNs + period)
-                    if (target - now > limit) {
-                        // More frames than the screen can show (e.g. a 50 Hz TV):
-                        // skip one to stay current.
-                        codec.discard(index)
-                        dropped++
-                        lastTargetNs = now
-                    } else {
-                        codec.render(index, target)
-                        lastTargetNs = target
-                        rendered++
-                    }
+                is FramePacer.Decision.At -> {
+                    codec.render(index, decision.timestampNs)
+                    // Taking over a refresh already given out: the frame waiting there is the one lost.
+                    if (decision.replaces) dropped++ else rendered++
+                }
+                // The stream is faster than the screen; this refresh has its frame.
+                FramePacer.Decision.Skip -> {
+                    codec.discard(index)
+                    skipped++
+                }
+                FramePacer.Decision.Drop -> {
+                    codec.discard(index)
+                    dropped++
                 }
             }
         } catch (e: Exception) {

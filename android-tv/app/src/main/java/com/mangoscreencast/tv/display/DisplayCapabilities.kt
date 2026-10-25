@@ -21,8 +21,9 @@ enum class ResolutionSetting(val maxHeight: Int) {
 }
 
 /**
- * The most frames per second Apple devices are told they may send. 120 is
- * the default; a TV that can't show or decode it offers 60 instead.
+ * The most frames per second Apple devices are told they may send, offered
+ * exactly as picked. 120 is the default; a screen Android reports at 60 Hz
+ * shows 60 of them.
  */
 enum class FrameRateSetting(val fps: Int) {
     FPS_120(120),
@@ -46,7 +47,7 @@ data class MirrorProfile(
     val maxFps: Int,
     val h265: Boolean,
     val panel: Panel,
-    /** Why the TV offers less than the settings ask for, if it does. */
+    /** What the TV can't fully show or decode of the offer, or why it offers less than picked, if anything. */
     val note: String? = null,
 ) {
     val sizeName: String
@@ -122,7 +123,7 @@ object DisplayCapabilities {
      * takes: 4K, else 1440p, else 1080p, whatever the TV's menus run at.
      * Apple devices scale their screen to fit inside the size offered,
      * keeping its shape (up as well as down): a 4K offer gets about
-     * 1000 x 2160 from an iPhone held upright (996 x 2160 from a 15 Pro Max)
+     * 1000 x 2160 from an iPhone held upright (998 x 2160 from a 15 Pro Max)
      * and 1620 x 2160 from an iPad, where 1080p gets them about 500 x 1080
      * and 810 x 1080. The TV's own size is the most it
      * can show, so that is the most worth asking for: a bigger offer only
@@ -134,11 +135,13 @@ object DisplayCapabilities {
      * the size check is enough; the frame-rate tables some vendors publish
      * are often too conservative.
      *
-     * Above 60 fps nothing is assumed: the screen needs a mode that fast and
-     * the decoder's own tables must list the rate. The resolution always
-     * comes first: when the decoder can't keep up at that size (4K120 is
-     * rare), the TV offers 60 fps and says which smaller resolution gets
-     * the faster rate.
+     * The frame rate is offered exactly as picked too, 120 included, whatever
+     * the screen's mode list or the decoder's tables say: Android TVs often
+     * list a single 60 Hz mode for a panel that can do more, and the rate
+     * tables are as conservative as the size tables. The note says what the
+     * TV can show of it (a screen Android reports at 60 Hz shows 60 of 120)
+     * and when the decoder isn't rated for it, so the person can pick 60 if
+     * the picture stutters. Apple devices treat the rate as an upper limit.
      */
     internal fun choose(
         resolution: ResolutionSetting, frameRate: FrameRateSetting, panel: Panel, screenMaxHz: Float,
@@ -165,16 +168,21 @@ object DisplayCapabilities {
 
         val wanted = frameRate.fps
         if (wanted <= 60) return offer(wanted, refresh)
-        if (screenMaxHz < wanted - 1.5f) {
-            return offer(60, refresh, "This TV's screen goes up to ${screenMaxHz.roundToInt()} Hz, so it offers 60 fps.")
-        }
-        val fast = taken.firstOrNull { (width, height) -> height <= best.second && decodesAt(decoders, width, height, wanted) }
-        return when {
-            fast == null -> offer(60, refresh, "The TV's video decoder isn't rated for $wanted fps, so it offers 60 fps.")
-            fast != best -> offer(60, refresh,
-                "$wanted fps needs ${fast.first} × ${fast.second} or smaller on this TV: pick it under Resolution to get it.")
-            else -> offer(wanted, wanted)
-        }
+        // Above 60: the display goes out at the same rate, so the sender sees a screen that fast.
+        val (width, height) = best
+        val limits = listOfNotNull(
+            if (screenMaxHz < wanted - 1.5f)
+                "Android reports this TV's screen at ${screenMaxHz.roundToInt()} Hz, so it shows up to " +
+                    "${screenMaxHz.roundToInt()} of them."
+            else null,
+            if (!decodesAt(decoders, width, height, wanted))
+                "The TV's video decoder isn't rated for $wanted fps at $width × $height: if the picture stutters, " +
+                    "pick 60 fps or a smaller Resolution."
+            else null,
+        )
+        if (limits.isEmpty()) return offer(wanted, wanted)
+        return offer(wanted, wanted, "Offering $wanted fps as picked. ${limits.joinToString(" ")} " +
+            "What Apple devices send is up to them (Show stats shows it).")
     }
 
     private fun takes(decoders: DecoderInfo, width: Int, height: Int): Boolean {
@@ -194,9 +202,11 @@ object DisplayCapabilities {
     }
 
     /**
-     * Best display mode for a stream of `fps` frames per second. Above 60:
-     * the largest mode at that rate. Otherwise native size, refresh closest
-     * to 60 (or 120). Always the TV's own 16:9 shape.
+     * Best display mode for a stream of `fps` frames per second: the screen's
+     * largest 16:9 size, at that rate above 60 when the screen has it there,
+     * else at the refresh closest to 60 (or 120). Never a smaller size for
+     * the sake of the rate: a 1080p120 mode would turn a 4K panel into a
+     * 1080p one.
      */
     fun preferredMode(display: Display, fps: Int = 60): Display.Mode? {
         if (Build.VERSION.SDK_INT < 23) return null
@@ -206,12 +216,10 @@ object DisplayCapabilities {
 
     internal fun preferredMode(all: List<ScreenMode>, fps: Int): ScreenMode? {
         val modes = tvShaped(all)
-        if (fps > 60) {
-            modes.filter { abs(it.refreshRate - fps) < 1.5f }.maxByOrNull { it.pixels }?.let { return it }
-        }
         val maxPixels = modes.maxOfOrNull { it.pixels } ?: return null
-        return modes
-            .filter { it.pixels == maxPixels }
+        val largest = modes.filter { it.pixels == maxPixels }
+        if (fps > 60) largest.firstOrNull { abs(it.refreshRate - fps) < 1.5f }?.let { return it }
+        return largest
             .minByOrNull { mode ->
                 val rate = mode.refreshRate
                 // Multiples of 60 show 60 fps evenly; prefer exactly 60 over 120.

@@ -77,7 +77,7 @@ class MirrorActivity : Activity(), SurfaceHolder.Callback, AirPlayReceiver.Liste
         surfaceView.holder.addCallback(this)
     }
 
-    /** The frame rate the TV offered Apple devices (120 when the TV can take it, else 60 or 30). */
+    /** The frame rate the TV offered Apple devices: the Frame rate setting, as picked. */
     private val streamFps get() = receiver.status.profile?.maxFps ?: 60
 
     /**
@@ -145,7 +145,9 @@ class MirrorActivity : Activity(), SurfaceHolder.Callback, AirPlayReceiver.Liste
         }
         if (Build.VERSION.SDK_INT >= 30) {
             try {
-                holder.surface.setFrameRate(streamFps.toFloat(), Surface.FRAME_RATE_COMPATIBILITY_FIXED_SOURCE)
+                // A stream faster than the screen is shown at the screen's rate.
+                val shown = minOf(streamFps.toFloat(), DisplayCapabilities.maxRefreshRate(this))
+                holder.surface.setFrameRate(shown, Surface.FRAME_RATE_COMPATIBILITY_FIXED_SOURCE)
             } catch (_: Exception) {
             }
         }
@@ -239,7 +241,8 @@ class MirrorActivity : Activity(), SurfaceHolder.Callback, AirPlayReceiver.Liste
         statsView.text = getString(
             R.string.stats_format,
             s.width, s.height, s.codec, s.fps, s.megabitsPerSecond, s.decodeMs, s.droppedFrames, s.restarts,
-            profile?.width ?: 0, profile?.height ?: 0, settings.latencyMode.name.lowercase(),
+            profile?.width ?: 0, profile?.height ?: 0, settings.latencyMode.name.lowercase(), s.shownFps,
+            profile?.maxFps ?: 0, s.skippedFrames,
         )
     }
 

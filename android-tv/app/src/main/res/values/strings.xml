@@ -29,7 +29,7 @@
     <string name="mirroring_banner">Mirroring %1$s · press Back twice to stop</string>
     <string name="back_again">Press Back again to stop mirroring</string>
     <string name="paused">Paused on the other device</string>
-    <string name="stats_format">%1$d × %2$d %3$s · %4$.0f fps · %5$.1f Mbit/s\ndecode %6$.1f ms · dropped %7$d · restarts %8$d\nTV offers %9$d × %10$d · pacing: %11$s</string>
+    <string name="stats_format">%1$d × %2$d %3$s · %4$.0f fps in · %12$.0f shown · %5$.1f Mbit/s\ndecode %6$.1f ms · dropped %7$d · skipped %14$d · restarts %8$d\nTV offers %9$d × %10$d @ %13$d fps · pacing: %11$s</string>
 
     <!-- Settings -->
     <string name="setting_name">TV name</string>
@@ -39,7 +39,7 @@
     <string name="resolution_auto">Auto</string>
     <string name="resolution_auto_value">Auto (%1$s)</string>
     <string name="setting_frame_rate">Frame rate</string>
-    <string name="setting_frame_rate_hint">The most frames per second Macs and iPhones may send. 120 needs a 120 Hz TV screen, and Apple devices decide what they actually send: turn on Show stats to see it.</string>
+    <string name="setting_frame_rate_hint">The most frames per second Macs, iPhones and iPads may send, offered exactly as picked. Apple devices decide what they actually send, and a 60 Hz screen shows 60 of them: turn on Show stats to see what arrives.</string>
     <string name="fps_value">%1$d fps</string>
     <string name="setting_pacing">Frame pacing</string>
     <string name="pacing_balanced">Balanced</string>
@@ -49,7 +49,7 @@
     <string name="pacing_fastest_hint">Lowest delay. Motion can stutter if Wi-Fi delivers frames unevenly.</string>
     <string name="pacing_smoothest_hint">Holds one frame (about 17 ms) to smooth out a busy Wi-Fi network.</string>
     <string name="setting_fill">iPhone in landscape</string>
-    <string name="setting_fill_hint">iPhones are wider than a TV. Fill zooms in to cover the TV and cuts off the left and right edges (a 16:9 video then fills it exactly); Fit shows the whole picture with black bars above and below; Stretch pulls it out to the whole screen, with nothing cut off and no bars, but everything a little wider. Mac screens and upright iPhones are never changed. While mirroring, press Up or Down to switch.</string>
+    <string name="setting_fill_hint">iPhones are wider than a TV. Fill zooms in to cover the TV and cuts off the left and right edges (a 16:9 video then fills it exactly); Fit shows the whole picture with black bars above and below; Stretch pulls it out to the whole screen, with nothing cut off and no bars, but everything a little taller. Mac screens and upright iPhones are never changed. While mirroring, press Up or Down to switch.</string>
     <string name="fit_value">Fit whole picture</string>
     <string name="fill_value">Fill the screen</string>
     <string name="stretch_value">Stretch to the screen</string>
