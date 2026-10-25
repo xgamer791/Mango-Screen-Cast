@@ -96,7 +96,7 @@ def banner(width, height):
     x = int(height * 0.78 * s)
     d.text((x, int(height * 0.20 * s)), "Mango", font=big, fill=(255, 164, 27, 255))
     d.text((x, int(height * 0.47 * s)), "Screen Cast", font=small, fill=(244, 242, 247, 255))
-    # Which devices it's for, so it isn't mistaken for Mango Screen Cast For Windows on the same TV.
+    # Which devices it's for.
     d.text((x, int(height * 0.66 * s)), "for macOS/iOS", font=platform, fill=(169, 164, 181, 255))
     return img.resize((width, height), Image.LANCZOS)
 

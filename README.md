@@ -5,8 +5,6 @@ receiver**. Macs, iPhones and iPads find the TV in their built-in **Screen
 Mirroring** menu. You don't install anything on them and there's no code to
 type in.
 
-For Windows PCs there's a separate app, [Mango Screen Cast For Windows](https://github.com/xgamer791/Mango-Screen-Cast-For-Windows), with its own TV app. The two can be installed side by side on the same TV and don't share anything.
-
 There's also an **iPad and iPhone app, Mango Cast**, that does the same on an
 iPad: put your Mac's screen on it, or use it as a second display. See
 [iPad and iPhone](#ipad-and-iphone).
@@ -149,8 +147,7 @@ display change:
 
 A *mirrored* Mac keeps its own shape (a MacBook is wider than an iPad), so it
 shows with thin bars; tap **Fill** (or double-tap) to zoom it to cover the
-screen instead. Windows PCs can't send AirPlay on their own; an AirPlay sender
-app for Windows gets the same sizes.
+screen instead.
 
 It needs iPadOS or iOS 16 or newer, and the Mac and the iPad on the same
 Wi-Fi network.
