@@ -39,10 +39,6 @@
 			isa = PBXBuildFile;
 			fileRef = 89276C6FDED1F139390BD16F /* VideoRenderer.swift */;
 		};
-		0A2C6ABD3009FBDEC66C62EF /* UpdateChecker.swift in Sources */ = {
-			isa = PBXBuildFile;
-			fileRef = D833A2401C974A26FC7F8143 /* UpdateChecker.swift */;
-		};
 		0B7BD122B11363F827E52DF4 /* MirrorProfile.swift in Sources */ = {
 			isa = PBXBuildFile;
 			fileRef = 9523147EF3861616EA05EF16 /* MirrorProfile.swift */;
@@ -123,10 +119,6 @@
 			isa = PBXBuildFile;
 			fileRef = C49D5C5572EE4BB4B57DB525 /* libplist/src/jplist.c */;
 		};
-		4085A47F46B0ABDA62FA182C /* ReleaseFeed.swift in Sources */ = {
-			isa = PBXBuildFile;
-			fileRef = B781CA545026F150FAF6C5BD /* ReleaseFeed.swift */;
-		};
 		45CBCAB64D2F3CC0D2C6B09C /* uxplay/byteutils.c in Sources */ = {
 			isa = PBXBuildFile;
 			fileRef = 791F6A6EF289E71AFAF00BEA /* uxplay/byteutils.c */;
@@ -142,10 +134,6 @@
 		535777A04BCC77238A7C2F92 /* Fixtures.swift in Sources */ = {
 			isa = PBXBuildFile;
 			fileRef = 1EE1C3DD4B75A85EAB818FDE /* Fixtures.swift */;
-		};
-		55A9F607CAD67B6D5E2641B1 /* ReleaseFeedTests.swift in Sources */ = {
-			isa = PBXBuildFile;
-			fileRef = F86FCFA8408ECCCD24B70B00 /* ReleaseFeedTests.swift */;
 		};
 		5B4446BDBB0674D9F76E25B6 /* android_dnssd/dns_sd_android.c in Sources */ = {
 			isa = PBXBuildFile;
@@ -222,10 +210,6 @@
 		82A930C753862F68DF52D9E7 /* uxplay/playfair/omg_hax.c in Sources */ = {
 			isa = PBXBuildFile;
 			fileRef = E0996224881AEC84FF78B6F7 /* uxplay/playfair/omg_hax.c */;
-		};
-		87428C1E9428475BE8927150 /* ReleaseFeed.swift in Sources */ = {
-			isa = PBXBuildFile;
-			fileRef = B781CA545026F150FAF6C5BD /* ReleaseFeed.swift */;
 		};
 		88B30A8C5FD4086AFA8AEA44 /* AudioCookie.swift in Sources */ = {
 			isa = PBXBuildFile;
@@ -832,12 +816,6 @@
 			path = MirrorView.swift;
 			sourceTree = "<group>";
 		};
-		B781CA545026F150FAF6C5BD /* ReleaseFeed.swift */ = {
-			isa = PBXFileReference;
-			lastKnownFileType = sourcecode.swift;
-			path = ReleaseFeed.swift;
-			sourceTree = "<group>";
-		};
 		B7E8EC9365DA9CF207606223 /* PictureInPicture.swift */ = {
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.swift;
@@ -948,12 +926,6 @@
 			path = ScreenGesturesTests.swift;
 			sourceTree = "<group>";
 		};
-		D833A2401C974A26FC7F8143 /* UpdateChecker.swift */ = {
-			isa = PBXFileReference;
-			lastKnownFileType = sourcecode.swift;
-			path = UpdateChecker.swift;
-			sourceTree = "<group>";
-		};
 		D98395F30646B3A176CE8CB8 /* uxplay/llhttp/http.c */ = {
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.c.c;
@@ -1062,12 +1034,6 @@
 			name = libplist/src/plist.c;
 			path = "../android-tv/third_party/libplist/src/plist.c";
 			sourceTree = SOURCE_ROOT;
-		};
-		F86FCFA8408ECCCD24B70B00 /* ReleaseFeedTests.swift */ = {
-			isa = PBXFileReference;
-			lastKnownFileType = sourcecode.swift;
-			path = ReleaseFeedTests.swift;
-			sourceTree = "<group>";
 		};
 		FC9B108732ECDBABF88A17DB /* uxplay/compat.c */ = {
 			isa = PBXFileReference;
@@ -1274,15 +1240,6 @@
 			path = MangoCore;
 			sourceTree = "<group>";
 		};
-		B4CCF690B80EA160054DF016 /* Updates */ = {
-			isa = PBXGroup;
-			children = (
-				B781CA545026F150FAF6C5BD /* ReleaseFeed.swift */,
-				D833A2401C974A26FC7F8143 /* UpdateChecker.swift */,
-			);
-			path = Updates;
-			sourceTree = "<group>";
-		};
 		BF26E6BE873B013450E336A2 /* MangoScreenCast */ = {
 			isa = PBXGroup;
 			children = (
@@ -1294,7 +1251,6 @@
 				DF681E0BF6ABCF58F4B4B443 /* Media */,
 				018BAB73A383D1F6DCE0DEC2 /* Remote */,
 				70252C5B07C05771F091BD46 /* Settings.swift */,
-				B4CCF690B80EA160054DF016 /* Updates */,
 				8CFEA836ED2AC03501E875D2 /* Views */,
 			);
 			path = MangoScreenCast;
@@ -1308,7 +1264,6 @@
 				1EE1C3DD4B75A85EAB818FDE /* Fixtures.swift */,
 				8312D0C41899E2431E3C58D1 /* MirrorProfileTests.swift */,
 				A71B8DB044EDCC3196DD75C8 /* NalUnitsTests.swift */,
-				F86FCFA8408ECCCD24B70B00 /* ReleaseFeedTests.swift */,
 				AB47D7B76A7271F7744B263C /* RemoteProtocolTests.swift */,
 				D772BEC45BB7105ADD669D23 /* ScreenGesturesTests.swift */,
 				5AE6ACDDC44C727320E6D7B5 /* TypingSyncTests.swift */,
@@ -1583,7 +1538,6 @@
 				535777A04BCC77238A7C2F92 /* Fixtures.swift in Sources */,
 				B7DF6301E14BB9A9F411ABDA /* MirrorProfileTests.swift in Sources */,
 				5E73247FC2FC196CE55BC189 /* NalUnitsTests.swift in Sources */,
-				55A9F607CAD67B6D5E2641B1 /* ReleaseFeedTests.swift in Sources */,
 				B400EF52B489452D5FEABF68 /* RemoteProtocolTests.swift in Sources */,
 				1EBA1B34809A29E23D8E51D0 /* ScreenGesturesTests.swift in Sources */,
 				CA682BC811DD9C0F9D4A3D91 /* TypingSyncTests.swift in Sources */,
@@ -1591,7 +1545,6 @@
 				3BA316D82E5B93655287C37F /* AudioCookie.swift in Sources */,
 				3749B09B9124D7649A9919A2 /* VideoRenderer.swift in Sources */,
 				0B7BD122B11363F827E52DF4 /* MirrorProfile.swift in Sources */,
-				87428C1E9428475BE8927150 /* ReleaseFeed.swift in Sources */,
 				4821F1AF43AADB236B81CE31 /* MacKeys.swift in Sources */,
 				D96D495CBD61EBB8FD31384C /* ScreenGestures.swift in Sources */,
 				3702E69272B6345A2563F86D /* TypingField.swift in Sources */,
@@ -1619,8 +1572,6 @@
 				BBBCE30DA7E2518FF2C4642F /* ScreenView.swift in Sources */,
 				B16B8393E9D87C15539E0145 /* TypingField.swift in Sources */,
 				B08B441909D2F8BDFB3465AB /* Settings.swift in Sources */,
-				4085A47F46B0ABDA62FA182C /* ReleaseFeed.swift in Sources */,
-				0A2C6ABD3009FBDEC66C62EF /* UpdateChecker.swift in Sources */,
 				0673B64CCBA2426BB75EAC49 /* HomeView.swift in Sources */,
 				6D3E809906C5855DE7ABAA0C /* MirrorView.swift in Sources */,
 				1C275174E235C79E30B17168 /* RootView.swift in Sources */,
@@ -1670,7 +1621,6 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MANGO_BUILD_CHANNEL = local;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.mangoscreencast.ios;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -1837,7 +1787,6 @@
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
-				MANGO_BUILD_CHANNEL = local;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = com.mangoscreencast.ios;
 				PRODUCT_NAME = "$(TARGET_NAME)";

@@ -10,7 +10,6 @@ import SwiftUI
 struct HomeView: View {
     @EnvironmentObject private var receiver: Receiver
     @EnvironmentObject private var settings: Settings
-    @EnvironmentObject private var updates: UpdateChecker
     @EnvironmentObject private var remote: RemoteControl
     @State private var showSettings = false
 
@@ -32,9 +31,6 @@ struct HomeView: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: compact ? 24 : 36) {
                     header(compact: compact)
-                    if updates.isReleaseBuild, let update = updates.availableUpdate {
-                        updateBanner(update)
-                    }
                     if let notice = receiver.notice {
                         Banner(systemImage: "arrow.uturn.backward.circle.fill", text: notice) {
                             Button("OK") { receiver.notice = nil }
@@ -71,7 +67,6 @@ struct HomeView: View {
             SettingsView()
                 .environmentObject(receiver)
                 .environmentObject(settings)
-                .environmentObject(updates)
                 .environmentObject(remote)
         }
     }
@@ -98,15 +93,6 @@ struct HomeView: View {
             }
             .buttonStyle(.bordered)
             .tint(Theme.textSecondary)
-        }
-    }
-
-    private func updateBanner(_ update: ReleaseFeed.Release) -> some View {
-        Banner(systemImage: "arrow.down.circle.fill", text: "Mango Cast \(update.version) is available.") {
-            Button("Update") { updates.openUpdate() }
-                .buttonStyle(.borderedProminent)
-                .tint(Theme.mango)
-                .foregroundColor(.black)
         }
     }
 

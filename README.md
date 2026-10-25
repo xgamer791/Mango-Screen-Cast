@@ -150,62 +150,35 @@ Wi-Fi network.
 
 ### Install
 
-Apple only lets you install apps from outside the App Store if they're signed
-with your own Apple ID. A free Apple ID works.
+Mango Cast comes through **TestFlight**. Every push to `main` or the
+development branch builds a new version (1.0.*n*) and uploads it to App Store
+Connect. Once Apple has processed it, usually within half an hour, it shows up
+in the **TestFlight** app on the iPad. TestFlight installs it, by itself with
+automatic updates on, or with a tap. Settings → **Updates** in Mango Cast shows
+the version you have.
 
-**With Xcode on your Mac:**
+**Setting up the uploads (once).** CI signs and uploads with an App Store
+Connect API key, which needs a paid Apple Developer account:
 
-1. Get the code with its submodules, and open the project:
-   ```sh
-   git clone --recursive https://github.com/xgamer791/Mango-Screen-Cast
-   open Mango-Screen-Cast/ios/MangoScreenCast.xcodeproj
-   ```
-   Xcode 15 or newer. It downloads OpenSSL by itself the first time.
-2. Click the **MangoScreenCast** project, then the **MangoScreenCast** target →
-   **Signing & Capabilities**, and pick your Apple ID under **Team** (Add an
-   Account… if it isn't there). If Xcode says the bundle identifier isn't
-   available, change `com.mangoscreencast.ios` to something of your own, such
-   as `com.yourname.mango`.
-3. Connect the iPad with a cable, pick it at the top of the Xcode window, and
-   press **Run** (⌘R).
-4. The first time, the iPad asks for two things: turn on **Developer Mode**
-   (Settings → Privacy & Security, then restart), and trust your Apple ID
-   under Settings → General → **VPN & Device Management**.
+1. In [App Store Connect](https://appstoreconnect.apple.com), the app's record
+   must exist (Apps → **+** → New App) with the bundle ID
+   `com.mangoscreencast.ios`. If the app's record uses another bundle ID, set
+   it as the `IOS_BUNDLE_ID` Actions variable (repository Settings → Secrets
+   and variables → Actions → Variables).
+2. Users and Access → Integrations → **App Store Connect API** → Team Keys:
+   generate a key with the **Admin** role (Apple only lets Admin keys create
+   the signing certificate and profile). Download the `.p8` file; Apple only
+   offers it once.
+3. Add these repository secrets (Settings → Secrets and variables → Actions):
 
-With a free Apple ID, the app stops opening after 7 days. Press Run in Xcode
-again to renew it. A paid developer account makes it last a year.
+   | Secret | Value |
+   | --- | --- |
+   | `APP_STORE_CONNECT_KEY_ID` | The key's Key ID. |
+   | `APP_STORE_CONNECT_ISSUER_ID` | The Issuer ID shown above the keys. |
+   | `APP_STORE_CONNECT_KEY` | The whole contents of the `.p8` file. |
+   | `APPLE_TEAM_ID` | Your Team ID (developer.apple.com → Account → Membership details). |
 
-**Without Xcode (and with updates):** use [AltStore](https://altstore.io) or
-[SideStore](https://sidestore.io), which install apps signed with your Apple ID.
-Add this source in AltStore (Browse → Sources → **+**) or SideStore:
-
-```
-https://github.com/xgamer791/Mango-Screen-Cast/releases/download/ios-latest/altstore-source.json
-```
-
-then install **Mango Cast** from it. You can also install the IPA from the
-[`ios-latest` pre-release](../../releases/tag/ios-latest)
-(`MangoScreenCast-unsigned.ipa`) with [Sideloadly](https://sideloadly.io).
-
-### Updates
-
-iOS only lets the App Store update apps by itself, so Mango Cast can't install
-its own updates the way the TV app does. Instead:
-
-- Every push to `main` or the development branch builds a new version
-  (1.0.*n*) and publishes it to the source above.
-- **AltStore and SideStore** show the new version under My Apps; tap
-  **Update**. AltStore also renews the app in the background every week (with
-  AltServer running on your Mac), so a free Apple ID's 7-day limit never
-  stops it opening.
-- **The app checks too**, at launch and every few hours while it's open. When a
-  newer version is out, the home screen says so, and **Update** opens AltStore
-  or SideStore on it. Settings → **Updates** shows the version you have and
-  has a button that adds the source to AltStore or SideStore.
-- **Built with Xcode?** Get the latest code and press Run again.
-
-For fully automatic updates (no tap), a paid Apple Developer account and
-TestFlight are the only way; this repository doesn't set that up.
+4. Run the **iOS app** workflow (Actions → iOS app → Run workflow), or push.
 
 ### Use
 
@@ -245,7 +218,7 @@ Mango Cast restarts AirPlay when you come back.
 | Picture in Picture when you leave | On by default: leaving while a Mac mirrors shows its screen in a floating window. |
 | Show stats while mirroring | Resolution, codec, frame rate and bitrate in a corner. |
 | Keep the screen on while waiting | On by default. It always stays on while mirroring. |
-| Updates | The version you have, Check for updates, and a button that adds the update source to AltStore or SideStore. |
+| Updates | The version you have. New versions come through TestFlight. |
 | Mac control | Link with a Mac running Mango Cast Remote (once), unlink Macs, and turn controlling on or off. |
 | Diagnostics | What the iPad offers and the recent AirPlay log, with a Share button. |
 
@@ -268,8 +241,10 @@ screen:
 **Set it up once:**
 
 1. Download `MangoCastRemote-mac.zip` from the
-   [`ios-latest` pre-release](../../releases/tag/ios-latest) (the iPad can
-   AirDrop you the link: Settings → **Link with a Mac**), open it, and move
+   [`ios-latest` pre-release](../../releases/tag/ios-latest), which CI updates
+   with every build (it can't go through TestFlight: App Store apps can't be
+   allowed to click and type on the Mac). The iPad can AirDrop you the link
+   (Settings → **Link with a Mac**). Open the zip and move
    **MangoCastRemote** to Applications. (Or build the **MangoCastRemote**
    scheme in Xcode.) It's signed ad hoc, not by Apple, so the first time,
    Control-click it → **Open**, or allow it under System Settings → Privacy &
@@ -283,8 +258,8 @@ screen:
 
 That's it: they stay linked until you unlink them (Settings → Unlink on the
 iPad, or **Unlink all iPads** in the Mac's menu), even if Mango Cast is
-deleted and installed again (with the same Apple ID in AltStore or
-SideStore): the link is kept in the iPad's keychain, which iOS keeps. From
+deleted and installed again: the link is kept in the iPad's keychain, which
+iOS keeps. From
 then on, while that Mac mirrors to the iPad, the iPad connects to it by
 itself and the **Controlling** button shows at the top. Tap it to turn
 controlling off (taps then show the controls again, as without it).
@@ -368,10 +343,8 @@ ios/
     AirPlay/               Receiver (server lifecycle, status), Bonjour advertising
     Media/                 VideoRenderer (VideoToolbox), AudioPlayer, NAL parsing
     Views/                 Home, Mirror (player), Settings
-    Updates/               checks the release feed for newer builds
   MangoScreenCastTests/    unit tests, including decoding real H.264/HEVC frames
   MangoScreenCastUITests/  screenshots of each screen, for checking layouts
-tools/make_altstore_source.py   the AltStore / SideStore source CI publishes
 ```
 
 On the iPad the same UxPlay core is built with Xcode against
@@ -401,8 +374,8 @@ when it can decode it. That's what lets Apple devices send more than 1080p.
 `android-tv/native-test` builds the AirPlay core on Linux. It checks the
 service records and the `/info` reply Apple devices read (display size,
 60 fps, HEVC flag, no password). CI runs both and builds the APKs. For the
-iPad app, CI runs its tests on an iPad simulator, builds the unsigned IPA, and
-takes screenshots of the home and Settings screens on every iPad simulator (and
+iPad app, CI runs its tests on an iPad simulator, uploads the build to
+TestFlight, and takes screenshots of the home and Settings screens on every iPad simulator (and
 an iPhone) in both orientations (the `ios-screenshots` artifact).
 
 ## License

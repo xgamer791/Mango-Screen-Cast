@@ -3,7 +3,6 @@ import SwiftUI
 struct SettingsView: View {
     @EnvironmentObject private var receiver: Receiver
     @EnvironmentObject private var settings: Settings
-    @EnvironmentObject private var updates: UpdateChecker
     @EnvironmentObject private var remote: RemoteControl
     @State private var showPairing = false
     @Environment(\.dismiss) private var dismiss
@@ -74,22 +73,11 @@ struct SettingsView: View {
                 }
 
                 Section {
-                    LabeledContent("Version", value: "\(updates.version) (\(updates.build))")
-                    HStack {
-                        Text(updateStatus)
-                            .foregroundColor(.secondary)
-                        Spacer()
-                        if updates.state == .checking { ProgressView() }
-                    }
-                    Button("Check for updates") { updates.check() }
-                        .disabled(updates.state == .checking)
-                    Button(updates.availableUpdate == nil ? "Get updates with AltStore or SideStore" : "Install the update") {
-                        updates.openUpdate()
-                    }
+                    LabeledContent("Version", value: versionAndBuild)
                 } header: {
                     Text("Updates")
                 } footer: {
-                    Text("iOS only lets the App Store update apps by itself. Add Mango Cast to AltStore or SideStore (the button above does it) and new versions show up there to install with a tap; AltStore also renews the app every week so it keeps opening. Built it in Xcode? Get the latest code and press Run.")
+                    Text("New versions come through TestFlight, which installs them on its own or with a tap.")
                 }
 
                 Section {
@@ -169,16 +157,6 @@ struct SettingsView: View {
         return parts.joined(separator: " · ")
     }
 
-    private var updateStatus: String {
-        switch updates.state {
-        case .idle: return updates.isReleaseBuild ? "Not checked yet" : "Built in Xcode"
-        case .checking: return "Checking…"
-        case .upToDate: return "Up to date"
-        case .available(let release): return "Version \(release.version) is available"
-        case .failed(let reason): return "Couldn’t check: \(reason)"
-        }
-    }
-
     private func resolution(landscape: Bool) -> Binding<Int> {
         Binding {
             settings.resolutionScale(landscape: landscape)
@@ -208,6 +186,12 @@ struct SettingsView: View {
         settings.receiverName = name
         draftName = settings.receiverName
         receiver.restart()
+    }
+
+    /// "1.0.17 (17)": the version and build TestFlight lists.
+    private var versionAndBuild: String {
+        let info = Bundle.main.infoDictionary
+        return "\(info?["CFBundleShortVersionString"] as? String ?? "?") (\(info?["CFBundleVersion"] as? String ?? "?"))"
     }
 
     private var about: String {

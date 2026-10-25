@@ -14,6 +14,12 @@ struct PairMacView: View {
     @State private var linkCopied = false
     @FocusState private var codeFocused: Bool
 
+    /// Mango Cast Remote for the Mac, which CI publishes with every build.
+    /// It can't go through TestFlight: it needs Accessibility to click and
+    /// type, which App Store apps can't have.
+    private static let macRemoteDownload =
+        URL(string: "https://github.com/xgamer791/Mango-Screen-Cast/releases/download/ios-latest/MangoCastRemote-mac.zip")!
+
     /// The Mac showing a code to enter: the one asked, or one showing a
     /// code from its own menu.
     private var macWithCode: String? {
@@ -99,17 +105,17 @@ struct PairMacView: View {
 
                 Section {
                     Text("AirPlay only sends the Mac’s picture here, so to click and type on the Mac, a small app on the Mac does it for this iPad: Mango Cast Remote. Get it once:")
-                    ShareLink(item: ReleaseFeed.macRemoteDownload) {
+                    ShareLink(item: Self.macRemoteDownload) {
                         Label("Send the download link to your Mac", systemImage: "square.and.arrow.up")
                     }
                     Button {
-                        UIPasteboard.general.url = ReleaseFeed.macRemoteDownload
+                        UIPasteboard.general.url = Self.macRemoteDownload
                         linkCopied = true
                     } label: {
                         Label(linkCopied ? "Link copied" : "Copy the download link",
                               systemImage: linkCopied ? "checkmark" : "doc.on.doc")
                     }
-                    Text(verbatim: ReleaseFeed.macRemoteDownload.absoluteString)
+                    Text(verbatim: Self.macRemoteDownload.absoluteString)
                         .font(.footnote.monospaced())
                         .foregroundColor(.secondary)
                         .textSelection(.enabled)

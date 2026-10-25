@@ -39,7 +39,7 @@ PLIST_SOURCES = ["base64.c", "bplist.c", "bytearray.c", "common.c", "hashtable.c
                  "time64.c", "xplist.c"]
 # App sources the (host-less) unit tests compile too.
 TESTED_APP_SOURCES = ["Media/NalUnits.swift", "Media/AudioCookie.swift", "Media/VideoRenderer.swift",
-                      "AirPlay/MirrorProfile.swift", "Updates/ReleaseFeed.swift", "Remote/MacKeys.swift",
+                      "AirPlay/MirrorProfile.swift", "Remote/MacKeys.swift",
                       "Remote/ScreenGestures.swift", "Remote/TypingField.swift"]
 
 FILE_TYPES = {
@@ -210,8 +210,7 @@ APP_SETTINGS = {
     "ENABLE_PREVIEWS": "NO",
     "INFOPLIST_FILE": APP + "/Info.plist",
     "LD_RUNPATH_SEARCH_PATHS": ["$(inherited)", "@executable_path/Frameworks"],
-    # CI sets these per build (1.0.<run>, <run>, release); see ios.yml.
-    "MANGO_BUILD_CHANNEL": "local",
+    # CI sets this and CURRENT_PROJECT_VERSION per build (1.0.<run>, <run>); see ios.yml.
     "MARKETING_VERSION": "1.0",
     "PRODUCT_BUNDLE_IDENTIFIER": BUNDLE_ID,
     "PRODUCT_NAME": "$(TARGET_NAME)",
