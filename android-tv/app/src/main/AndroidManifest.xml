@@ -118,6 +118,17 @@
             </intent-filter>
         </activity>
 
+        <!-- The gear's menu (ui/SettingsMenuActivity.kt): its own task, over the app
+             the gear was pressed in, which it goes back to as it closes. -->
+        <activity
+            android:name=".ui.SettingsMenuActivity"
+            android:exported="false"
+            android:excludeFromRecents="true"
+            android:launchMode="singleTop"
+            android:taskAffinity=""
+            android:theme="@style/Theme.Mango.Menu"
+            android:configChanges="keyboard|keyboardHidden|navigation|screenSize|screenLayout|smallestScreenSize|orientation|uiMode|density" />
+
         <!-- The remote's gear (ui/GearKeyService.kt): the system takes it before any
              app and gives it only to a system app's panel, so Mango takes it first,
              as an accessibility service filtering keys. Turned on once over adb. -->

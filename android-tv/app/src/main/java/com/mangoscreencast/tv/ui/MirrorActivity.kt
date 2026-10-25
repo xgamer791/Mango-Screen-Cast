@@ -1,7 +1,6 @@
 package com.mangoscreencast.tv.ui
 
 import android.app.Activity
-import android.content.Intent
 import android.hardware.display.DisplayManager
 import android.os.Build
 import android.os.Bundle
@@ -268,9 +267,8 @@ class MirrorActivity : Activity(), SurfaceHolder.Callback, AirPlayReceiver.Liste
                 return true
             }
             KeyEvent.KEYCODE_SETTINGS -> {
-                // Same screen the gear opens from Home. The receiver stays up:
-                // Settings acquires it before this screen releases it.
-                if (event.repeatCount == 0) startActivity(Intent(this, SettingsActivity::class.java))
+                // The gear's menu (GearKeyService takes the gear first), over the picture.
+                if (event.repeatCount == 0) SettingsMenuActivity.open(this)
                 return true
             }
             KeyEvent.KEYCODE_DPAD_UP, KeyEvent.KEYCODE_DPAD_DOWN -> {

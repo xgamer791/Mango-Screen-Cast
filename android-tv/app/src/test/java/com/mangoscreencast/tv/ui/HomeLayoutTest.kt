@@ -102,6 +102,15 @@ class HomeLayoutTest {
         }
     }
 
+    @Test
+    fun noSettingsButtonTheGearOpensTheMenu() {
+        val activity = Robolectric.buildActivity(Activity::class.java).setup().get()
+        val root = LayoutInflater.from(ContextThemeWrapper(activity, R.style.Theme_Mango)).inflate(R.layout.activity_home, null)
+        val buttons = mutableListOf<String>()
+        visit(root) { if (it is android.widget.Button) buttons += it.text.toString() }
+        assertTrue(buttons.toString(), activity.getString(R.string.settings) !in buttons)
+    }
+
     private fun ready(root: View) {
         val c = root.context
         root.text(R.id.status, c.getString(R.string.status_ready))

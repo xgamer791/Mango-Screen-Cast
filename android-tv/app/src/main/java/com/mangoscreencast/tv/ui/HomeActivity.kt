@@ -1,13 +1,13 @@
 package com.mangoscreencast.tv.ui
 
 import android.app.Activity
-import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.view.KeyEvent
 import android.view.View
 import android.widget.Button
+import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import com.mangoscreencast.tv.MangoApp
@@ -55,25 +55,20 @@ class HomeActivity : Activity(), AirPlayReceiver.Listener, AppUpdater.Listener {
                 else -> updater.install()
             }
         }
-        findViewById<Button>(R.id.settings_button).apply {
-            setOnClickListener { openSettings() }
-            requestFocus()
-        }
-        AppTiles.fill(findViewById(R.id.apps_row), ::openApp)
+        val apps = findViewById<LinearLayout>(R.id.apps_row)
+        AppTiles.fill(apps, ::openApp)
+        // The first app has the focus: the gear opens the menu, so there's no Settings button.
+        apps.getChildAt(0)?.requestFocus()
         ReceiverService.sync(this)
     }
 
-    private fun openSettings() = startActivity(Intent(this, SettingsActivity::class.java))
-
     /**
-     * The Hisense gear doesn't reach apps as a key: the system opens the
-     * MAIN + LEANBACK_SETTINGS handler, [SettingsActivity] (the manifest says
-     * how). A remote or TV that delivers KEYCODE_SETTINGS opens the same
-     * screen from here.
+     * The remote's gear opens the menu from anywhere (GearKeyService). Without
+     * that service, a remote that sends KEYCODE_SETTINGS opens it from here.
      */
     override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
         if (keyCode == KeyEvent.KEYCODE_SETTINGS && event.repeatCount == 0) {
-            openSettings()
+            SettingsMenuActivity.open(this)
             return true
         }
         return super.onKeyDown(keyCode, event)
