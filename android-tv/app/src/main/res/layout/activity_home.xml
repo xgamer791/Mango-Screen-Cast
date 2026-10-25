@@ -42,7 +42,7 @@
         android:includeFontPadding="false"
         android:maxLines="1"
         android:textColor="#FFFFFF"
-        android:textSize="35.2sp" />
+        android:textSize="31.68sp" />
 
     <TextView
         android:id="@+id/subtitle"
@@ -55,7 +55,7 @@
         android:maxLines="2"
         android:maxWidth="560dp"
         android:textColor="#FFFFFF"
-        android:textSize="24.8sp" />
+        android:textSize="22.32sp" />
 
     <!-- Only when something needs saying: a lost connection, or why AirPlay isn't running. -->
     <TextView
