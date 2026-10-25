@@ -6,7 +6,8 @@ import UIKit
 /// With Mango Cast Remote on the Mac, the picture is the Mac's screen to
 /// work with, as Holli Bot's Screen is (ScreenView): tap to click, swipe to
 /// scroll, pinch to zoom, and the keyboard button types on the Mac. The ⋯
-/// button shows the controls (Control, Fill, Stop).
+/// button shows the bar saying what's mirroring. Control, Fill and stats are
+/// in Settings.
 ///
 /// Without it, a tap shows or hides the controls and a double tap switches
 /// between showing the whole picture and filling the screen; pinching still
@@ -71,7 +72,8 @@ struct MirrorView: View {
                 }
                 Spacer()
                 HStack(alignment: .bottom) {
-                    if settings.showStats || controlsVisible, let stats, !demo {
+                    // Only with Show stats on in Settings: ⋯ doesn't bring them up.
+                    if settings.showStats, let stats, !demo {
                         statsText(stats).transition(.opacity)
                     }
                     Spacer(minLength: 0)
@@ -144,7 +146,8 @@ struct MirrorView: View {
     }
 
     /// Round buttons in the corner, as Holli Bot's Screen has: how far it's
-    /// zoomed (tap for the whole screen), the keyboard, and ⋯ for the controls.
+    /// zoomed (tap for the whole screen), the keyboard, and ⋯ for the bar. In
+    /// Liquid Glass, the glass of the iPad's Home Screen, with nothing round them.
     private var dock: some View {
         HStack(spacing: 10) {
             if screen.zoom > 1 {
@@ -155,8 +158,11 @@ struct MirrorView: View {
                         .font(.subheadline.weight(.bold).monospacedDigit())
                         .frame(minWidth: 44, minHeight: 44)
                         .padding(.horizontal, 6)
+                        .contentShape(Capsule())
+                        .homeScreenGlass(in: Capsule())
                 }
-                .background(.ultraThinMaterial, in: Capsule())
+                .buttonStyle(.plain)
+                .noPointerHighlight()
                 .accessibilityIdentifier("zoomBadge")
                 .accessibilityLabel("Show the whole screen")
                 .transition(.scale.combined(with: .opacity))
@@ -168,6 +174,8 @@ struct MirrorView: View {
         }
     }
 
+    /// A round dock button in Liquid Glass; on (the keyboard up, the bar
+    /// showing), the glass is tinted mango and the symbol black.
     private func dockButton(_ symbol: String, on: Bool, id: String, label: String,
                             action: @escaping () -> Void) -> some View {
         Button(action: action) {
@@ -175,12 +183,16 @@ struct MirrorView: View {
                 .font(.title3.weight(.semibold))
                 .foregroundColor(on ? .black : .white)
                 .frame(width: 48, height: 48)
-                .background(on ? AnyShapeStyle(Theme.mango) : AnyShapeStyle(Material.ultraThinMaterial), in: Circle())
+                .contentShape(Circle())
+                .homeScreenGlass(in: Circle(), tint: on ? Theme.mango : nil)
         }
+        .buttonStyle(.plain)
+        .noPointerHighlight()
         .accessibilityIdentifier(id)
         .accessibilityLabel(label)
     }
 
+    /// The bar ⋯ shows: what's mirroring.
     private var topBar: some View {
         HStack(spacing: 12) {
             Image(systemName: "dot.radiowaves.left.and.right")
@@ -189,41 +201,13 @@ struct MirrorView: View {
                 .font(.headline)
                 .lineLimit(1)
             Spacer(minLength: 12)
-            Button {
-                if remote.isConnected {
-                    settings.controlMac.toggle()
-                } else {
-                    linkTarget = linkableMac
-                    showPairing = true
-                }
-            } label: {
-                Label(controlTitle, systemImage: controlling ? "hand.tap.fill" : "hand.tap")
-                    .font(.headline)
-            }
-            .buttonStyle(.bordered)
-            .tint(controlling ? Theme.mango : .white)
-            .accessibilityIdentifier("controlButton")
-            Button(action: toggleFill) {
-                Label(settings.fillScreen ? "Fit" : "Fill",
-                      systemImage: settings.fillScreen ? "arrow.down.right.and.arrow.up.left"
-                                                       : "arrow.up.left.and.arrow.down.right")
-                    .font(.headline)
-            }
-            .buttonStyle(.bordered)
-            .tint(.white)
-            Button(role: .destructive) {
-                receiver.disconnect()
-            } label: {
-                Label("Stop", systemImage: "xmark.circle.fill")
-                    .font(.headline)
-            }
-            .buttonStyle(.borderedProminent)
-            .tint(Theme.error)
         }
-        .padding(.leading, 18)
-        .padding(.trailing, 10)
+        .padding(.horizontal, 18)
         .padding(.vertical, 10)
+        .frame(minHeight: 56)
         .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .accessibilityElement(children: .combine)
+        .accessibilityIdentifier("controlsBar")
     }
 
     /// Taps only click on the Mac with Mango Cast Remote running there; until
@@ -269,15 +253,6 @@ struct MirrorView: View {
         return "Looking for Mango Cast Remote on your Mac. Make sure it’s open there (it lives in the menu bar) and on the same Wi-Fi."
     }
 
-    /// What the Control button says: controlling, paused, or how to set it up.
-    private var controlTitle: String {
-        switch remote.state {
-        case .connected: return settings.controlMac ? "Controlling" : "Control off"
-        case .connecting, .searching: return "Finding Mac…"
-        case .notPaired, .off, .failed: return "Control Mac"
-        }
-    }
-
     private func statsText(_ v: VideoRenderer.Stats) -> some View {
         let offered = receiver.status.profile.map { "offering \($0.width) × \($0.height)" } ?? ""
         let line1 = String(format: "%ld × %ld %@ · %.0f fps · %.1f Mbit/s", v.width, v.height, v.codec, v.fps,
@@ -292,6 +267,30 @@ struct MirrorView: View {
         .padding(.vertical, 8)
         .background(Color.black.opacity(0.6), in: RoundedRectangle(cornerRadius: 10, style: .continuous))
         .allowsHitTesting(false)
+    }
+}
+
+private extension View {
+    /// Liquid Glass in `shape`: the glass of the iPad's Home Screen and its
+    /// Dock (iOS 26), reacting to a finger, tinted with `tint` if given.
+    /// Before iOS 26 there's no Liquid Glass: a material, or the tint.
+    @ViewBuilder
+    func homeScreenGlass<S: Shape>(in shape: S, tint: Color? = nil) -> some View {
+        if #available(iOS 26.0, *) {
+            glassEffect((tint.map { Glass.regular.tint($0) } ?? .regular).interactive(), in: shape)
+        } else {
+            background(tint.map { AnyShapeStyle($0) } ?? AnyShapeStyle(Material.ultraThinMaterial), in: shape)
+        }
+    }
+
+    /// No highlight round it from the iPad's pointer (a trackpad or a mouse).
+    @ViewBuilder
+    func noPointerHighlight() -> some View {
+        if #available(iOS 17.0, *) {
+            hoverEffectDisabled()
+        } else {
+            self
+        }
     }
 }
 

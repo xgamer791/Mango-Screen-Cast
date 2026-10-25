@@ -193,6 +193,23 @@ final class ControlsUITests: XCTestCase {
         keyboardButton.tap()
     }
 
+    /// ⋯ shows the bar saying what's mirroring, with no buttons on it:
+    /// Control and Fill are in Settings, and the Mac stops mirroring.
+    func testMoreShowsTheBarWithNoButtons() {
+        let more = app.buttons["moreButton"]
+        XCTAssertTrue(more.waitForExistence(timeout: 5))
+        let bar = app.descendants(matching: .any)["controlsBar"]
+        // The bar shows as the picture opens and goes after a few seconds.
+        XCTAssertTrue(bar.waitForNonExistence(timeout: 10))
+        more.tap()
+        XCTAssertTrue(bar.waitForExistence(timeout: 5))
+        XCTAssertTrue(bar.label.contains("Mirroring Demo Mac"), "the bar says what's mirroring: \(bar.label)")
+        for name in ["controlButton", "Controlling", "Control Mac", "Fit", "Fill", "Stop"] {
+            XCTAssertFalse(app.buttons[name].exists, "no \(name) button")
+        }
+        snap("7 controls bar")
+    }
+
     private func snap(_ name: String) {
         let screenshot = XCUIScreen.main.screenshot()
         let attachment = XCTAttachment(screenshot: screenshot)
