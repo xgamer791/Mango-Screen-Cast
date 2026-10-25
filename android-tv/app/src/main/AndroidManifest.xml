@@ -102,10 +102,14 @@
             leaves Mango the only MAIN + LEANBACK_SETTINGS handler. Settings'
             last row opens the TV's own settings by component when they're on.
         -->
+        <!-- No task affinity: opened by the gear (ui/GearKeyService.kt) it's a task
+             of its own, so Back goes back to the app the gear was pressed in.
+             Opened from Home, it's in Home's task as before. -->
         <activity
             android:name=".ui.SettingsActivity"
             android:exported="true"
-            android:launchMode="singleTop">
+            android:launchMode="singleTop"
+            android:taskAffinity="">
             <intent-filter android:label="@string/settings_gear_label" android:priority="1000">
                 <action android:name="android.intent.action.MAIN" />
                 <action android:name="android.settings.SETTINGS" />
@@ -113,6 +117,22 @@
                 <category android:name="android.intent.category.LEANBACK_SETTINGS" />
             </intent-filter>
         </activity>
+
+        <!-- The remote's gear (ui/GearKeyService.kt): the system takes it before any
+             app and gives it only to a system app's panel, so Mango takes it first,
+             as an accessibility service filtering keys. Turned on once over adb. -->
+        <service
+            android:name=".ui.GearKeyService"
+            android:exported="true"
+            android:label="@string/gear_service_label"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+            <meta-data
+                android:name="android.accessibilityservice"
+                android:resource="@xml/gear_key_service" />
+        </service>
 
         <service
             android:name=".ReceiverService"

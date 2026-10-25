@@ -26,6 +26,9 @@
     <string name="settings">Settings</string>
     <!-- Shown when the gear key has both this app and the TV's settings to choose from. -->
     <string name="settings_gear_label">Mango Settings</string>
+    <!-- The gear key service, as the TV's accessibility settings list it. -->
+    <string name="gear_service_label">Mango gear button</string>
+    <string name="gear_service_description">Opens Mango Settings when you press the gear button on the remote. Mango only acts on that button; every other key works as usual.</string>
 
     <!-- Player -->
     <string name="mirroring_banner">Mirroring %1$s · press Back twice to stop</string>
