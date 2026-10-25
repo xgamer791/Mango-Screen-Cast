@@ -270,7 +270,9 @@ Windows may say it protected your PC: choose **More info → Run anyway**.
 
 The PC sends the sharpest picture the TV or iPad offers: HEVC up to 4K when
 the PC has a hardware HEVC encoder (most from the last eight years), otherwise
-H.264 up to 1080p. One device shows at a time: while a Mac or an iPhone is
+H.264, as big as the TV's decoder plays (1080p on many TVs) or the iPad's
+whole screen. A PC with no hardware encoder at all encodes on its processor,
+and sends 1080p at most. One device shows at a time: while a Mac or an iPhone is
 mirroring, the PC is told the TV is busy, and an Apple device that starts
 mirroring takes over from the PC.
 

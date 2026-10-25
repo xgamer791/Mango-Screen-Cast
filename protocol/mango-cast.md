@@ -74,9 +74,12 @@ without breaking the other.
     "audio": {"format": "pcm_s16le", "rate": 48000, "channels": 2}}
    ```
 
-   `codec` is the first of the sender's codecs the receiver decodes. With
-   `h264`, `maxWidth` × `maxHeight` is at most 1920 × 1080 (the receiver's
-   shape, smaller), as Apple devices send H.264. `audio` is `null` when the
+   `codec` is the first of the sender's codecs the receiver decodes.
+   `maxWidth` × `maxHeight` is the largest picture it plays in that codec:
+   with `h264`, a TV offers no more than its H.264 decoder plays (often
+   1920 × 1080, in the TV's shape), while an iPad offers its whole screen. A
+   sender encoding on the CPU (no hardware encoder) sends no more than
+   1920 × 1080's pixels whatever it's offered. `audio` is `null` when the
    receiver's sound is off; the sender then sends none.
 
    REFUSE reasons: `busy` (another device is mirroring), `protocol` (no

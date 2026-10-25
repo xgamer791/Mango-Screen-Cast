@@ -737,7 +737,13 @@ def run_window_scenario(exe, sc, out_dir):
     proc = subprocess.Popen([exe, "--log", log_path])
     hwnd = None
     try:
-        if not wait_for(lambda: user32.FindWindowW("MangoCastWindow", "Mango Cast"), 15):
+        def ready():
+            # The window exists before its controls do: wait until the status line says something.
+            h = user32.FindWindowW("MangoCastWindow", "Mango Cast")
+            line = user32.GetDlgItem(h, ID_STATUS) if h else None
+            return bool(line and text_of(line))
+
+        if not wait_for(ready, 15):
             rx.problem("the window didn't open")
             return findings, rx.problems, ""
         hwnd = user32.FindWindowW("MangoCastWindow", "Mango Cast")

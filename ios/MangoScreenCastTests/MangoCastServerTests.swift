@@ -255,7 +255,7 @@ final class MangoCastServerTests: XCTestCase {
         XCTAssertTrue(sink.started.isEmpty)
     }
 
-    func testAnH264SenderIsAskedForNoMoreThan1080p() throws {
+    func testAnH264SenderIsOfferedTheWholeScreen() throws {
         var big = offer
         (big.maxWidth, big.maxHeight) = (2752, 2064)
         sink.decide = { _ in .accept(big) }
@@ -263,10 +263,10 @@ final class MangoCastServerTests: XCTestCase {
         sender.hello(#"{"protocol": 1, "name": "OLD-PC", "codecs": ["h264"], "width": 2560, "height": 1440}"#)
         let welcome = object(try XCTUnwrap(sender.readSkippingPings()).payload)
         XCTAssertEqual(welcome["codec"] as? String, "h264")
-        XCTAssertEqual(welcome["maxWidth"] as? Int, 1440)
-        XCTAssertEqual(welcome["maxHeight"] as? Int, 1080)
+        XCTAssertEqual(welcome["maxWidth"] as? Int, 2752)
+        XCTAssertEqual(welcome["maxHeight"] as? Int, 2064)
         XCTAssertEqual(sink.startedSignal.wait(timeout: .now() + 2), .success)
-        XCTAssertEqual(sink.started.first.map { [$0.width, $0.height] }, [1440, 810])
+        XCTAssertEqual(sink.started.first.map { [$0.width, $0.height] }, [2560, 1440])
     }
 
     func testNoSoundUnlessItWasAskedFor() throws {

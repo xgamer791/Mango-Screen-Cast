@@ -155,6 +155,19 @@ object DisplayCapabilities {
         }
     }
 
+    /**
+     * The largest H.264 picture to offer a Windows PC within the TV's
+     * `width` × `height`: the largest size the hardware H.264 decoder is
+     * rated for at `fps`. Many TVs' 4K decoding is for HEVC only, so this is
+     * often 1080p, and it's never less: Apple devices send H.264 that big, so
+     * every TV plays it.
+     */
+    fun h264Limit(width: Int, height: Int, fps: Int): Pair<Int, Int> = h264Limit(width, height, fps, SystemDecoders)
+
+    internal fun h264Limit(width: Int, height: Int, fps: Int, decoders: DecoderInfo): Pair<Int, Int> =
+        CANDIDATES.firstOrNull { (w, h) -> w <= width && h <= height && decoders.canDecode(AVC, w, h, fps) }
+            ?: (1920 to 1080)
+
     private fun takes(decoders: DecoderInfo, width: Int, height: Int): Boolean {
         if (decoders.supportsSize(HEVC, width, height)) return true
         return height <= 1080 && decoders.supportsSize(AVC, width, height)

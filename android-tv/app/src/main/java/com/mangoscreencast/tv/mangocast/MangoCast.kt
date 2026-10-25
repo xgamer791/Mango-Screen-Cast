@@ -78,7 +78,10 @@ data class Hello(
     }
 }
 
-/** What the TV takes. */
+/**
+ * What the TV takes. [h264Width] × [h264Height] is the largest H.264 picture
+ * its decoder plays (1080p on many TVs, whose 4K decoding is for HEVC).
+ */
 data class Offer(
     val name: String,
     val maxWidth: Int,
@@ -86,18 +89,16 @@ data class Offer(
     val fps: Int,
     val h265: Boolean,
     val audio: Boolean,
+    val h264Width: Int = 1920,
+    val h264Height: Int = 1080,
 ) {
-    /**
-     * What the TV takes in `codec`: H.264 no bigger than 1920 × 1080 (the same
-     * shape, smaller), as Apple devices send it, because TVs decode H.264 no
-     * bigger and a PC without an HEVC encoder can't keep up beyond it.
-     */
+    /** What the TV takes in `codec`: H.264 no bigger than its decoder plays (the same shape, smaller). */
     fun forCodec(codec: String): Offer {
-        if (codec != MangoCast.H264 || (maxWidth <= H264_WIDTH && maxHeight <= H264_HEIGHT)) return this
-        val (w, h) = if (maxWidth.toLong() * H264_HEIGHT >= maxHeight.toLong() * H264_WIDTH) {
-            H264_WIDTH to (maxHeight.toLong() * H264_WIDTH / maxWidth).toInt()
+        if (codec != MangoCast.H264 || (maxWidth <= h264Width && maxHeight <= h264Height)) return this
+        val (w, h) = if (maxWidth.toLong() * h264Height >= maxHeight.toLong() * h264Width) {
+            h264Width to (maxHeight.toLong() * h264Width / maxWidth).toInt()
         } else {
-            (maxWidth.toLong() * H264_HEIGHT / maxHeight).toInt() to H264_HEIGHT
+            (maxWidth.toLong() * h264Height / maxHeight).toInt() to h264Height
         }
         return copy(maxWidth = w and 1.inv(), maxHeight = h and 1.inv())
     }
@@ -149,11 +150,6 @@ data class Offer(
         "codecs" to if (h265) "h265,h264" else "h264",
         "audio" to if (audio) "1" else "0",
     )
-
-    private companion object {
-        const val H264_WIDTH = 1920
-        const val H264_HEIGHT = 1080
-    }
 }
 
 /** The TV's answer to a HELLO. */

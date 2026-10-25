@@ -72,4 +72,24 @@ class FrameRateChoiceTest {
         val p = choose(FrameRateSetting.FPS_30)
         assertEquals(listOf(3840, 2160, 30, 60), listOf(p.width, p.height, p.maxFps, p.refreshRate))
     }
+
+    /** H.264 rated up to `avcHeight` at up to `avcFps`. */
+    private class AvcDecoders(private val avcHeight: Int, private val avcFps: Int = 60) : DecoderInfo {
+        override val hevcAvailable = true
+        override fun supportsSize(mime: String, width: Int, height: Int) = height <= 2160
+        override fun canDecode(mime: String, width: Int, height: Int, fps: Int) =
+            mime != "video/avc" || (height <= avcHeight && fps <= avcFps)
+    }
+
+    @Test
+    fun h264LimitIsWhatTheDecoderIsRatedFor() {
+        assertEquals(3840 to 2160, DisplayCapabilities.h264Limit(3840, 2160, 60, AvcDecoders(2160)))
+        assertEquals(2560 to 1440, DisplayCapabilities.h264Limit(3840, 2160, 60, AvcDecoders(1440)))
+        assertEquals(1920 to 1080, DisplayCapabilities.h264Limit(3840, 2160, 60, AvcDecoders(1080)))
+        // 4K at 30 fps only: not offered for a 60 fps stream.
+        assertEquals(1920 to 1080, DisplayCapabilities.h264Limit(3840, 2160, 60, AvcDecoders(2160, avcFps = 30)))
+        // Never more than the TV takes, and never less than 1080p.
+        assertEquals(2560 to 1440, DisplayCapabilities.h264Limit(2560, 1440, 60, AvcDecoders(2160)))
+        assertEquals(1920 to 1080, DisplayCapabilities.h264Limit(3840, 2160, 60, AvcDecoders(720)))
+    }
 }

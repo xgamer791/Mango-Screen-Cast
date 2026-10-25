@@ -262,14 +262,14 @@ final class MangoCastServer {
                 decision = server.sink?.mangoCastHello(hello)
                     ?? .refuse(reason: "off", message: "This device isn't ready yet. Try again in a moment.")
             }
-            guard case .accept(let offered) = decision else {
+            // An iPad decodes H.264 as big as its screen, so both codecs get the same offer.
+            guard case .accept(let offer) = decision else {
                 if case .refuse(let reason, let message) = decision { refuse(reason, message) }
                 return
             }
-            guard let codec = offered.codec(for: hello) else {
+            guard let codec = offer.codec(for: hello) else {
                 return refuse("protocol", "This device can't decode \(hello.codecs.joined(separator: " or ")).")
             }
-            let offer = offered.forCodec(codec)
             server.current = self
             self.codec = codec
             let picture = offer.picture(for: hello)

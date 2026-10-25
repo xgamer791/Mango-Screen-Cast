@@ -20,6 +20,10 @@ Size fitInside(Size source, Size max) {
     return {std::max(w, 2), std::max(h, 2)};
 }
 
+bool encoderTakes(Size size, bool hardware) {
+    return hardware || static_cast<double>(size.width) * size.height <= 1920.0 * 1080.0;
+}
+
 double defaultBitrate(Size size, double fps) {
     double rate = static_cast<double>(size.width) * size.height * std::max(fps, 1.0) / (1920.0 * 1080.0 * 60.0);
     double mbps = 16.0 * std::pow(std::max(rate, 1e-3), 0.7);

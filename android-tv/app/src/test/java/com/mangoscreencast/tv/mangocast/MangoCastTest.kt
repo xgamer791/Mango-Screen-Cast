@@ -43,7 +43,7 @@ class MangoCastTest {
     }
 
     @Test
-    fun h264IsOfferedNoBiggerThan1080p() {
+    fun h264IsOfferedNoBiggerThanTheDecoderPlays() {
         assertEquals(offer, offer.forCodec("h265"))
         val h264 = offer.forCodec("h264")
         assertEquals(1920 to 1080, h264.maxWidth to h264.maxHeight)
@@ -52,6 +52,11 @@ class MangoCastTest {
         assertEquals(1440 to 1080, square.maxWidth to square.maxHeight)
         val small = offer.copy(maxWidth = 1280, maxHeight = 720)
         assertEquals(small, small.forCodec("h264"))
+        // A TV whose H.264 decoder plays 1440p, or 4K.
+        val qhd = offer.copy(h264Width = 2560, h264Height = 1440).forCodec("h264")
+        assertEquals(2560 to 1440, qhd.maxWidth to qhd.maxHeight)
+        val uhd = offer.copy(h264Width = 3840, h264Height = 2160)
+        assertEquals(uhd, uhd.forCodec("h264"))
     }
 
     @Test

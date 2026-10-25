@@ -223,20 +223,29 @@ class AirPlayReceiver(private val context: Context, private val settings: Settin
             log("Windows: couldn't listen for Windows computers")
             return
         }
-        val txt = offer(profile).txtRecord(settings.deviceId, "${Build.MANUFACTURER} ${Build.MODEL}".trim())
+        val offer = offer(profile)
+        val txt = offer.txtRecord(settings.deviceId, "${Build.MANUFACTURER} ${Build.MODEL}".trim())
         windowsAdvertiser.register(MangoCast.SERVICE_TYPE, name, port, txt)
-        log("Windows: listening on port $port")
+        log("Windows: listening on port $port; H.264 up to ${offer.h264Width}x${offer.h264Height}")
     }
 
-    /** What the TV takes from a Windows computer: what it offers Apple devices. */
-    private fun offer(profile: MirrorProfile) = Offer(
-        name = settings.tvName,
-        maxWidth = profile.width,
-        maxHeight = profile.height,
-        fps = profile.maxFps,
-        h265 = profile.h265,
-        audio = settings.soundEnabled,
-    )
+    /**
+     * What the TV takes from a Windows computer: what it offers Apple
+     * devices, and H.264 as big as its decoder plays.
+     */
+    private fun offer(profile: MirrorProfile): Offer {
+        val (h264Width, h264Height) = DisplayCapabilities.h264Limit(profile.width, profile.height, profile.maxFps)
+        return Offer(
+            name = settings.tvName,
+            maxWidth = profile.width,
+            maxHeight = profile.height,
+            fps = profile.maxFps,
+            h265 = profile.h265,
+            audio = settings.soundEnabled,
+            h264Width = h264Width,
+            h264Height = h264Height,
+        )
+    }
 
     private fun stopServer() {
         windowsAdvertiser.unregisterAll()

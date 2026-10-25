@@ -17,6 +17,11 @@ struct Size {
 // than the source), both sides rounded down to even numbers, at least 2.
 Size fitInside(Size source, Size max);
 
+// Whether an encoder takes a picture this size: a software (CPU) encoder
+// gets no more than 1080p's pixels, as it can't keep up with more; a
+// hardware encoder anything the receiver offers.
+bool encoderTakes(Size size, bool hardware);
+
 // A sensible constant bitrate, in bits per second, for a picture size and
 // frame rate: about 16 Mbit/s for 1080p60, 25 for 1440p60, 40 for 4K60.
 double defaultBitrate(Size size, double fps);

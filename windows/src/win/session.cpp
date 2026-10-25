@@ -287,14 +287,16 @@ private:
         firstSent_ = false;
         std::string lastError;
         std::vector<Size> sizes = {size};
-        if (static_cast<double>(size.width) * size.height > 1920.0 * 1080.0) {
-            // If no encoder takes the full size, 1080p at most.
+        if (!encoderTakes(size, false)) {
+            // If no encoder takes the full size, or only the software one is
+            // left, 1080p at most.
             Size smaller = fitInside(size, {1920, 1080});
             if (smaller != size) sizes.push_back(smaller);
         }
         for (Size s : sizes) {
             for (size_t i = 0; i < candidates_.size(); i++) {
                 const EncoderCandidate& c = candidates_[i];
+                if (!encoderTakes(s, c.hardware)) continue;
                 VideoEncoder::Config cfg;
                 cfg.codec = codec_;
                 cfg.size = s;
@@ -331,8 +333,9 @@ private:
                     notReadySinceUs_ = -1;
                     submittedSinceOpen_ = 0;
                     submittedSinceOutput_ = 0;
-                    if (s != size) LOG("Sending %s instead of %s: no encoder takes the full size", sizeText(s).c_str(),
-                                       sizeText(size).c_str());
+                    if (s != size)
+                        LOG("Sending %s instead of %s: %s", sizeText(s).c_str(), sizeText(size).c_str(),
+                            c.hardware ? "no encoder takes the full size" : "the software encoder sends at most 1080p");
                     return true;
                 }
                 lastError = why;

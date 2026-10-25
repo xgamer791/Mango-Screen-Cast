@@ -92,21 +92,6 @@ struct Offer: Equatable {
     var h265: Bool
     var audio: Bool
 
-    /// What this device takes in `codec`: H.264 no bigger than 1920 × 1080
-    /// (the same shape, smaller), as Apple devices send it, because a PC
-    /// without an HEVC encoder can't keep up beyond it.
-    func forCodec(_ codec: String) -> Offer {
-        let (maxW, maxH) = (1920, 1080)
-        guard codec == MangoCast.h264, maxWidth > maxW || maxHeight > maxH else { return self }
-        var capped = self
-        if maxWidth * maxH >= maxHeight * maxW {
-            (capped.maxWidth, capped.maxHeight) = (maxW, maxHeight * maxW / maxWidth & ~1)
-        } else {
-            (capped.maxWidth, capped.maxHeight) = (maxWidth * maxH / maxHeight & ~1, maxH)
-        }
-        return capped
-    }
-
     /// The first of the sender's codecs this device decodes, or nil.
     func codec(for hello: Hello) -> String? {
         hello.codecs.first { $0 == MangoCast.h264 || ($0 == MangoCast.h265 && h265) }

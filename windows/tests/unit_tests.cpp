@@ -147,6 +147,15 @@ static void testFit() {
     CHECK(s.width % 2 == 0 && s.height % 2 == 0 && s.width <= 3840 && s.height <= 2160);
 }
 
+static void testSoftwareEncoderLimit() {
+    CHECK(encoderTakes({1920, 1080}, false));
+    CHECK(encoderTakes({1440, 1080}, false));
+    CHECK(!encoderTakes({2560, 1440}, false));
+    CHECK(!encoderTakes({1920, 1200}, false));
+    CHECK(encoderTakes(fitInside({1920, 1200}, {1920, 1080}), false));
+    CHECK(encoderTakes({3840, 2160}, true));
+}
+
 static void testBitrate() {
     double b1080 = defaultBitrate({1920, 1080}, 60);
     double b1440 = defaultBitrate({2560, 1440}, 60);
@@ -381,6 +390,7 @@ int main() {
     testFixerH264();
     testFixerHevc();
     testFit();
+    testSoftwareEncoderLimit();
     testBitrate();
     testCongestion();
     testAudio();
