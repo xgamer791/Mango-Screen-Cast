@@ -115,14 +115,6 @@
 			isa = PBXBuildFile;
 			fileRef = 1B8BD01E19DA17A48F0CC037 /* AudioCookie.swift */;
 		};
-		3BB8E38B3230EB034C3B7839 /* WindowsRemoteTests.swift in Sources */ = {
-			isa = PBXBuildFile;
-			fileRef = 60044EA6E4B9630597879D6C /* WindowsRemoteTests.swift */;
-		};
-		3ED042A650728E0676A32E53 /* WindowsRemote.swift in Sources */ = {
-			isa = PBXBuildFile;
-			fileRef = 4982530C23C0D33F38B5CE56 /* WindowsRemote.swift */;
-		};
 		3ED7C7513A6526F6F1E85F89 /* libplist/src/jplist.c in Sources */ = {
 			isa = PBXBuildFile;
 			fileRef = C49D5C5572EE4BB4B57DB525 /* libplist/src/jplist.c */;
@@ -130,10 +122,6 @@
 		45CBCAB64D2F3CC0D2C6B09C /* uxplay/byteutils.c in Sources */ = {
 			isa = PBXBuildFile;
 			fileRef = 791F6A6EF289E71AFAF00BEA /* uxplay/byteutils.c */;
-		};
-		46817C720F8EEBE0005CCDB9 /* WindowsRemoteProtocol.swift in Sources */ = {
-			isa = PBXBuildFile;
-			fileRef = 1F87AA02FBA87DFDD1266372 /* WindowsRemoteProtocol.swift */;
 		};
 		4821F1AF43AADB236B81CE31 /* MacKeys.swift in Sources */ = {
 			isa = PBXBuildFile;
@@ -315,10 +303,6 @@
 			isa = PBXBuildFile;
 			fileRef = A23E8E0D17DD7499BA6042D1 /* ServiceAdvertiser.swift */;
 		};
-		C4FC96BD669612E3DD95E75D /* TouchpadGestures.swift in Sources */ = {
-			isa = PBXBuildFile;
-			fileRef = E4ED64D8759866CAA1AF2425 /* TouchpadGestures.swift */;
-		};
 		CA682BC811DD9C0F9D4A3D91 /* TypingSyncTests.swift in Sources */ = {
 			isa = PBXBuildFile;
 			fileRef = 5AE6ACDDC44C727320E6D7B5 /* TypingSyncTests.swift */;
@@ -327,17 +311,9 @@
 			isa = PBXBuildFile;
 			fileRef = DED2DF1AA693BB813038C430 /* libplist/src/out-plutil.c */;
 		};
-		D297DE85145C7CB0BF0421F4 /* TouchpadGestures.swift in Sources */ = {
-			isa = PBXBuildFile;
-			fileRef = E4ED64D8759866CAA1AF2425 /* TouchpadGestures.swift */;
-		};
 		D2D70C22A5D36D8671D8FCF0 /* OpenSSL in Frameworks */ = {
 			isa = PBXBuildFile;
 			productRef = A06CE0A20C761D449A82BE71 /* OpenSSL */;
-		};
-		D2DF1B697E52A13BABD09919 /* WindowsRemoteProtocol.swift in Sources */ = {
-			isa = PBXBuildFile;
-			fileRef = 1F87AA02FBA87DFDD1266372 /* WindowsRemoteProtocol.swift */;
 		};
 		D4F0FDC005B83616896FD6D1 /* libplist/src/out-limd.c in Sources */ = {
 			isa = PBXBuildFile;
@@ -362,10 +338,6 @@
 		DF3C0899206003DFD73565F4 /* uxplay/airplay_video.c in Sources */ = {
 			isa = PBXBuildFile;
 			fileRef = E1BA2F3F2686C3E03F798010 /* uxplay/airplay_video.c */;
-		};
-		E2E226212B09886D2A4538D7 /* WindowsTouchpadView.swift in Sources */ = {
-			isa = PBXBuildFile;
-			fileRef = 67B6FC731593DC7DFAF1FF62 /* WindowsTouchpadView.swift */;
 		};
 		E41E3B97A1D508D96922D023 /* uxplay/pairing.c in Sources */ = {
 			isa = PBXBuildFile;
@@ -517,12 +489,6 @@
 			path = Fixtures.swift;
 			sourceTree = "<group>";
 		};
-		1F87AA02FBA87DFDD1266372 /* WindowsRemoteProtocol.swift */ = {
-			isa = PBXFileReference;
-			lastKnownFileType = sourcecode.swift;
-			path = WindowsRemoteProtocol.swift;
-			sourceTree = "<group>";
-		};
 		26ED4D03850022678A5CB0E7 /* MangoScreenCastApp.swift */ = {
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.swift;
@@ -610,12 +576,6 @@
 			path = "../android-tv/third_party/uxplay/lib/raop_rtp_mirror.c";
 			sourceTree = SOURCE_ROOT;
 		};
-		4982530C23C0D33F38B5CE56 /* WindowsRemote.swift */ = {
-			isa = PBXFileReference;
-			lastKnownFileType = sourcecode.swift;
-			path = WindowsRemote.swift;
-			sourceTree = "<group>";
-		};
 		4A96B3FC37E59453EE4CABBB /* ScreenGestures.swift */ = {
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.swift;
@@ -639,12 +599,6 @@
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.swift;
 			path = TypingSyncTests.swift;
-			sourceTree = "<group>";
-		};
-		60044EA6E4B9630597879D6C /* WindowsRemoteTests.swift */ = {
-			isa = PBXFileReference;
-			lastKnownFileType = sourcecode.swift;
-			path = WindowsRemoteTests.swift;
 			sourceTree = "<group>";
 		};
 		62ACD8E8FA86BEDB8655414A /* RemoteServer.swift */ = {
@@ -673,12 +627,6 @@
 			includeInIndex = 0;
 			path = MangoScreenCastTests.xctest;
 			sourceTree = BUILT_PRODUCTS_DIR;
-		};
-		67B6FC731593DC7DFAF1FF62 /* WindowsTouchpadView.swift */ = {
-			isa = PBXFileReference;
-			lastKnownFileType = sourcecode.swift;
-			path = WindowsTouchpadView.swift;
-			sourceTree = "<group>";
 		};
 		6957053C717BBEA0CE827742 /* libplist/src/bytearray.c */ = {
 			isa = PBXFileReference;
@@ -1046,12 +994,6 @@
 			path = "../android-tv/third_party/libplist/src/hashtable.c";
 			sourceTree = SOURCE_ROOT;
 		};
-		E4ED64D8759866CAA1AF2425 /* TouchpadGestures.swift */ = {
-			isa = PBXFileReference;
-			lastKnownFileType = sourcecode.swift;
-			path = TouchpadGestures.swift;
-			sourceTree = "<group>";
-		};
 		E73BDCB6F34904597AD9A580 /* uxplay/fairplay_playfair.c */ = {
 			isa = PBXFileReference;
 			lastKnownFileType = sourcecode.c.c;
@@ -1177,17 +1119,6 @@
 				A23E8E0D17DD7499BA6042D1 /* ServiceAdvertiser.swift */,
 			);
 			path = AirPlay;
-			sourceTree = "<group>";
-		};
-		3CAF456A4F850E13BB1BA7B6 /* Windows */ = {
-			isa = PBXGroup;
-			children = (
-				E4ED64D8759866CAA1AF2425 /* TouchpadGestures.swift */,
-				4982530C23C0D33F38B5CE56 /* WindowsRemote.swift */,
-				1F87AA02FBA87DFDD1266372 /* WindowsRemoteProtocol.swift */,
-				67B6FC731593DC7DFAF1FF62 /* WindowsTouchpadView.swift */,
-			);
-			path = Windows;
 			sourceTree = "<group>";
 		};
 		6F53C0A15EAA94B0BEE96B1F /* Shared */ = {
@@ -1321,7 +1252,6 @@
 				018BAB73A383D1F6DCE0DEC2 /* Remote */,
 				70252C5B07C05771F091BD46 /* Settings.swift */,
 				8CFEA836ED2AC03501E875D2 /* Views */,
-				3CAF456A4F850E13BB1BA7B6 /* Windows */,
 			);
 			path = MangoScreenCast;
 			sourceTree = "<group>";
@@ -1337,7 +1267,6 @@
 				AB47D7B76A7271F7744B263C /* RemoteProtocolTests.swift */,
 				D772BEC45BB7105ADD669D23 /* ScreenGesturesTests.swift */,
 				5AE6ACDDC44C727320E6D7B5 /* TypingSyncTests.swift */,
-				60044EA6E4B9630597879D6C /* WindowsRemoteTests.swift */,
 			);
 			path = MangoScreenCastTests;
 			sourceTree = "<group>";
@@ -1612,7 +1541,6 @@
 				B400EF52B489452D5FEABF68 /* RemoteProtocolTests.swift in Sources */,
 				1EBA1B34809A29E23D8E51D0 /* ScreenGesturesTests.swift in Sources */,
 				CA682BC811DD9C0F9D4A3D91 /* TypingSyncTests.swift in Sources */,
-				3BB8E38B3230EB034C3B7839 /* WindowsRemoteTests.swift in Sources */,
 				D6B417A17022AA043A69543A /* NalUnits.swift in Sources */,
 				3BA316D82E5B93655287C37F /* AudioCookie.swift in Sources */,
 				3749B09B9124D7649A9919A2 /* VideoRenderer.swift in Sources */,
@@ -1620,8 +1548,6 @@
 				4821F1AF43AADB236B81CE31 /* MacKeys.swift in Sources */,
 				D96D495CBD61EBB8FD31384C /* ScreenGestures.swift in Sources */,
 				3702E69272B6345A2563F86D /* TypingField.swift in Sources */,
-				D2DF1B697E52A13BABD09919 /* WindowsRemoteProtocol.swift in Sources */,
-				C4FC96BD669612E3DD95E75D /* TouchpadGestures.swift in Sources */,
 				F95F009F4E5640E58026C55A /* RemoteProtocol.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1650,10 +1576,6 @@
 				6D3E809906C5855DE7ABAA0C /* MirrorView.swift in Sources */,
 				1C275174E235C79E30B17168 /* RootView.swift in Sources */,
 				900A17B1B734EF23CF188E18 /* SettingsView.swift in Sources */,
-				D297DE85145C7CB0BF0421F4 /* TouchpadGestures.swift in Sources */,
-				3ED042A650728E0676A32E53 /* WindowsRemote.swift in Sources */,
-				46817C720F8EEBE0005CCDB9 /* WindowsRemoteProtocol.swift in Sources */,
-				E2E226212B09886D2A4538D7 /* WindowsTouchpadView.swift in Sources */,
 				0C63E9DF012714AAA30F9CCA /* RemoteProtocol.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

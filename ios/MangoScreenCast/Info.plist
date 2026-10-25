@@ -31,12 +31,9 @@
 		<string>_mangoremote._tcp</string>
 		<string>_mangopair._tcp</string>
 		<string>_mangolink._tcp</string>
-		<string>_mangowinctl._tcp</string>
-		<string>_mangowinpair._tcp</string>
-		<string>_mangowinlink._tcp</string>
 	</array>
 	<key>NSLocalNetworkUsageDescription</key>
-	<string>Mango Cast uses your local network so your Mac can find this device in Screen Mirroring and send its screen here, and so it can control a paired Mac or a Windows PC running Mango Screen Cast For Windows.</string>
+	<string>Mango Cast uses your local network so your Mac can find this device in Screen Mirroring and send its screen here, and so it can control a paired Mac.</string>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>audio</string>

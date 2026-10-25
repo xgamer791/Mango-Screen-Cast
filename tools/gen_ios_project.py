@@ -40,8 +40,7 @@ PLIST_SOURCES = ["base64.c", "bplist.c", "bytearray.c", "common.c", "hashtable.c
 # App sources the (host-less) unit tests compile too.
 TESTED_APP_SOURCES = ["Media/NalUnits.swift", "Media/AudioCookie.swift", "Media/VideoRenderer.swift",
                       "AirPlay/MirrorProfile.swift", "Remote/MacKeys.swift",
-                      "Remote/ScreenGestures.swift", "Remote/TypingField.swift",
-                      "Windows/WindowsRemoteProtocol.swift", "Windows/TouchpadGestures.swift"]
+                      "Remote/ScreenGestures.swift", "Remote/TypingField.swift"]
 
 FILE_TYPES = {
     ".swift": "sourcecode.swift",
