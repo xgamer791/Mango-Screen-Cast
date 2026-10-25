@@ -358,15 +358,20 @@ final class VideoRenderer {
     /// A picture of the screen's own shape fills it exactly. The sizes on
     /// offer can be a pixel or two off, which would leave a hairline bar, so
     /// within 1% it's filled (losing at most that pixel). Other shapes are
-    /// shown whole unless `fillsScreen`.
+    /// shown whole unless `fillsScreen` (and never cropped when it's the
+    /// other way round from the screen).
     private func updateGravity() {
         var sameShape = false
+        var turned = false
         if pictureSize.width > 0, pictureSize.height > 0, viewSize.width > 0, viewSize.height > 0 {
             let picture = pictureSize.width / pictureSize.height
             let view = viewSize.width / viewSize.height
             sameShape = abs(picture - view) / view < 0.01
+            // An upright picture on a screen turned sideways (or the other
+            // way): filling would cut off most of it, so it's shown whole.
+            turned = (picture > 1) != (view > 1)
         }
-        let gravity: AVLayerVideoGravity = fillsScreen || sameShape ? .resizeAspectFill : .resizeAspect
+        let gravity: AVLayerVideoGravity = (fillsScreen && !turned) || sameShape ? .resizeAspectFill : .resizeAspect
         if layer.videoGravity != gravity { layer.videoGravity = gravity }
     }
 

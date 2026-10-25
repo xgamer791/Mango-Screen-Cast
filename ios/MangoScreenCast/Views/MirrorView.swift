@@ -56,6 +56,9 @@ struct MirrorView: View {
                 if controlsVisible {
                     topBar.transition(.move(edge: .top).combined(with: .opacity))
                 }
+                if turnedAround {
+                    turnedHint.transition(.opacity)
+                }
                 if controlsVisible && !remote.isConnected && !demo {
                     setupHint.transition(.opacity)
                 }
@@ -217,6 +220,35 @@ struct MirrorView: View {
         .padding(.trailing, 10)
         .padding(.vertical, 10)
         .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+    }
+
+    /// The device was turned after the Mac connected, so the Mac's display is
+    /// the other way round (and shows whole, small, rather than cut off).
+    private var turnedAround: Bool {
+        guard !demo, let stats, stats.width > 0, stats.height > 0 else { return false }
+        return (stats.width > stats.height) != Receiver.isLandscape()
+    }
+
+    private var turnedHint: some View {
+        let sideways = Receiver.isLandscape()
+        return HStack(spacing: 12) {
+            Image(systemName: "rotate.right.fill")
+                .foregroundColor(Theme.mango)
+            Text(sideways ? "Turned sideways: \(receiver.status.clientName ?? "the Mac") still has an upright display here. Reconnect to get a sideways one that fills the screen."
+                          : "Turned upright: \(receiver.status.clientName ?? "the Mac") still has a sideways display here. Reconnect to get an upright one that fills the screen.")
+                .font(.subheadline.weight(.semibold))
+                .fixedSize(horizontal: false, vertical: true)
+            Spacer(minLength: 8)
+            Button(sideways ? "Reconnect sideways" : "Reconnect upright") { receiver.reconnectForCurrentShape() }
+                .buttonStyle(.borderedProminent)
+                .tint(Theme.mango)
+                .foregroundColor(.black)
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 10)
+        .frame(maxWidth: 640)
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .accessibilityIdentifier("turnedHint")
     }
 
     /// Taps only click on the Mac with Mango Cast Remote running there; until

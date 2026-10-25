@@ -90,7 +90,9 @@ final class Receiver: ObservableObject {
         if settings.resolutionOnTrial && settings.resolutionTrialInUse {
             // The app stopped while mirroring at a size on trial: don't
             // start with it again. (No window yet, so no sizes in the text.)
-            settings.resolutionScale = settings.confirmedResolutionScale
+            for landscape in [false, true] {
+                settings.setResolutionScale(settings.confirmedResolutionScale(landscape: landscape), landscape: landscape)
+            }
             settings.resolutionTrialInUse = false
             notice = "Mango Cast closed while trying a new picture size, so it went back to the last one that worked."
             log(notice!)
@@ -157,16 +159,36 @@ final class Receiver: ObservableObject {
         heartbeat = timer
     }
 
-    /// The most this device can show, in the shape of its screen as it's
-    /// held right now.
-    func currentProfile(scale: Int? = nil) -> MirrorProfile {
-        MirrorProfile.make(screen: Self.screenPixels(), landscape: Self.isLandscape(), hevc: Self.hevcSupported,
-                           scale: scale ?? settings.resolutionScale)
+    /// What's offered with the device held upright or sideways (by default,
+    /// the way it's held now), at the size picked for that way round.
+    func currentProfile(scale: Int? = nil, landscape: Bool? = nil) -> MirrorProfile {
+        let sideways = landscape ?? Self.isLandscape()
+        return MirrorProfile.make(screen: Self.screenPixels(), landscape: sideways, hevc: Self.hevcSupported,
+                                  scale: scale ?? settings.resolutionScale(landscape: sideways))
     }
 
-    /// Every size on offer for the screen as it's held now, largest first.
-    func resolutionChoices() -> [MirrorProfile] {
-        MirrorProfile.choices(screen: Self.screenPixels(), landscape: Self.isLandscape(), hevc: Self.hevcSupported)
+    /// Every size on offer held upright or sideways, largest first.
+    func resolutionChoices(landscape: Bool) -> [MirrorProfile] {
+        MirrorProfile.choices(screen: Self.screenPixels(), landscape: landscape, hevc: Self.hevcSupported)
+    }
+
+    /// Which way round the size being offered is (and so the shape of a Mac's
+    /// display connected now).
+    var offeredLandscape: Bool {
+        guard let profile = status.profile else { return Self.isLandscape() }
+        return profile.screenWidth > profile.screenHeight
+    }
+
+    /// The device was turned while a Mac shows it the other way round: offer
+    /// the new shape (whoever's connected is disconnected, and connects again
+    /// to get a display that fills the screen this way).
+    func reconnectForCurrentShape() {
+        guard running else { return }
+        let who = status.clientName
+        log("turned; offering \(currentProfile().sizeText) instead")
+        notice = "Ready for \(Self.isLandscape() ? "sideways" : "upright"): on \(who ?? "your Mac"), choose “\(settings.receiverName)” in Screen Mirroring again."
+        endCheck()
+        restart()
     }
 
     // MARK: - Trying a picture size (main thread)
@@ -175,50 +197,63 @@ final class Receiver: ObservableObject {
     /// the next time a device mirrors, the person is asked to keep it, and
     /// if they don't, or the picture doesn't work, it goes back to the last
     /// size that did. Full size is always safe to go back to.
-    func setResolution(scale: Int) {
-        let current = settings.resolutionScale
+    func setResolution(scale: Int, landscape: Bool) {
+        let current = settings.resolutionScale(landscape: landscape)
         guard scale != current else { return }
-        if !settings.resolutionOnTrial { settings.confirmedResolutionScale = current }
-        settings.resolutionScale = scale
-        if scale == 100 { settings.confirmedResolutionScale = 100 }
+        if !settings.resolutionOnTrial(landscape: landscape) {
+            settings.setConfirmedResolutionScale(current, landscape: landscape)
+        }
+        settings.setResolutionScale(scale, landscape: landscape)
+        // Full size and this device's default are always safe to go back to.
+        if scale == 100 || scale == Settings.defaultResolutionScale {
+            settings.setConfirmedResolutionScale(scale, landscape: landscape)
+        }
         settings.resolutionTrialInUse = false
         endCheck()
         notice = nil
-        if settings.resolutionOnTrial {
-            log("trying \(currentProfile().sizeText); last kept size \(currentProfile(scale: settings.confirmedResolutionScale).sizeText)")
+        let way = landscape ? "sideways" : "upright"
+        if settings.resolutionOnTrial(landscape: landscape) {
+            let kept = settings.confirmedResolutionScale(landscape: landscape)
+            log("trying \(currentProfile(landscape: landscape).sizeText) \(way); last kept size \(currentProfile(scale: kept, landscape: landscape).sizeText)")
         }
-        restart()
+        // The other way round is offered the next time the device is held so.
+        if landscape == offeredLandscape { restart() }
     }
 
     func keepResolution() {
-        guard settings.resolutionOnTrial else { return }
-        settings.confirmedResolutionScale = settings.resolutionScale
+        let landscape = offeredLandscape
+        guard settings.resolutionOnTrial(landscape: landscape) else { return }
+        settings.setConfirmedResolutionScale(settings.resolutionScale(landscape: landscape), landscape: landscape)
         settings.resolutionTrialInUse = false
-        log("kept \(currentProfile().sizeText)")
+        log("kept \(currentProfile(landscape: landscape).sizeText)")
         endCheck()
     }
 
-    /// Goes back to the last size that worked. `reason` starts the notice
-    /// shown on the home screen.
-    func revertResolution(because reason: String? = nil) {
-        guard settings.resolutionOnTrial else { return }
-        let tried = currentProfile()
-        settings.resolutionScale = settings.confirmedResolutionScale
+    /// Goes back to the last size that worked held that way round (by
+    /// default, the way of the size being offered). `reason` starts the
+    /// notice shown on the home screen.
+    func revertResolution(because reason: String? = nil, landscape: Bool? = nil) {
+        let sideways = landscape ?? offeredLandscape
+        guard settings.resolutionOnTrial(landscape: sideways) else { return }
+        let tried = currentProfile(landscape: sideways)
+        settings.setResolutionScale(settings.confirmedResolutionScale(landscape: sideways), landscape: sideways)
         settings.resolutionTrialInUse = false
         endCheck()
-        let back = currentProfile()
+        let back = currentProfile(landscape: sideways)
         let text = "\(reason ?? "Didn’t keep \(tried.sizeText)"), so Mango Cast went back to \(back.sizeText)."
         notice = text
         log(text)
-        restart()
+        if sideways == offeredLandscape { restart() }
     }
 
     /// Mirroring started: if the size is on trial, watch it.
     private func beginCheck() {
-        guard settings.resolutionOnTrial, resolutionCheck == nil else { return }
+        let landscape = offeredLandscape
+        guard settings.resolutionOnTrial(landscape: landscape), resolutionCheck == nil else { return }
         settings.resolutionTrialInUse = true
-        resolutionCheck = ResolutionCheck(trying: status.profile ?? currentProfile(),
-                                          previous: currentProfile(scale: settings.confirmedResolutionScale))
+        resolutionCheck = ResolutionCheck(
+            trying: status.profile ?? currentProfile(landscape: landscape),
+            previous: currentProfile(scale: settings.confirmedResolutionScale(landscape: landscape), landscape: landscape))
         checkStarted = Date()
         checkTimer?.invalidate()
         checkTimer = Timer.scheduledTimer(withTimeInterval: 1, repeats: true) { [weak self] _ in self?.tickCheck() }
@@ -240,8 +275,10 @@ final class Receiver: ObservableObject {
         }
     }
 
-    /// Mirroring ended. A size on trial that wasn't kept goes back.
+    /// Mirroring ended. A size on trial that wasn't kept goes back, and if
+    /// the device was turned meanwhile, the next Mac gets the new shape.
     private func sessionEnded() {
+        screenShapeChanged()
         guard let check = resolutionCheck else { return }
         revertResolution(because: "Mirroring stopped before \(check.trying.sizeText) was kept")
     }
@@ -572,7 +609,7 @@ final class Receiver: ObservableObject {
             lines.append("Screen: \(p.screenWidth)x\(p.screenHeight)")
         }
         let device = UIDevice.current
-        lines.append("Device: \(Self.modelIdentifier()), \(device.systemName) \(device.systemVersion)")
+        lines.append("Device: \(Device.model), \(device.systemName) \(device.systemVersion)")
         let info = Bundle.main.infoDictionary
         lines.append("App: \(info?["CFBundleShortVersionString"] as? String ?? "?") (\(info?["CFBundleVersion"] as? String ?? "?"))")
         lines.append("Hardware HEVC decoding: \(Self.hevcSupported ? "yes" : "no")")
@@ -613,13 +650,5 @@ final class Receiver: ObservableObject {
         let url = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)[0]
         try? FileManager.default.createDirectory(at: url, withIntermediateDirectories: true)
         return url
-    }
-
-    private static func modelIdentifier() -> String {
-        var info = utsname()
-        uname(&info)
-        return withUnsafeBytes(of: &info.machine) { raw in
-            String(decoding: raw.prefix { $0 != 0 }, as: UTF8.self)
-        }
     }
 }

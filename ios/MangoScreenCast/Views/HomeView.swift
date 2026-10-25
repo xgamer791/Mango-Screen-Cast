@@ -41,9 +41,11 @@ struct HomeView: View {
                                 .buttonStyle(.bordered)
                                 .tint(Theme.textSecondary)
                         }
-                    } else if settings.resolutionOnTrial {
+                    } else if settings.resolutionOnTrial(landscape: receiver.offeredLandscape) {
+                        let landscape = receiver.offeredLandscape
+                        let kept = settings.confirmedResolutionScale(landscape: landscape)
                         Banner(systemImage: "rectangle.dashed",
-                               text: "Trying \(receiver.currentProfile().sizeText). Mirror from your Mac to see it; you’ll be asked to keep it, or it goes back to \(receiver.currentProfile(scale: settings.confirmedResolutionScale).sizeText).") {
+                               text: "Trying \(receiver.currentProfile(landscape: landscape).sizeText). Mirror from your Mac to see it; you’ll be asked to keep it, or it goes back to \(receiver.currentProfile(scale: kept, landscape: landscape).sizeText).") {
                             Button("Go back") { receiver.revertResolution() }
                                 .buttonStyle(.bordered)
                                 .tint(Theme.textSecondary)
@@ -226,9 +228,11 @@ struct HomeView: View {
                 Text(verbatim: "Offering \(profile.sizeText)\(profile.scale == 100 ? "" : " (\(profile.scale)%)") · "
                      + "\(profile.maxFps) fps · \(profile.codecs)   ·   Screen \(profile.screenWidth) × \(profile.screenHeight)")
                     .fixedSize(horizontal: false, vertical: true)
-                // Always one tap back to the size every device handles best.
-                if settings.resolutionScale != 100 {
-                    Button("Back to full resolution") { receiver.setResolution(scale: 100) }
+                // Always one tap back to the size this device starts with.
+                if settings.resolutionScale(landscape: receiver.offeredLandscape) != Settings.defaultResolutionScale {
+                    Button("Back to the default resolution") {
+                        receiver.setResolution(scale: Settings.defaultResolutionScale, landscape: receiver.offeredLandscape)
+                    }
                         .font(.footnote.weight(.semibold))
                         .foregroundColor(Theme.mango)
                 }

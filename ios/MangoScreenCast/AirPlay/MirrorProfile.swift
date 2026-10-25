@@ -26,13 +26,13 @@ struct MirrorProfile: Equatable {
     var sizeText: String { "\(width) × \(height)" }
 
     /// The steps offered, as percent of the full size.
-    static let scales = [100, 90, 80, 75, 66, 60, 50]
+    static let scales = [100, 95, 90, 85, 80, 75, 70, 66, 60, 55, 50, 45, 40]
 
     /// - Parameters:
     ///   - screen: the screen's size in pixels, either orientation.
     ///   - landscape: whether the device is held in landscape.
     ///   - hevc: whether the device decodes HEVC in hardware.
-    ///   - scale: percent of the full size, 50 to 100.
+    ///   - scale: percent of the full size, 40 to 100.
     static func make(screen: CGSize, landscape: Bool, hevc: Bool, scale: Int = 100) -> MirrorProfile {
         let longSide = Int(max(screen.width, screen.height).rounded())
         let shortSide = Int(min(screen.width, screen.height).rounded())

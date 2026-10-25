@@ -9,7 +9,23 @@ final class Settings: ObservableObject {
 
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
+        // The iPad (9th generation)'s default became 810 × 1080: a size kept
+        // from before then goes, once, so it starts there too.
+        if Self.defaultResolutionScale != 100 && !defaults.bool(forKey: Keys.defaultScaleApplied) {
+            for key in [Keys.scale, Keys.confirmedScale, Keys.trialInUse, Keys.oldResolution, Keys.scale(false),
+                        Keys.scale(true), Keys.confirmed(false), Keys.confirmed(true)] {
+                defaults.removeObject(forKey: key)
+            }
+            defaults.set(true, forKey: Keys.defaultScaleApplied)
+        }
     }
+
+    /// The picture size offered unless another is picked, as percent of the
+    /// full size, both ways round: full, except on the iPad (9th generation),
+    /// where it's half, 810 × 1080 upright and 1080 × 810 sideways: its
+    /// screen's size in points. Nothing is saved for it, so a new install
+    /// starts there too.
+    static let defaultResolutionScale = ["iPad12,1", "iPad12,2"].contains(Device.model) ? 50 : 100
 
     static var defaultName: String {
         UIDevice.current.userInterfaceIdiom == .pad ? "Mango Cast iPad" : "Mango Cast iPhone"
@@ -28,25 +44,38 @@ final class Settings: ObservableObject {
         set { change(Keys.name, String(newValue.trimmingCharacters(in: .whitespacesAndNewlines).prefix(60))) }
     }
 
-    /// The picture size offered, as percent of full (see MirrorProfile.scales).
-    /// 100, the screen's own pixels, unless changed.
-    var resolutionScale: Int {
-        get {
-            if let scale = defaults.object(forKey: Keys.scale) as? Int { return scale }
-            // Earlier versions had a "1080p" choice; about two thirds is closest.
-            return defaults.string(forKey: Keys.oldResolution) == "hd1080" ? 66 : 100
-        }
-        set { change(Keys.scale, newValue) }
+    /// The picture size offered with the device held upright (portrait) or
+    /// sideways (landscape), as percent of full (see MirrorProfile.scales).
+    /// Each way has its own: a Mac's display takes the shape the device has
+    /// when it connects. `defaultResolutionScale` unless changed.
+    func resolutionScale(landscape: Bool) -> Int {
+        if let scale = defaults.object(forKey: Keys.scale(landscape)) as? Int { return scale }
+        // Earlier versions had one size for both ways, and before that a "1080p" choice.
+        if let scale = defaults.object(forKey: Keys.scale) as? Int { return scale }
+        return defaults.string(forKey: Keys.oldResolution) == "hd1080" ? 66 : Self.defaultResolutionScale
     }
 
-    /// The last picture size that was kept (or never in question). A
+    func setResolutionScale(_ scale: Int, landscape: Bool) {
+        change(Keys.scale(landscape), scale)
+    }
+
+    /// The last size kept that way round (or never in question). A
     /// different `resolutionScale` is on trial until it's kept.
-    var confirmedResolutionScale: Int {
-        get { defaults.object(forKey: Keys.confirmedScale) as? Int ?? resolutionScale }
-        set { change(Keys.confirmedScale, newValue) }
+    func confirmedResolutionScale(landscape: Bool) -> Int {
+        if let scale = defaults.object(forKey: Keys.confirmed(landscape)) as? Int { return scale }
+        if let scale = defaults.object(forKey: Keys.confirmedScale) as? Int { return scale }
+        return resolutionScale(landscape: landscape)
     }
 
-    var resolutionOnTrial: Bool { resolutionScale != confirmedResolutionScale }
+    func setConfirmedResolutionScale(_ scale: Int, landscape: Bool) {
+        change(Keys.confirmed(landscape), scale)
+    }
+
+    func resolutionOnTrial(landscape: Bool) -> Bool {
+        resolutionScale(landscape: landscape) != confirmedResolutionScale(landscape: landscape)
+    }
+
+    var resolutionOnTrial: Bool { resolutionOnTrial(landscape: false) || resolutionOnTrial(landscape: true) }
 
     /// A mirroring session started with a size on trial and hasn't ended.
     /// Still set at launch means the app stopped mid-trial.
@@ -131,5 +160,22 @@ final class Settings: ObservableObject {
         static let background = "runInBackground"
         static let pictureInPicture = "pictureInPicture"
         static let deviceId = "deviceId"
+        static func scale(_ landscape: Bool) -> String { landscape ? "resolutionScaleLandscape" : "resolutionScalePortrait" }
+        static func confirmed(_ landscape: Bool) -> String {
+            landscape ? "confirmedResolutionScaleLandscape" : "confirmedResolutionScalePortrait"
+        }
+        static let defaultScaleApplied = "defaultScale810x1080"
     }
+}
+
+enum Device {
+    /// The model, such as "iPad12,1" (in the simulator, the one simulated).
+    static let model: String = {
+        if let simulated = ProcessInfo.processInfo.environment["SIMULATOR_MODEL_IDENTIFIER"] { return simulated }
+        var info = utsname()
+        uname(&info)
+        return withUnsafeBytes(of: &info.machine) { raw in
+            String(decoding: raw.prefix { $0 != 0 }, as: UTF8.self)
+        }
+    }()
 }

@@ -36,7 +36,7 @@ final class MirrorProfileTests: XCTestCase {
         XCTAssertEqual(size(classic, 75), [1616, 1212])
         XCTAssertEqual(size(pro13, 50), [1376, 1032])
         // Out-of-range values are clamped.
-        XCTAssertEqual(size(air, 30), size(air, 50))
+        XCTAssertEqual(size(air, 30), size(air, 40))
         XCTAssertEqual(size(air, 120), [2360, 1640])
         // Without HEVC the full size is about 1080p, same shape.
         XCTAssertEqual(size(air, hevc: false, 100), [1554, 1080])
@@ -58,12 +58,23 @@ final class MirrorProfileTests: XCTestCase {
                 }
             }
         }
-        XCTAssertEqual(MirrorProfile.choices(screen: air, landscape: true, hevc: true).count, 7)
+        XCTAssertEqual(MirrorProfile.choices(screen: air, landscape: true, hevc: true).count, MirrorProfile.scales.count)
     }
 
     func testFitKeepsTheShapeAndEvenSizes() {
         XCTAssertTrue(MirrorProfile.fit(4000, 3000, within: 3840, 2160) == (2880, 2160))
         XCTAssertTrue(MirrorProfile.fit(2361, 1641, within: 3840, 2160) == (2360, 1640))
         XCTAssertTrue(MirrorProfile.fit(0, 0, within: 3840, 2160) == (1920, 1080))
+    }
+
+    /// The iPad (9th generation) starts at half size: its screen in points.
+    func testHalfOfANinthGenerationIPadIs810By1080() {
+        let screen = CGSize(width: 1620, height: 2160)
+        let portrait = MirrorProfile.make(screen: screen, landscape: false, hevc: true, scale: 50)
+        XCTAssertEqual([portrait.width, portrait.height], [810, 1080])
+        let landscape = MirrorProfile.make(screen: screen, landscape: true, hevc: true, scale: 50)
+        XCTAssertEqual([landscape.width, landscape.height], [1080, 810])
+        XCTAssertTrue(MirrorProfile.choices(screen: screen, landscape: false, hevc: true)
+            .contains { $0.width == 810 && $0.height == 1080 })
     }
 }
