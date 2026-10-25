@@ -35,7 +35,7 @@
         android:includeFontPadding="false"
         android:maxLines="1"
         android:textColor="#FFFFFF"
-        android:textSize="44sp" />
+        android:textSize="35.4375sp" />
 
     <TextView
         android:id="@+id/subtitle"
