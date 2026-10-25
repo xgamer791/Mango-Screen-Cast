@@ -49,13 +49,6 @@ class HomeLayoutTest {
     }
 
     @Test
-    fun readyNextToTheTvsOwnAirPlay() = check("two-receivers") { root ->
-        ready(root)
-        root.text(R.id.status_detail, root.context.getString(R.string.status_ready_detail_other, name, "Master Bedroom TV"))
-        root.text(R.id.update_status, root.context.getString(R.string.version_label, "1.2.0"))
-    }
-
-    @Test
     fun connected() = check("connected") { root ->
         ready(root)
         root.text(R.id.status, root.context.getString(R.string.status_connected, "Christopher’s MacBook Air"))
@@ -69,6 +62,7 @@ class HomeLayoutTest {
         ready(root)
         root.text(R.id.status, root.context.getString(R.string.status_failed))
         root.findViewById<TextView>(R.id.subtitle).visibility = View.GONE
+        root.findViewById<TextView>(R.id.status_detail).visibility = View.VISIBLE
         root.text(R.id.status_detail, "Couldn't announce the TV on the network. Check that the TV is on Wi-Fi or Ethernet.")
         root.text(R.id.update_status,
             "Couldn't check for updates (Unable to resolve host \"github.com\": No address associated with hostname)")
@@ -82,8 +76,7 @@ class HomeLayoutTest {
         val c = root.context
         root.text(R.id.status, c.getString(R.string.status_ready))
         root.text(R.id.subtitle, c.getString(R.string.ready_subtitle))
-        root.text(R.id.status_detail, c.getString(R.string.status_ready_detail, name))
-        root.text(R.id.capability, c.getString(R.string.capability, "4K", 3840, 2160, 60, "HEVC + H.264", 3840, 2160))
+        root.findViewById<TextView>(R.id.status_detail).visibility = View.GONE
     }
 
     private fun check(label: String, fill: (View) -> Unit) {

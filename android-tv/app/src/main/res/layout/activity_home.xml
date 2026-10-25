@@ -50,7 +50,7 @@
         android:textColor="#FFFFFF"
         android:textSize="31sp" />
 
-    <!-- Which name to pick, or what a connected device is doing. -->
+    <!-- Only when something needs saying: a lost connection, or why AirPlay isn't running. -->
     <TextView
         android:id="@+id/status_detail"
         android:layout_width="wrap_content"
@@ -87,7 +87,7 @@
         android:layout_width="840dp"
         android:layout_height="112dp"
         android:layout_marginStart="60dp"
-        android:layout_marginTop="250dp"
+        android:layout_marginTop="244dp"
         android:background="@drawable/glass_strip"
         android:baselineAligned="false"
         android:orientation="horizontal">
@@ -174,7 +174,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="60dp"
-        android:layout_marginTop="384dp"
+        android:layout_marginTop="380dp"
         android:fontFamily="@font/geist_semibold"
         android:includeFontPadding="false"
         android:text="@string/supported_devices"
@@ -186,7 +186,7 @@
         android:layout_width="840dp"
         android:layout_height="56dp"
         android:layout_marginStart="60dp"
-        android:layout_marginTop="420dp"
+        android:layout_marginTop="416dp"
         android:baselineAligned="false"
         android:orientation="horizontal">
 
@@ -259,27 +259,13 @@
         </FrameLayout>
     </LinearLayout>
 
-    <!-- The band under the tiles: what the TV offers, and the app version. -->
-    <TextView
-        android:id="@+id/capability"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="60dp"
-        android:layout_marginTop="494dp"
-        android:ellipsize="end"
-        android:fontFamily="@font/geist_regular"
-        android:includeFontPadding="false"
-        android:maxLines="1"
-        android:maxWidth="560dp"
-        android:textColor="#B3FFFFFF"
-        android:textSize="14sp" />
-
+    <!-- Under the tiles: the app version, or an update's progress. -->
     <TextView
         android:id="@+id/update_status"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="top|end"
-        android:layout_marginTop="494dp"
+        android:layout_marginTop="490dp"
         android:layout_marginEnd="60dp"
         android:ellipsize="end"
         android:fontFamily="@font/geist_regular"

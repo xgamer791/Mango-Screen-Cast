@@ -81,8 +81,7 @@ cd Mango-Screen-Cast/android-tv
 
 ## Use
 
-1. Open **Mango Screen Cast For macOS/iOS** on the TV. It shows *Ready to Cast* and the
-   name to look for.
+1. Open **Mango Screen Cast For macOS/iOS** on the TV. It shows *Ready to Cast*.
 2. On a **Mac**: Control Center → Screen Mirroring → your TV. To extend the
    desktop instead of mirroring it, choose **Use As Separate Display**. No
    code is needed. On macOS 26, Screen Mirroring can be removed from Control
@@ -95,9 +94,9 @@ cd Mango-Screen-Cast/android-tv
    **Two names for one TV?** Hisense, Sony and some other Android TVs have
    Apple's AirPlay built in, listed under the TV's own name (*Master Bedroom
    TV*, say). That one mirrors at 1080p. Pick the app's name for the full
-   picture; the TV's home screen says so whenever it sees the other one. To
-   hide the TV's own entry, turn AirPlay off in the TV's settings (*Apple
-   AirPlay and HomeKit*).
+   picture; Settings → Diagnostics lists the other one whenever the TV sees
+   it. To hide the TV's own entry, turn AirPlay off in the TV's settings
+   (*Apple AirPlay and HomeKit*).
 4. To stop: stop mirroring on the Apple device, or press **Back twice** on the
    TV remote. Press **OK** while mirroring to show live stats (resolution,
    fps, decode time).

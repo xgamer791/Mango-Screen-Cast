@@ -10,9 +10,6 @@
     <string name="status_starting">Starting…</string>
     <string name="status_ready">Ready to Cast</string>
     <string name="ready_subtitle">Get started by connecting\nyour devices to the TV</string>
-    <string name="status_ready_detail">Pick “%1$s” in Screen Mirroring.</string>
-    <!-- Shown instead when the TV's built-in AirPlay is on too, under the TV's own name. -->
-    <string name="status_ready_detail_other">Pick “%1$s” in Screen Mirroring, not “%2$s”: that one is the TV’s own AirPlay, and it mirrors at 1080p.</string>
     <string name="status_connected">%1$s is connected</string>
     <string name="status_connected_detail">Start Screen Mirroring on it to show its screen here.</string>
     <string name="status_mirroring">Mirroring %1$s</string>
@@ -25,7 +22,6 @@
     <string name="step_cast_body">Tap to connect and\nstart casting</string>
     <string name="supported_devices">Supported Devices</string>
     <string name="more_devices">+More</string>
-    <string name="capability">Up to %1$s · %2$d × %3$d · %4$d fps · %5$s   ·   TV screen %6$d × %7$d</string>
     <string name="settings">Settings</string>
 
     <!-- Player -->

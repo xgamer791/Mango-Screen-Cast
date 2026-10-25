@@ -20,7 +20,6 @@ class HomeActivity : Activity(), AirPlayReceiver.Listener, AppUpdater.Listener {
     private lateinit var statusView: TextView
     private lateinit var subtitleView: TextView
     private lateinit var detailView: TextView
-    private lateinit var capabilityView: TextView
     private lateinit var updateStatus: TextView
     private lateinit var updateButton: Button
 
@@ -42,7 +41,6 @@ class HomeActivity : Activity(), AirPlayReceiver.Listener, AppUpdater.Listener {
         statusView = findViewById(R.id.status)
         subtitleView = findViewById(R.id.subtitle)
         detailView = findViewById(R.id.status_detail)
-        capabilityView = findViewById(R.id.capability)
         updateStatus = findViewById(R.id.update_status)
         updateButton = findViewById(R.id.update_button)
         updateButton.setOnClickListener {
@@ -83,16 +81,10 @@ class HomeActivity : Activity(), AirPlayReceiver.Listener, AppUpdater.Listener {
         val name = status.tvName.ifBlank { MangoApp.settings.tvName }
         val client = status.clientName ?: getString(R.string.a_device)
 
-        // Headline, the big line under it, and the small line under that.
+        // Headline, the big line under it, and the small line under that (blank unless something needs saying).
         val (title, subtitle, detail) = when (status.state) {
             State.STOPPED, State.STARTING -> Triple(getString(R.string.status_starting), "", "")
-            State.READY -> Triple(
-                getString(R.string.status_ready),
-                getString(R.string.ready_subtitle),
-                // Next to the TV's own AirPlay, say which of the two names is this one.
-                status.otherReceiver?.let { getString(R.string.status_ready_detail_other, name, it.name) }
-                    ?: getString(R.string.status_ready_detail, name),
-            )
+            State.READY -> Triple(getString(R.string.status_ready), getString(R.string.ready_subtitle), "")
             State.CONNECTED -> Triple(
                 getString(R.string.status_connected, client), getString(R.string.status_connected_detail), "",
             )
@@ -108,12 +100,6 @@ class HomeActivity : Activity(), AirPlayReceiver.Listener, AppUpdater.Listener {
 
         // Something that waited for the TV to be free can go ahead now.
         if (status.state == State.READY) updater.checkIfDue()
-
-        val profile = status.profile
-        capabilityView.text = if (profile == null) "" else getString(
-            R.string.capability, profile.sizeName, profile.width, profile.height, profile.maxFps, profile.codecs,
-            profile.panel.width, profile.panel.height,
-        )
     }
 
     override fun onUpdateState(state: AppUpdater.State) {
