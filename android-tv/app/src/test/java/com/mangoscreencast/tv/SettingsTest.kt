@@ -53,20 +53,20 @@ class SettingsTest {
     }
 
     @Test
-    fun resolutionIs720pByDefault() {
-        assertEquals(ResolutionSetting.HD_720, Settings(context).resolution)
+    fun resolutionIsAutoByDefault() {
+        assertEquals(ResolutionSetting.AUTO, Settings(context).resolution)
     }
 
     @Test
-    fun anyResolutionSavedBeforeTheNewDefaultBecomes720p() {
-        for (old in listOf("AUTO", "UHD_2160", "QHD_1440", "FHD_1080")) {
+    fun anyResolutionSavedBeforeGoesBackToAutoOnce() {
+        for (old in listOf("HD_720", "UHD_2160", "QHD_1440", "FHD_1080")) {
             prefs.edit().clear().putString("resolution", old).commit()
-            assertEquals(old, ResolutionSetting.HD_720, Settings(context).resolution)
+            assertEquals(old, ResolutionSetting.AUTO, Settings(context).resolution)
         }
     }
 
     @Test
-    fun aResolutionChosenNowIsKept() {
+    fun aResolutionChosenAfterIsKept() {
         for (chosen in ResolutionSetting.entries) {
             Settings(context).resolution = chosen
             assertEquals(chosen, Settings(context).resolution)
@@ -74,7 +74,7 @@ class SettingsTest {
     }
 
     @Test
-    fun settingsCyclesResolutionsFromAutoTo720p() {
-        assertEquals(listOf("AUTO", "UHD_2160", "QHD_1440", "FHD_1080", "HD_720"), ResolutionSetting.entries.map { it.name })
+    fun settingsCyclesResolutionsFromAuto() {
+        assertEquals(listOf("AUTO", "UHD_2160", "QHD_1440", "FHD_1080"), ResolutionSetting.entries.map { it.name })
     }
 }

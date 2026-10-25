@@ -92,8 +92,8 @@ cd Mango-Screen-Cast/android-tv
 | Setting | What it does |
 |---|---|
 | TV name | The name Apple devices show. *Mango Screen Cast For macOS/iOS* unless you change it. |
-| Resolution | *720p* (1280 × 720, default), *Auto* (the most the TV can decode, up to 4K), *4K*, *2K* (1440p) or *1080p*. |
-| Frame rate | The most frames per second Apple devices may send: *120 fps* (default), *60 fps* or *30 fps*. 120 needs a 120 Hz mode on the TV's screen and a decoder rated for it; a TV without them offers 60. With Resolution on Auto the picture shrinks (usually to 1440p) until the decoder is rated for 120; choose *60 fps* to keep 4K on such a TV. Apple devices treat this as an upper limit and may still send 60; *Show stats* shows what arrives. |
+| Resolution | *Auto* (default) offers the TV's own resolution: 4K on a 4K TV, as long as its video decoder takes 4K. Macs, iPhones and iPads size their picture to fit it (on a Mac, System Settings → Displays changes the size of the TV's display). You can also pick *4K*, *2K* (1440p) or *1080p*. |
+| Frame rate | The most frames per second Apple devices may send: *120 fps* (default), *60 fps* or *30 fps*. 120 needs a 120 Hz mode on the TV's screen and a decoder rated for it; a TV without them offers 60. The resolution comes first: if the decoder isn't rated for 120 at that size, the TV offers 60 (pick a smaller Resolution to get 120). Apple devices treat this as an upper limit and may still send 60; *Show stats* shows what arrives. |
 | Frame pacing | *Balanced* (default) shows each frame right away, one per screen refresh. *Fastest* shows frames the moment they're decoded. *Smoothest* holds one frame back to absorb Wi-Fi jitter. |
 | iPhone in landscape | *Fill the screen* (default) or *Fit whole picture*. iPhones are wider than a TV, so the whole picture leaves black bars above and below; Fill zooms in to cover the TV and cuts off the left and right edges (a 16:9 video then fills the TV exactly). Mac screens and portrait phones are never cropped. While mirroring, press **Up** or **Down** to switch. |
 | Sound | Play the device's audio on the TV. |
@@ -116,9 +116,7 @@ is held, and takes the whole screen (no Split View).
 sideways: its native pixel count (for example 2160 × 1620 on a 10.2-inch iPad,
 2360 × 1640 on an iPad Air, 2752 × 2064 on a 13-inch iPad Pro), with HEVC. So a
 separate display fills the screen edge to edge at full sharpness. Macs that
-can't send HEVC (Intel Macs) get the same shape at about 1080p. On the iPad
-(9th generation) it starts at half, 1080 × 810; pick **Native** for the full
-2160 × 1620.
+can't send HEVC (Intel Macs) get the same shape at about 1080p.
 
 To find a sweet spot, Settings → **Resolution** lists sizes above **Native**,
 every 5% up to the largest HEVC allows at 4K's height (2880 × 2160, 133%, on a

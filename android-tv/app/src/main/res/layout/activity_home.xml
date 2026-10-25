@@ -38,7 +38,7 @@
                 android:textSize="32sp"
                 android:textStyle="bold" />
 
-            <!-- Which devices this app is for, so it isn't mistaken for Mango Screen Cast For Windows. -->
+            <!-- Which devices this app is for. -->
             <TextView
                 android:id="@+id/brand_platform"
                 android:layout_width="wrap_content"

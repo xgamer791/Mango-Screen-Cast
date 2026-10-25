@@ -116,7 +116,7 @@ final class MirrorProfileTests: XCTestCase {
         XCTAssertEqual(pro.prefix(2).map { [$0.width, $0.height] }, [[2880, 2160], [2752, 2064]])
     }
 
-    /// The iPad (9th generation) starts at half size: its screen in points.
+    /// Half of the iPad (9th generation)'s screen is its size in points.
     func testHalfOfANinthGenerationIPadIs810By1080() {
         let screen = CGSize(width: 1620, height: 2160)
         let portrait = MirrorProfile.make(screen: screen, landscape: false, hevc: true, scale: 50)

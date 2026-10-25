@@ -31,7 +31,7 @@
     <string name="setting_name">TV name</string>
     <string name="setting_name_hint">What Macs and iPhones show in Screen Mirroring</string>
     <string name="setting_resolution">Resolution</string>
-    <string name="setting_resolution_hint">Apple devices size their picture to this: 720p unless you pick another. Auto offers the most the TV can decode, up to 4K.</string>
+    <string name="setting_resolution_hint">Apple devices size their picture to this. Auto is the TV’s own resolution (4K on a 4K TV); pick another size if it doesn’t match your TV.</string>
     <string name="resolution_auto">Auto</string>
     <string name="resolution_auto_value">Auto (%1$s)</string>
     <string name="setting_frame_rate">Frame rate</string>

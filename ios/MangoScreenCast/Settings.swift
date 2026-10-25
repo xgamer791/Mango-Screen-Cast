@@ -10,23 +10,11 @@ final class Settings: ObservableObject {
 
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
-        // The iPad (9th generation)'s default became 810 × 1080: a size kept
-        // from before then goes, once, so it starts there too.
-        if Self.defaultResolutionScale != 100 && !defaults.bool(forKey: Keys.defaultScaleApplied) {
-            for key in [Keys.scale, Keys.confirmedScale, Keys.trialInUse, Keys.oldResolution, Keys.scale(false),
-                        Keys.scale(true), Keys.confirmed(false), Keys.confirmed(true)] {
-                defaults.removeObject(forKey: key)
-            }
-            defaults.set(true, forKey: Keys.defaultScaleApplied)
-        }
     }
 
     /// The picture size offered unless another is picked, as percent of the
-    /// full size, both ways round: full, except on the iPad (9th generation),
-    /// where it's half, 810 × 1080 upright and 1080 × 810 sideways: its
-    /// screen's size in points. Nothing is saved for it, so a new install
-    /// starts there too.
-    static let defaultResolutionScale = ["iPad12,1", "iPad12,2"].contains(Device.model) ? 50 : 100
+    /// full size: full, the screen's own pixels, on every device.
+    static let defaultResolutionScale = 100
 
     static var defaultName: String {
         UIDevice.current.userInterfaceIdiom == .pad ? "Mango Cast iPad" : "Mango Cast iPhone"
@@ -172,7 +160,6 @@ final class Settings: ObservableObject {
         static func confirmed(_ landscape: Bool) -> String {
             landscape ? "confirmedResolutionScaleLandscape" : "confirmedResolutionScalePortrait"
         }
-        static let defaultScaleApplied = "defaultScale810x1080"
     }
 }
 

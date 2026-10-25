@@ -17,7 +17,6 @@ enum class ResolutionSetting(val maxHeight: Int) {
     UHD_2160(2160),
     QHD_1440(1440),
     FHD_1080(1080),
-    HD_720(720),
 }
 
 /**
@@ -70,8 +69,6 @@ private object SystemDecoders : DecoderInfo {
 
 object DisplayCapabilities {
     private val CANDIDATES = listOf(3840 to 2160, 2560 to 1440, 1920 to 1080)
-    /** 720p is only offered when it's picked (it's the default); Auto never goes below 1080p. */
-    private val HD = listOf(1280 to 720)
     private const val HEVC = MediaFormat.MIMETYPE_VIDEO_HEVC
     private const val AVC = MediaFormat.MIMETYPE_VIDEO_AVC
 
@@ -111,34 +108,35 @@ object DisplayCapabilities {
     ): MirrorProfile = choose(setting, frameRate, panel(context), maxRefreshRate(context), SystemDecoders)
 
     /**
-     * The largest size the TV's hardware decoder takes, up to 4K. Above
-     * 1080p Apple devices only send HEVC, so those sizes need an HEVC
-     * decoder.
+     * The largest size the TV's hardware decoder takes, up to the chosen
+     * resolution. Above 1080p Apple devices only send HEVC, so those sizes
+     * need an HEVC decoder.
      *
-     * Auto doesn't cap this at the screen mode Android reports: many 4K TVs
-     * run their menus at 1080p and report that, while video still plays on
-     * the full panel. The decoder is the reliable signal. Every TV HEVC
+     * Auto is the TV's own resolution: its largest display mode (4K on a 4K
+     * panel, even when the menus run at 1080p), never less than 1080p. Macs,
+     * iPhones and iPads then fit their picture to it. A TV that reports a
+     * smaller screen than it has can be set to 4K by hand. Every TV HEVC
      * decoder that takes a 4K picture is built for 4K60 streaming apps, so
      * up to 60 fps the size check is enough; the frame-rate tables some
      * vendors publish are often too conservative.
      *
      * Above 60 fps nothing is assumed: the screen needs a mode that fast and
-     * the decoder's own tables must list the rate. With Resolution on Auto
-     * the picture gets smaller until the decoder can keep up (4K120 is rare,
-     * 1440p120 and 1080p120 are common); with a fixed resolution it stays
-     * at 60 fps instead.
+     * the decoder's own tables must list the rate. The resolution always
+     * comes first: when the decoder can't keep up at that size (4K120 is
+     * rare), the TV offers 60 fps and says which smaller resolution gets
+     * the faster rate.
      */
     internal fun choose(
         resolution: ResolutionSetting, frameRate: FrameRateSetting, panel: Panel, screenMaxHz: Float,
         decoders: DecoderInfo,
     ): MirrorProfile {
-        val candidates = if (resolution == ResolutionSetting.HD_720) HD else CANDIDATES
-        val sizes = candidates.filter { (width, height) -> height <= resolution.maxHeight && takes(decoders, width, height) }
+        val maxHeight = if (resolution == ResolutionSetting.AUTO) max(panel.height, 1080) else resolution.maxHeight
+        val sizes = CANDIDATES.filter { (width, height) -> height <= maxHeight && takes(decoders, width, height) }
         val best = sizes.firstOrNull()
         val refresh = refreshFor(panel)
         fun offer(size: Pair<Int, Int>?, fps: Int, refreshRate: Int, note: String? = null): MirrorProfile {
-            // Nothing reported the smallest size; ask for it anyway and let the decoder try.
-            val (width, height) = size ?: candidates.last()
+            // Nothing reported 1080p; ask for it anyway and let the decoder try.
+            val (width, height) = size ?: (1920 to 1080)
             val h265 = if (size == null) decoders.hevcAvailable else decoders.supportsSize(HEVC, width, height)
             return MirrorProfile(width, height, refreshRate, fps, h265, panel, note)
         }
@@ -153,11 +151,8 @@ object DisplayCapabilities {
         return when {
             fast == null -> offer(best, 60, refresh,
                 "The TV's video decoder isn't rated for $wanted fps, so it offers 60 fps.")
-            fast != best && resolution != ResolutionSetting.AUTO -> offer(best, 60, refresh,
-                "$wanted fps needs a smaller picture on this TV. Set Resolution to Auto to get it.")
-            fast != best -> offer(fast, wanted, wanted,
-                "$wanted fps at ${fast.first} × ${fast.second}: the decoder isn't rated for $wanted fps at " +
-                    "${best!!.first} × ${best.second}.")
+            fast != best -> offer(best, 60, refresh,
+                "$wanted fps needs ${fast.first} × ${fast.second} or smaller on this TV: pick it under Resolution to get it.")
             else -> offer(fast, wanted, wanted)
         }
     }

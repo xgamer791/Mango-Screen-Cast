@@ -28,10 +28,32 @@ class FrameRateChoiceTest {
     }
 
     @Test
-    fun oneTwentyTradesSizeWhenResolutionIsAuto() {
+    fun oneTwentyKeepsTheTVsResolutionOnAuto() {
         val p = choose(FrameRateSetting.FPS_120)
-        assertEquals(listOf(2560, 1440, 120, 120), listOf(p.width, p.height, p.maxFps, p.refreshRate))
-        assertTrue(p.note!!, p.note!!.contains("3840 × 2160"))
+        assertEquals(listOf(3840, 2160, 60, 60), listOf(p.width, p.height, p.maxFps, p.refreshRate))
+        assertTrue(p.note!!, p.note!!.contains("2560 × 1440"))
+    }
+
+    @Test
+    fun autoIsTheTVsOwnResolution() {
+        fun auto(width: Int, height: Int): List<Int> {
+            val p = DisplayCapabilities.choose(ResolutionSetting.AUTO, FrameRateSetting.FPS_60,
+                Panel(width, height, listOf(60f)), 60f, FakeDecoders(emptySet()))
+            return listOf(p.width, p.height)
+        }
+        assertEquals(listOf(3840, 2160), auto(3840, 2160))
+        assertEquals(listOf(3840, 2160), auto(4096, 2160))
+        assertEquals(listOf(2560, 1440), auto(2560, 1440))
+        assertEquals(listOf(1920, 1080), auto(1920, 1080))
+        // Never less than 1080p.
+        assertEquals(listOf(1920, 1080), auto(1366, 768))
+    }
+
+    @Test
+    fun fourKCanBePickedOnATvThatReportsLess() {
+        val p = DisplayCapabilities.choose(ResolutionSetting.UHD_2160, FrameRateSetting.FPS_60,
+            Panel(1920, 1080, listOf(60f)), 60f, FakeDecoders(emptySet()))
+        assertEquals(listOf(3840, 2160), listOf(p.width, p.height))
     }
 
     @Test
@@ -50,14 +72,14 @@ class FrameRateChoiceTest {
 
     @Test
     fun ntscRatesCount() {
-        assertEquals(120, choose(FrameRateSetting.FPS_120, screenHz = 119.88f).maxFps)
+        assertEquals(120, choose(FrameRateSetting.FPS_120, screenHz = 119.88f, fastSizes = setOf(2160, 1440, 1080)).maxFps)
     }
 
     @Test
     fun aFixedResolutionIsKept() {
         val p = choose(FrameRateSetting.FPS_120, resolution = ResolutionSetting.UHD_2160)
         assertEquals(listOf(3840, 2160, 60), listOf(p.width, p.height, p.maxFps))
-        assertTrue(p.note!!, p.note!!.contains("Auto"))
+        assertTrue(p.note!!, p.note!!.contains("Resolution"))
     }
 
     @Test
@@ -71,27 +93,5 @@ class FrameRateChoiceTest {
     fun thirtyKeepsTheScreenAtSixty() {
         val p = choose(FrameRateSetting.FPS_30)
         assertEquals(listOf(3840, 2160, 30, 60), listOf(p.width, p.height, p.maxFps, p.refreshRate))
-    }
-
-    @Test
-    fun sevenTwentyIsOfferedAtEveryFrameRate() {
-        val hd = ResolutionSetting.HD_720
-        val p30 = choose(FrameRateSetting.FPS_30, resolution = hd)
-        assertEquals(listOf(1280, 720, 30, 60), listOf(p30.width, p30.height, p30.maxFps, p30.refreshRate))
-        val p60 = choose(FrameRateSetting.FPS_60, resolution = hd)
-        assertEquals(listOf(1280, 720, 60, 60), listOf(p60.width, p60.height, p60.maxFps, p60.refreshRate))
-        assertEquals("720p", p60.sizeName)
-        val p120 = choose(FrameRateSetting.FPS_120, resolution = hd, fastSizes = setOf(720))
-        assertEquals(listOf(1280, 720, 120, 120), listOf(p120.width, p120.height, p120.maxFps, p120.refreshRate))
-        assertNull(p120.note)
-        // A decoder not rated for 720p120: 60, and says why.
-        val slow = choose(FrameRateSetting.FPS_120, resolution = hd, fastSizes = emptySet())
-        assertEquals(listOf(1280, 720, 60), listOf(slow.width, slow.height, slow.maxFps))
-    }
-
-    @Test
-    fun autoNeverGoesBelow1080p() {
-        val p = choose(FrameRateSetting.FPS_120, fastSizes = setOf(720))
-        assertEquals(listOf(3840, 2160, 60), listOf(p.width, p.height, p.maxFps))
     }
 }
