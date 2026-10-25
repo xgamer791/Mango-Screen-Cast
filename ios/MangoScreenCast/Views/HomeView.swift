@@ -34,6 +34,20 @@ struct HomeView: View {
                     if updates.isReleaseBuild, let update = updates.availableUpdate {
                         updateBanner(update)
                     }
+                    if let notice = receiver.notice {
+                        Banner(systemImage: "arrow.uturn.backward.circle.fill", text: notice) {
+                            Button("OK") { receiver.notice = nil }
+                                .buttonStyle(.bordered)
+                                .tint(Theme.textSecondary)
+                        }
+                    } else if settings.resolutionOnTrial {
+                        Banner(systemImage: "rectangle.dashed",
+                               text: "Trying \(receiver.currentProfile().sizeText). Mirror from your Mac to see it; you’ll be asked to keep it, or it goes back to \(receiver.currentProfile(scale: settings.confirmedResolutionScale).sizeText).") {
+                            Button("Go back") { receiver.revertResolution() }
+                                .buttonStyle(.bordered)
+                                .tint(Theme.textSecondary)
+                        }
+                    }
                     Spacer(minLength: 0)
                     statusBlock(compact: compact)
                     cards(sideBySide: contentWidth >= Self.sideBySideWidth)
@@ -84,22 +98,12 @@ struct HomeView: View {
     }
 
     private func updateBanner(_ update: ReleaseFeed.Release) -> some View {
-        HStack(spacing: 14) {
-            Image(systemName: "arrow.down.circle.fill")
-                .font(.title2)
-                .foregroundColor(Theme.mango)
-            Text("Mango Cast \(update.version) is available.")
-                .font(.headline)
-                .fixedSize(horizontal: false, vertical: true)
-            Spacer(minLength: 8)
+        Banner(systemImage: "arrow.down.circle.fill", text: "Mango Cast \(update.version) is available.") {
             Button("Update") { updates.openUpdate() }
                 .buttonStyle(.borderedProminent)
                 .tint(Theme.mango)
                 .foregroundColor(.black)
         }
-        .padding(.horizontal, 18)
-        .padding(.vertical, 12)
-        .background(RoundedRectangle(cornerRadius: 16, style: .continuous).fill(Theme.surface))
     }
 
     private func statusBlock(compact: Bool) -> some View {
@@ -230,16 +234,47 @@ struct HomeView: View {
     }
 
     private var footer: some View {
-        Group {
+        HStack(alignment: .firstTextBaseline, spacing: 16) {
             if let profile = status.profile {
-                Text("Offering \(profile.width) × \(profile.height) · \(profile.maxFps) fps · \(profile.codecs)   ·   Screen \(profile.screenWidth) × \(profile.screenHeight)")
+                // verbatim: Text would otherwise print 2360 as "2,360".
+                Text(verbatim: "Offering \(profile.sizeText)\(profile.scale == 100 ? "" : " (\(profile.scale)%)") · "
+                     + "\(profile.maxFps) fps · \(profile.codecs)   ·   Screen \(profile.screenWidth) × \(profile.screenHeight)")
+                    .fixedSize(horizontal: false, vertical: true)
+                // Always one tap back to the size every device handles best.
+                if settings.resolutionScale != 100 {
+                    Button("Back to full resolution") { receiver.setResolution(scale: 100) }
+                        .font(.footnote.weight(.semibold))
+                        .foregroundColor(Theme.mango)
+                }
             } else {
                 Text(" ")
             }
         }
         .font(.footnote)
         .foregroundColor(Theme.textSecondary)
-        .fixedSize(horizontal: false, vertical: true)
+    }
+}
+
+/// A one-line message with an action, under the header.
+private struct Banner<Action: View>: View {
+    let systemImage: String
+    let text: String
+    @ViewBuilder let action: Action
+
+    var body: some View {
+        HStack(spacing: 14) {
+            Image(systemName: systemImage)
+                .font(.title2)
+                .foregroundColor(Theme.mango)
+            Text(text)
+                .font(.headline)
+                .fixedSize(horizontal: false, vertical: true)
+            Spacer(minLength: 8)
+            action
+        }
+        .padding(.horizontal, 18)
+        .padding(.vertical, 12)
+        .background(RoundedRectangle(cornerRadius: 16, style: .continuous).fill(Theme.surface))
     }
 }
 

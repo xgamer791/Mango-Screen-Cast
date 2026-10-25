@@ -111,15 +111,39 @@ receiver, with the same AirPlay core as the TV app. Your Mac finds it in Screen
 Mirroring as *Mango Cast iPad*, and mirrors to it or uses it as a second display
 with **Use As Separate Display**. Sound plays on the iPad.
 
-**Resolution is automatic.** The iPad offers exactly its own screen: its full
-pixel count (for example 2360 × 1640 on an iPad Air, 2752 × 2064 on a 13-inch
-iPad Pro), in the orientation it's held, with HEVC. So a separate display fills
-the screen edge to edge at full sharpness, in landscape or portrait. Turn the
-iPad while nothing is connected and it offers the new shape to the next Mac.
-Macs that can't send HEVC (Intel Macs) get the same shape at about 1080p.
+**Resolution fills the screen.** By default the iPad offers exactly its own
+screen: its full pixel count (for example 2360 × 1640 on an iPad Air,
+2752 × 2064 on a 13-inch iPad Pro), in the orientation it's held, with HEVC. So
+a separate display fills the screen edge to edge at full sharpness, in
+landscape or portrait. Turn the iPad while nothing is connected and it offers
+the new shape to the next Mac. Macs that can't send HEVC (Intel Macs) get the
+same shape at about 1080p.
+
+To find a sweet spot (smoother over busy Wi-Fi, or bigger text on a separate
+display), Settings → **Resolution** lists smaller sizes: 90%, 80%, 75%, 66%,
+60% and 50% of full. **Every size listed has the iPad's exact shape**, so
+whatever size you pick, the picture still fills the screen. That's the size
+the iPad tells the Mac (or iPhone, or any other AirPlay sender) to send. On the
+Mac, leave the AirPlay display's resolution in System Settings → Displays at
+its default, which follows what the iPad offers.
+
+**Backing out.** A new size is only tried at first, the way a Mac treats a
+display change:
+
+- The next time you mirror, Mango Cast asks **Keep 1888 × 1312?** with a
+  20-second countdown. Tap **Keep**, or **Go back**.
+- It goes back to the last size that worked by itself if you don't answer, if
+  no picture arrives within 15 seconds, if the picture keeps failing, if
+  mirroring stops before you keep it, or if the app closes mid-try.
+- While a size is being tried, the home screen says so with a **Go back**
+  button, and Settings has one too.
+- Whenever you're below full size, the home screen has **Back to full
+  resolution**, which is always safe.
+
 A *mirrored* Mac keeps its own shape (a MacBook is wider than an iPad), so it
 shows with thin bars; tap **Fill** (or double-tap) to zoom it to cover the
-screen instead.
+screen instead. Windows PCs can't send AirPlay; [Mango Cast for
+Windows](#windows-pc) sends to the iPad instead, at the size picked here.
 
 It needs iPadOS or iOS 16 or newer, and the Mac and the iPad on the same
 Wi-Fi network.
@@ -203,7 +227,7 @@ while it waits, because a locked iPad drops out of the list too.
 | Setting | What it does |
 |---|---|
 | Name | What your Mac shows in Screen Mirroring. *Mango Cast iPad* unless you change it. |
-| Resolution | *Automatic* (default) offers the iPad's whole screen, as described above. *Lighter* keeps the same shape at about 1080p, for a busy Wi-Fi network. |
+| Resolution | Full (default) or 90% down to 50% of it, all in the iPad's exact shape. New sizes are tried first and go back by themselves unless kept (see above). |
 | Fill the screen | Zoom a mirrored picture of another shape to cover the screen, cutting off its edges. Same as Fill / Fit while mirroring. |
 | Sound | Play the Mac's audio on the iPad. |
 | Show stats while mirroring | Resolution, codec, frame rate and bitrate in a corner. |
@@ -230,7 +254,7 @@ TV or iPad on the same network.
 ### Install
 
 Download `MangoCast.exe` from the
-[`windows-latest` pre-release](../../releases/tag/windows-latest). It's a single
+[`windows-latest` pre-release](https://github.com/xgamer791/Mango-Screen-Cast/releases/tag/windows-latest). It's a single
 program with nothing to install. It isn't signed yet, so the first time
 Windows may say it protected your PC: choose **More info → Run anyway**.
 

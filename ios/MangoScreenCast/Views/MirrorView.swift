@@ -24,6 +24,11 @@ struct MirrorView: View {
                     .padding(.vertical, 12)
                     .background(.ultraThinMaterial, in: Capsule())
             }
+            if let check = receiver.resolutionCheck {
+                ResolutionCheckCard(check: check, keep: receiver.keepResolution,
+                                    goBack: { receiver.revertResolution() })
+                    .transition(.scale.combined(with: .opacity))
+            }
             VStack(spacing: 0) {
                 if controlsVisible {
                     topBar.transition(.move(edge: .top).combined(with: .opacity))
@@ -112,6 +117,53 @@ struct MirrorView: View {
     }
 }
 
+/// Asks whether to keep a picture size that's being tried, counting down
+/// to going back on its own, the way a Mac does after a display change.
+private struct ResolutionCheckCard: View {
+    let check: Receiver.ResolutionCheck
+    let keep: () -> Void
+    let goBack: () -> Void
+
+    var body: some View {
+        VStack(spacing: 16) {
+            if let deadline = check.deadline {
+                Text("Keep \(check.trying.sizeText)?")
+                    .font(.title2.weight(.bold))
+                TimelineView(.periodic(from: .now, by: 1)) { context in
+                    let seconds = max(0, Int(deadline.timeIntervalSince(context.date).rounded(.up)))
+                    Text("Going back to \(check.previous.sizeText) in \(seconds) s unless you keep it.")
+                        .font(.body)
+                        .monospacedDigit()
+                        .multilineTextAlignment(.center)
+                }
+                HStack(spacing: 12) {
+                    Button("Go back", action: goBack)
+                        .buttonStyle(.bordered)
+                        .tint(.white)
+                    Button("Keep", action: keep)
+                        .buttonStyle(.borderedProminent)
+                        .tint(Theme.mango)
+                        .foregroundColor(.black)
+                }
+                .font(.headline)
+            } else {
+                HStack(spacing: 10) {
+                    ProgressView()
+                    Text("Trying \(check.trying.sizeText)…")
+                        .font(.headline)
+                }
+                Button("Go back to \(check.previous.sizeText)", action: goBack)
+                    .buttonStyle(.bordered)
+                    .tint(.white)
+            }
+        }
+        .padding(24)
+        .frame(maxWidth: 420)
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 20, style: .continuous))
+        .padding(24)
+    }
+}
+
 /// Hosts the renderer's AVSampleBufferDisplayLayer. The layer belongs to the
 /// renderer and outlives this view, so leaving and coming back to the
 /// player never interrupts decoding.
@@ -121,12 +173,12 @@ struct VideoLayerView: UIViewRepresentable {
     func makeUIView(context: Context) -> LayerHostView {
         let view = LayerHostView()
         view.backgroundColor = .black
-        view.host(renderer.layer)
+        view.renderer = renderer
         return view
     }
 
     func updateUIView(_ view: LayerHostView, context: Context) {
-        view.host(renderer.layer)
+        view.renderer = renderer
     }
 
     static func dismantleUIView(_ view: LayerHostView, coordinator: ()) {
@@ -137,7 +189,12 @@ struct VideoLayerView: UIViewRepresentable {
 final class LayerHostView: UIView {
     private weak var hosted: CALayer?
 
-    func host(_ sublayer: CALayer) {
+    /// Hosts the renderer's layer and tells it the view's size.
+    weak var renderer: VideoRenderer? {
+        didSet { if let renderer { host(renderer.layer) } }
+    }
+
+    private func host(_ sublayer: CALayer) {
         guard sublayer.superlayer !== layer else { return }
         sublayer.removeFromSuperlayer()
         layer.addSublayer(sublayer)
@@ -157,5 +214,6 @@ final class LayerHostView: UIView {
         CATransaction.setDisableActions(true)
         hosted?.frame = bounds
         CATransaction.commit()
+        renderer?.viewSize = bounds.size
     }
 }

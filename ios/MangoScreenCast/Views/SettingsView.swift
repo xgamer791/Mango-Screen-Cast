@@ -23,14 +23,34 @@ struct SettingsView: View {
 
                 Section {
                     Picker("Resolution", selection: resolution) {
-                        Text("Automatic (\(best.width) × \(best.height))").tag(ResolutionSetting.native)
-                        Text("Lighter (\(lighter.width) × \(lighter.height))").tag(ResolutionSetting.hd1080)
+                        ForEach(receiver.resolutionChoices(), id: \.scale) { choice in
+                            HStack {
+                                Text(choice.sizeText)
+                                    .monospacedDigit()
+                                Spacer()
+                                Text(label(for: choice))
+                                    .foregroundColor(.secondary)
+                            }
+                            .tag(choice.scale)
+                        }
                     }
-                    Toggle("Fill the screen", isOn: binding(\.fillScreen) { receiver.video.fillsScreen = $0 })
+                    .pickerStyle(.inline)
+                    .labelsHidden()
+                    if settings.resolutionOnTrial {
+                        Button("Go back to \(receiver.currentProfile(scale: settings.confirmedResolutionScale).sizeText)") {
+                            receiver.revertResolution()
+                        }
+                    }
                 } header: {
-                    Text("Picture")
+                    Text("Resolution")
                 } footer: {
-                    Text("Automatic offers this screen’s own pixels, the way it’s held, so with Use As Separate Display your Mac makes a display that fills it exactly. Lighter keeps the same shape with less detail, for a busy Wi-Fi network. Fill the screen zooms a mirrored picture of another shape to cover the screen, cutting off its edges; double-tap while mirroring to switch.")
+                    Text("Every size here has this screen’s exact shape, the way it’s held, so the picture fills it with no black bars. Full is the sharpest; step down if the picture stutters on a busy Wi-Fi network, or to make everything bigger on a Mac’s separate display. A new size is only tried at first: the next time you mirror, you’re asked to keep it, and it goes back by itself after 20 seconds, if no picture arrives, or if mirroring stops first. Changing it reconnects whatever is mirroring.")
+                }
+
+                Section {
+                    Toggle("Fill the screen", isOn: binding(\.fillScreen) { receiver.video.fillsScreen = $0 })
+                } footer: {
+                    Text("For a mirrored picture of another shape (a Mac’s own screen is wider than an iPad’s): zoom it to cover the screen, cutting off its edges. Double-tap while mirroring to switch.")
                 }
 
                 Section {
@@ -95,14 +115,13 @@ struct SettingsView: View {
         .onDisappear(perform: commitName)
     }
 
-    private var best: MirrorProfile {
-        MirrorProfile.make(screen: Receiver.screenPixels(), landscape: Receiver.isLandscape(),
-                           hevc: Receiver.hevcSupported, setting: .native)
-    }
-
-    private var lighter: MirrorProfile {
-        MirrorProfile.make(screen: Receiver.screenPixels(), landscape: Receiver.isLandscape(),
-                           hevc: Receiver.hevcSupported, setting: .hd1080)
+    private func label(for choice: MirrorProfile) -> String {
+        var parts = [choice.scale == 100 ? "Full (best)" : "\(choice.scale)%"]
+        if settings.resolutionOnTrial {
+            if choice.scale == settings.resolutionScale { parts.append("trying") }
+            if choice.scale == settings.confirmedResolutionScale { parts.append("last kept") }
+        }
+        return parts.joined(separator: " · ")
     }
 
     private var updateStatus: String {
@@ -115,13 +134,11 @@ struct SettingsView: View {
         }
     }
 
-    private var resolution: Binding<ResolutionSetting> {
+    private var resolution: Binding<Int> {
         Binding {
-            settings.resolution
-        } set: { value in
-            guard value != settings.resolution else { return }
-            settings.resolution = value
-            receiver.restart()
+            settings.resolutionScale
+        } set: { scale in
+            receiver.setResolution(scale: scale)
         }
     }
 
