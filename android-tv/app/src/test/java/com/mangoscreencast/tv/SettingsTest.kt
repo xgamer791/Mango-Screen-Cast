@@ -68,9 +68,22 @@ class SettingsTest {
     @Test
     fun fillingTheScreenWithALandscapeIPhoneIsBackOnOnceThenKept() {
         prefs.edit().putBoolean("fill_wide", false).commit()
-        assertEquals(true, Settings(context).fillWidePictures)
-        Settings(context).fillWidePictures = false
-        assertEquals(false, Settings(context).fillWidePictures)
+        assertEquals(WidePictures.FILL, Settings(context).widePictures)
+        for (chosen in WidePictures.entries) {
+            Settings(context).widePictures = chosen
+            assertEquals(chosen, Settings(context).widePictures)
+        }
+    }
+
+    @Test
+    fun fillTurnedOffBeforeStretchCameIsFit() {
+        prefs.edit().putBoolean("resolution_1080_default", true).putBoolean("fill_wide", false).commit()
+        assertEquals(WidePictures.FIT, Settings(context).widePictures)
+    }
+
+    @Test
+    fun upGoesFromFitToFillToStretch() {
+        assertEquals(listOf("FIT", "FILL", "STRETCH"), WidePictures.entries.map { it.name })
     }
 
     @Test

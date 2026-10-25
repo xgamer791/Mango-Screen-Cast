@@ -20,6 +20,7 @@ import com.mangoscreencast.tv.MangoApp
 import com.mangoscreencast.tv.R
 import com.mangoscreencast.tv.ReceiverService
 import com.mangoscreencast.tv.UpdateMode
+import com.mangoscreencast.tv.WidePictures
 import com.mangoscreencast.tv.display.DisplayCapabilities
 import com.mangoscreencast.tv.display.FrameRateSetting
 import com.mangoscreencast.tv.display.ResolutionSetting
@@ -73,9 +74,9 @@ class SettingsActivity : Activity(), AppUpdater.Listener {
             settings.latencyMode = values[(values.indexOf(settings.latencyMode) + 1) % values.size]
             receiver.video.latencyMode = settings.latencyMode
         }
-        row(R.string.setting_fill, getString(if (settings.fillWidePictures) R.string.fill_value else R.string.fit_value),
-            R.string.setting_fill_hint) {
-            settings.fillWidePictures = !settings.fillWidePictures
+        row(R.string.setting_fill, getString(wideLabel(settings.widePictures)), R.string.setting_fill_hint) {
+            val values = WidePictures.entries
+            settings.widePictures = values[(values.indexOf(settings.widePictures) + 1) % values.size]
         }
         row(R.string.setting_sound, onOff(settings.soundEnabled), R.string.setting_sound_hint) {
             settings.soundEnabled = !settings.soundEnabled
@@ -235,6 +236,12 @@ class SettingsActivity : Activity(), AppUpdater.Listener {
             DisplayCapabilities.profile(this, settings.resolution, settings.frameRate).note
         } else null
         return note ?: getString(R.string.setting_frame_rate_hint)
+    }
+
+    private fun wideLabel(mode: WidePictures): Int = when (mode) {
+        WidePictures.FIT -> R.string.fit_value
+        WidePictures.FILL -> R.string.fill_value
+        WidePictures.STRETCH -> R.string.stretch_value
     }
 
     private fun pacingLabel() = getString(

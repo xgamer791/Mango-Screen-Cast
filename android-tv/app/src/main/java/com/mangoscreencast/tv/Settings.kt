@@ -16,6 +16,18 @@ enum class LatencyMode {
     SMOOTHEST,
 }
 
+/** How a picture wider than the TV (an iPhone in landscape) is shown. Up while mirroring goes down this list. */
+enum class WidePictures {
+    /** All of it, with black bars above and below. */
+    FIT,
+
+    /** Zoomed to the TV's height, covering it; the left and right edges are cut off. */
+    FILL,
+
+    /** Pulled out to the whole screen: nothing cut off and no bars, but wider than it is. */
+    STRETCH,
+}
+
 enum class UpdateMode {
     /** Install new versions on its own while nothing is mirroring. */
     AUTOMATIC,
@@ -42,7 +54,8 @@ class Settings(private val context: Context) {
         // the screen: every TV starts there once, whatever it had; what's
         // picked after that is kept.
         if (!prefs.getBoolean(KEY_RESOLUTION_1080_DEFAULT, false)) {
-            prefs.edit().putBoolean(KEY_RESOLUTION_1080_DEFAULT, true).remove(KEY_RESOLUTION).remove(KEY_FILL_WIDE).apply()
+            prefs.edit().putBoolean(KEY_RESOLUTION_1080_DEFAULT, true).remove(KEY_RESOLUTION).remove(KEY_FILL_WIDE)
+                .remove(KEY_WIDE).apply()
         }
     }
 
@@ -72,13 +85,12 @@ class Settings(private val context: Context) {
             .getOrDefault(LatencyMode.BALANCED)
         set(value) = prefs.edit().putString(KEY_LATENCY, value.name).apply()
 
-    /**
-     * Zoom pictures wider than the TV (an iPhone in landscape) to cover it,
-     * cutting off the sides. On unless turned off: black bars read as a fault.
-     */
-    var fillWidePictures: Boolean
-        get() = prefs.getBoolean(KEY_FILL_WIDE, true)
-        set(value) = prefs.edit().putBoolean(KEY_FILL_WIDE, value).apply()
+    /** How an iPhone in landscape is shown. Fill unless changed: black bars read as a fault. */
+    var widePictures: WidePictures
+        get() = runCatching { WidePictures.valueOf(prefs.getString(KEY_WIDE, null)!!) }.getOrNull()
+            // Before Stretch it was a switch: Fill on or off.
+            ?: if (prefs.getBoolean(KEY_FILL_WIDE, true)) WidePictures.FILL else WidePictures.FIT
+        set(value) = prefs.edit().putString(KEY_WIDE, value.name).apply()
 
     var soundEnabled: Boolean
         get() = prefs.getBoolean(KEY_SOUND, true)
@@ -122,6 +134,7 @@ class Settings(private val context: Context) {
         const val KEY_LATENCY = "latency_mode"
         const val KEY_SOUND = "sound"
         const val KEY_FILL_WIDE = "fill_wide"
+        const val KEY_WIDE = "wide_pictures"
         const val KEY_STATS = "show_stats"
         const val KEY_BACKGROUND = "background"
         const val KEY_UPDATES = "updates"

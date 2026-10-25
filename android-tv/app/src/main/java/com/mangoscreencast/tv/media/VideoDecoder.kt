@@ -92,10 +92,11 @@ class VideoDecoder internal constructor(
     @Volatile
     private var vsyncPeriodNs = 16_666_667L
 
-    // The player surface's shape and the picture's. While they differ (the
-    // iPhone was just turned) frames wait, so none is drawn stretched.
+    // The picture shape the player is laid out for, and the picture's. While
+    // they differ (the iPhone was just turned) frames wait, so none is drawn
+    // into a layout made for another shape.
     @Volatile
-    private var surfaceAspect = 0f
+    private var layoutAspect = 0f
     @Volatile
     private var pictureAspect = 0f
     private var shapeWaitSinceNs = 0L
@@ -193,9 +194,9 @@ class VideoDecoder internal constructor(
         wakeInput()
     }
 
-    /** The player's surface is now `width` x `height` (from surfaceChanged). */
-    fun setSurfaceSize(width: Int, height: Int) {
-        if (width > 0 && height > 0) surfaceAspect = width.toFloat() / height
+    /** The player is laid out for a picture of this shape (width / height). */
+    fun setLayoutAspect(aspect: Float) {
+        if (aspect > 0f) layoutAspect = aspect
     }
 
     /** The display switched modes (e.g. to 60 Hz after the player asked for it). */
@@ -520,14 +521,14 @@ class VideoDecoder internal constructor(
     }
 
     /**
-     * Whether the player's surface has the picture's shape (or has had long
-     * enough to get it): until the player is laid out for a new shape, a
-     * frame drawn would be squeezed into the old one.
+     * Whether the player is laid out for the picture's shape (or has had long
+     * enough to be): until it is, a frame drawn would be squeezed into the
+     * layout for the old shape.
      */
     private fun shapeMatches(now: Long): Boolean {
         val picture = pictureAspect
-        val surface = surfaceAspect
-        if (picture == 0f || surface == 0f || abs(surface - picture) <= picture * SHAPE_TOLERANCE) {
+        val layout = layoutAspect
+        if (picture == 0f || layout == 0f || abs(layout - picture) <= picture * SHAPE_TOLERANCE) {
             shapeWaitSinceNs = 0
             return true
         }

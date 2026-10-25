@@ -45,12 +45,14 @@
     <string name="pacing_fastest_hint">Lowest delay. Motion can stutter if Wi-Fi delivers frames unevenly.</string>
     <string name="pacing_smoothest_hint">Holds one frame (about 17 ms) to smooth out a busy Wi-Fi network.</string>
     <string name="setting_fill">iPhone in landscape</string>
-    <string name="setting_fill_hint">iPhones are wider than a TV, so the whole picture leaves black bars above and below. Fill zooms in to cover the TV and cuts off the left and right edges; a 16:9 video then fills the TV exactly. Mac screens are never cropped. While mirroring, press Up or Down to switch.</string>
+    <string name="setting_fill_hint">iPhones are wider than a TV. Fill zooms in to cover the TV and cuts off the left and right edges (a 16:9 video then fills it exactly); Fit shows the whole picture with black bars above and below; Stretch pulls it out to the whole screen, with nothing cut off and no bars, but everything a little wider. Mac screens and upright iPhones are never changed. While mirroring, press Up or Down to switch.</string>
     <string name="fit_value">Fit whole picture</string>
     <string name="fill_value">Fill the screen</string>
+    <string name="stretch_value">Stretch to the screen</string>
     <string name="fill_hint">Black bars? Press Up to fill the screen</string>
-    <string name="fill_on">Filling the screen (sides cut off). Up or Down to go back.</string>
-    <string name="fill_off">Whole picture. Up or Down to fill the screen.</string>
+    <string name="fill_on">Filling the screen (sides cut off). Up to stretch, Down for the whole picture.</string>
+    <string name="fill_off">Whole picture. Up to fill the screen.</string>
+    <string name="stretch_on">Stretched to the screen. Down to fill it without stretching.</string>
     <string name="setting_sound">Sound</string>
     <string name="setting_sound_hint">Play the mirrored device’s sound on the TV</string>
     <string name="setting_stats">Show stats while mirroring</string>

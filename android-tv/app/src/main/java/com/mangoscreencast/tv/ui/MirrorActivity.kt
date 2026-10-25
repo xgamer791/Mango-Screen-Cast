@@ -18,6 +18,7 @@ import android.widget.TextView
 import android.widget.Toast
 import com.mangoscreencast.tv.MangoApp
 import com.mangoscreencast.tv.R
+import com.mangoscreencast.tv.WidePictures
 import com.mangoscreencast.tv.airplay.AirPlayReceiver
 import com.mangoscreencast.tv.display.DisplayCapabilities
 import com.mangoscreencast.tv.media.VideoDecoder
@@ -71,7 +72,7 @@ class MirrorActivity : Activity(), SurfaceHolder.Callback, AirPlayReceiver.Liste
         @Suppress("DEPRECATION")
         window.decorView.systemUiVisibility = (View.SYSTEM_UI_FLAG_FULLSCREEN or View.SYSTEM_UI_FLAG_HIDE_NAVIGATION
             or View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY or View.SYSTEM_UI_FLAG_LAYOUT_STABLE)
-        frame.fillWide = settings.fillWidePictures
+        frame.widePictures = settings.widePictures
         configureDisplay()
         surfaceView.holder.addCallback(this)
     }
@@ -136,7 +137,7 @@ class MirrorActivity : Activity(), SurfaceHolder.Callback, AirPlayReceiver.Liste
     override fun surfaceCreated(holder: SurfaceHolder) {}
 
     override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
-        receiver.video.setSurfaceSize(width, height)
+        receiver.video.setLayoutAspect(frame.pictureAspect)
         if (coverView.visibility == View.VISIBLE) {
             // Laid out for the new shape: show it once a frame or two has been drawn at it.
             handler.removeCallbacks(uncover)
@@ -158,27 +159,38 @@ class MirrorActivity : Activity(), SurfaceHolder.Callback, AirPlayReceiver.Liste
     override fun onVideoSize(width: Int, height: Int) {
         runOnUiThread {
             if (width <= 0 || height <= 0) return@runOnUiThread
-            // A new shape (the iPhone was turned): black for a moment, as the
-            // last frame would otherwise show stretched while the player resizes.
+            val root = frame.parent as View
+            val before = frame.sizeFor(root.width, root.height)
             val aspect = width.toFloat() / height
-            if (pictureAspect != 0f && abs(aspect - pictureAspect) > pictureAspect * 0.02f) {
+            val reshaped = pictureAspect != 0f && abs(aspect - pictureAspect) > pictureAspect * 0.02f
+            pictureAspect = aspect
+            frame.setAspect(width, height)
+            if (root.width > 0 && frame.sizeFor(root.width, root.height) == before) {
+                // Laid out the same either way (stretched both ways, say): nothing to wait for.
+                receiver.video.setLayoutAspect(frame.pictureAspect)
+            } else if (reshaped) {
+                // A new shape (the iPhone was turned): black for a moment, as the
+                // last frame would otherwise show stretched while the player resizes.
                 coverView.visibility = View.VISIBLE
                 handler.removeCallbacks(uncover)
                 handler.postDelayed(uncover, MAX_COVER_MS)
             }
-            pictureAspect = aspect
-            frame.setAspect(width, height)
-            val root = frame.parent as View
             logLayout(width, height)
             // An iPhone in landscape is wider than the TV: say once how to fill the screen.
             if (!fillHintShown && frame.isWiderThan(root.width, root.height)) {
                 fillHintShown = true
-                showBanner(getString(if (frame.fillWide) R.string.fill_on else R.string.fill_hint))
+                showBanner(getString(wideBanner(frame.widePictures, hint = true)))
             }
         }
     }
 
     private var fillHintShown = false
+
+    private fun wideBanner(mode: WidePictures, hint: Boolean = false): Int = when (mode) {
+        WidePictures.FIT -> if (hint) R.string.fill_hint else R.string.fill_off
+        WidePictures.FILL -> R.string.fill_on
+        WidePictures.STRETCH -> R.string.stretch_on
+    }
 
     /** For Diagnostics: how the picture sits on the screen, and whether that leaves bars. */
     private fun logLayout(width: Int, height: Int) {
@@ -186,7 +198,8 @@ class MirrorActivity : Activity(), SurfaceHolder.Callback, AirPlayReceiver.Liste
         if (root.width == 0 || root.height == 0) return
         val wide = frame.isWiderThan(root.width, root.height)
         val how = when {
-            wide && frame.fillWide -> "filling the screen, sides cut off"
+            wide && frame.widePictures == WidePictures.FILL -> "filling the screen, sides cut off"
+            wide && frame.widePictures == WidePictures.STRETCH -> "stretched to the screen"
             wide -> "fit, bars above and below"
             width.toLong() * root.height == height.toLong() * root.width -> "fills the screen"
             else -> "fit, bars at the sides"
@@ -251,10 +264,13 @@ class MirrorActivity : Activity(), SurfaceHolder.Callback, AirPlayReceiver.Liste
                 return true
             }
             KeyEvent.KEYCODE_DPAD_UP, KeyEvent.KEYCODE_DPAD_DOWN -> {
-                settings.fillWidePictures = !settings.fillWidePictures
-                frame.fillWide = settings.fillWidePictures
+                // Up: Fit, Fill, Stretch. Down: back the other way.
+                val modes = WidePictures.entries
+                val step = if (keyCode == KeyEvent.KEYCODE_DPAD_UP) 1 else modes.size - 1
+                settings.widePictures = modes[(modes.indexOf(settings.widePictures) + step) % modes.size]
+                frame.widePictures = settings.widePictures
                 fillHintShown = true
-                showBanner(getString(if (frame.fillWide) R.string.fill_on else R.string.fill_off))
+                showBanner(getString(wideBanner(frame.widePictures)))
                 receiver.video.stats().let { logLayout(it.width, it.height) }
                 return true
             }
