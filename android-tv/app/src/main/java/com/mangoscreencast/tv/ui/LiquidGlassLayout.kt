@@ -4,7 +4,6 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapShader
 import android.graphics.Canvas
-import android.graphics.Color
 import android.graphics.ColorMatrix
 import android.graphics.ColorMatrixColorFilter
 import android.graphics.Matrix
@@ -23,12 +22,12 @@ import kotlin.math.sqrt
 
 /**
  * Mango Liquid Glass, as on the web: what lies behind this view, blurred and
- * darkened to 70% (saturation left at 100%), under a tint, with the app
- * tiles' rounded corners and a soft two-layer drop shadow. The tint and the
- * colour without a backdrop come from R.color.glass_tint and glass_fallback,
- * which have night-mode values as the web version has dark-mode ones
- * (rgb(9 9 12 / 0.55) on a TV in night mode). The web version's edge
- * refraction only runs in Chromium; elsewhere it stays frosted, as here.
+ * darkened to 70% (saturation left at 100%), under a light tint, with the
+ * app tiles' rounded corners and no shadow. The tint and the colour without
+ * a backdrop come from R.color.glass_tint and glass_fallback, which have
+ * night-mode values as the web version has dark-mode ones (rgb(9 9 12 /
+ * 0.31) on a TV in night mode). The web version's edge refraction only runs
+ * in Chromium; elsewhere it stays frosted, as here.
  *
  * Android's own blur (RenderEffect) doesn't reach the 1440p surface the
  * home screen is drawn into (Canvas1440Layout), and it needs Android 12. So
@@ -36,7 +35,6 @@ import kotlin.math.sqrt
  * are drawn once into a bitmap and blurred here, inside the glass's own
  * bounds with the edges clamped, as a backdrop filter does. They don't
  * change; the backdrop is made again when the glass moves or changes size.
- * The shadow falls outside the view, so its parent mustn't clip it.
  */
 class LiquidGlassLayout @JvmOverloads constructor(
     context: Context,
@@ -51,15 +49,6 @@ class LiquidGlassLayout @JvmOverloads constructor(
     }
     private val tintPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = context.getColor(R.color.glass_tint) }
     private val fallbackPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = context.getColor(R.color.glass_fallback) }
-    private val shadowPaints = SHADOWS.map { (dy, blur, alpha) ->
-        Paint(Paint.ANTI_ALIAS_FLAG).apply {
-            color = Color.BLACK
-            // The web's blur length is twice the Gaussian's sigma; Android's shadow radius r gives sigma 0.57735 r + 0.5.
-            val sigma = blur / 2 * PX_1440_IN_DP * density
-            setShadowLayer(((sigma - 0.5f) / 0.57735f).coerceAtLeast(0.1f), 0f, dy * PX_1440_IN_DP * density,
-                Color.argb((alpha * 255).roundToInt(), 0, 0, 0))
-        }
-    }
     private val bounds = RectF()
 
     init {
@@ -74,8 +63,6 @@ class LiquidGlassLayout @JvmOverloads constructor(
             backdropFor = at
         }
         bounds.set(0f, 0f, width.toFloat(), height.toFloat())
-        // The shadow: an opaque shape casting it, which the backdrop then covers.
-        for (paint in shadowPaints) canvas.drawRoundRect(bounds, radius, radius, paint)
         val image = backdrop
         if (image != null) {
             backdropPaint.shader = BitmapShader(image, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP).apply {
@@ -125,9 +112,6 @@ class LiquidGlassLayout @JvmOverloads constructor(
         const val BLUR_DP = 6.5f * PX_1440_IN_DP
         const val SATURATE = 1.0f
         const val BRIGHTNESS = 0.70f
-
-        /** 0 8.1px 18.8px rgb(0 0 0 / 0.11), 0 1px 2px rgb(0 0 0 / 0.04): offset down, blur, opacity, in 1440p px. */
-        val SHADOWS = listOf(Triple(8.1f, 18.8f, 0.11f), Triple(1f, 2f, 0.04f))
 
         /** The backdrop is made at half the view's pixels; blurred, it loses nothing. */
         private const val SCALE = 0.5f

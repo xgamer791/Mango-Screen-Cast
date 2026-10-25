@@ -29,7 +29,7 @@ class LiquidGlassTest {
 
     /** A 600 x 200 px glass at (100, 100) over `behind`, drawn; returns the screen. */
     private fun render(behind: View): Bitmap {
-        val root = FrameLayout(behind.context).apply { clipChildren = false }
+        val root = FrameLayout(behind.context)
         root.addView(behind, FrameLayout.LayoutParams(800, 400))
         val glass = LiquidGlassLayout(behind.context)
         root.addView(glass, FrameLayout.LayoutParams(600, 200).apply { leftMargin = 100; topMargin = 100 })
@@ -60,10 +60,10 @@ class LiquidGlassTest {
     fun aFlatBackdropIsTintedOverItsDarkenedColour() {
         val colour = Color.rgb(150, 110, 70)
         val context = activity
-        assertEquals(0x4A000000, context.getColor(R.color.glass_tint))
+        assertEquals(0x17000000, context.getColor(R.color.glass_tint))
         val screen = render(flat(context, colour))
         assertColour(expected(colour, context.getColor(R.color.glass_tint)), screen.getPixel(400, 200))
-        // Away from the glass and its shadow the backdrop is untouched.
+        // Away from the glass the backdrop is untouched.
         assertEquals(colour, screen.getPixel(30, 30))
     }
 
@@ -72,9 +72,9 @@ class LiquidGlassTest {
     fun inNightModeTheDarkTintIsUsed() {
         val colour = Color.rgb(150, 110, 70)
         val context = activity
-        assertEquals(0x8C09090C.toInt(), context.getColor(R.color.glass_tint))
+        assertEquals(0x4F09090C, context.getColor(R.color.glass_tint))
         val screen = render(flat(context, colour))
-        assertColour(expected(colour, 0x8C09090C.toInt()), screen.getPixel(400, 200))
+        assertColour(expected(colour, 0x4F09090C), screen.getPixel(400, 200))
     }
 
     @Test
@@ -85,7 +85,7 @@ class LiquidGlassTest {
         assertEquals(8 * context.resources.displayMetrics.density, radius)
         val screen = render(flat(context, colour))
         val glass = expected(colour, context.getColor(R.color.glass_tint))
-        // Just inside the top-left corner's curve: the backdrop (the shadow falls below, not here).
+        // Just inside the top-left corner's curve: the backdrop.
         val corner = screen.getPixel(101, 101)
         assertTrue("corner is glass: ${Integer.toHexString(corner)}", Color.red(corner) > glass[0] + 30)
         // A radius in, it's glass.
@@ -93,13 +93,13 @@ class LiquidGlassTest {
     }
 
     @Test
-    fun itCastsASoftShadowBelowIt() {
+    fun nothingIsDrawnOutsideIt() {
+        // No shadow: right next to the glass, on every side, the backdrop is untouched.
         val colour = Color.rgb(200, 200, 200)
         val screen = render(flat(activity, colour))
-        val below = Color.red(screen.getPixel(400, 304)) // 4 px under the glass
-        val above = Color.red(screen.getPixel(400, 96))  // 4 px over it
-        assertTrue("no shadow below: $below", below < 200)
-        assertTrue("shadow should fall below more than above: above $above, below $below", below < above)
+        for ((x, y) in listOf(400 to 98, 400 to 302, 98 to 200, 702 to 200)) {
+            assertEquals("at ($x, $y)", colour, screen.getPixel(x, y))
+        }
     }
 
     @Test

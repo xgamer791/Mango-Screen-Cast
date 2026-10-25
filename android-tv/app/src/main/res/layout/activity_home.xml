@@ -7,8 +7,7 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/home_background"
-    android:clipChildren="false">
+    android:background="@drawable/home_background">
 
     <!-- Wallpaper: Manhattan in fog at dusk, 2560 x 1440: pixel for pixel on the 1440p surface the page is drawn into. -->
     <ImageView
@@ -89,7 +88,7 @@
             android:src="@drawable/ic_cast_badge" />
     </FrameLayout>
 
-    <!-- The glass strip (Mango Liquid Glass), as wide as the app row under it, its shadow falling outside it (hence clipChildren off above): three equal columns, each with its icon and text centred. -->
+    <!-- The glass strip (Mango Liquid Glass), as wide as the app row under it: three equal columns, each with its icon and text centred. -->
     <com.mangoscreencast.tv.ui.LiquidGlassLayout
         android:id="@+id/steps"
         android:layout_width="840dp"
