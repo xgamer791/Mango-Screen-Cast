@@ -32,6 +32,7 @@
 		<string>_raop._tcp</string>
 		<string>_mangoremote._tcp</string>
 		<string>_mangopair._tcp</string>
+		<string>_mangolink._tcp</string>
 	</array>
 	<key>NSLocalNetworkUsageDescription</key>
 	<string>Mango Cast uses your local network so your Mac can find this device in Screen Mirroring and send its screen here, and so it can control a paired Mac.</string>

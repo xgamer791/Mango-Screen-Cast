@@ -183,6 +183,10 @@
 			isa = PBXBuildFile;
 			fileRef = AB6184959352F959845FC990 /* MirrorView.swift */;
 		};
+		70776C385600BE8E350B15E9 /* CodeWindow.swift in Sources */ = {
+			isa = PBXBuildFile;
+			fileRef = CA6DF63216BD288556114338 /* CodeWindow.swift */;
+		};
 		71C3FC528EFAB7BBF1A9F06D /* libplist/src/oplist.c in Sources */ = {
 			isa = PBXBuildFile;
 			fileRef = DFC88DCC451C7DF57D4F5C3A /* libplist/src/oplist.c */;
@@ -907,6 +911,12 @@
 			path = "../android-tv/third_party/uxplay/lib/playfair/sap_hash.c";
 			sourceTree = SOURCE_ROOT;
 		};
+		CA6DF63216BD288556114338 /* CodeWindow.swift */ = {
+			isa = PBXFileReference;
+			lastKnownFileType = sourcecode.swift;
+			path = CodeWindow.swift;
+			sourceTree = "<group>";
+		};
 		CB9299A3A63F89FD4A5A1C26 /* Assets.xcassets */ = {
 			isa = PBXFileReference;
 			lastKnownFileType = folder.assetcatalog;
@@ -1212,6 +1222,7 @@
 			isa = PBXGroup;
 			children = (
 				11799F3F425ACAA5AA6769FD /* Assets.xcassets */,
+				CA6DF63216BD288556114338 /* CodeWindow.swift */,
 				30B6FB1A886E7C6F409A9A48 /* Info.plist */,
 				781E45E8637470068833FA54 /* InputInjector.swift */,
 				BF7CD6943E3BB0900CA6FD7B /* MangoCastRemoteApp.swift */,
@@ -1622,6 +1633,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				70776C385600BE8E350B15E9 /* CodeWindow.swift in Sources */,
 				0336B00032EA6C685A39DA66 /* InputInjector.swift in Sources */,
 				73004D7F5D848671CB3F15B0 /* MangoCastRemoteApp.swift in Sources */,
 				4D30A86007E2ACE6D5DA51E7 /* RemoteServer.swift in Sources */,

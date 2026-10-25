@@ -59,18 +59,18 @@ struct SettingsView: View {
                         HStack {
                             Label(mac, systemImage: "desktopcomputer")
                             Spacer()
-                            Button("Forget", role: .destructive) { remote.forget(mac) }
+                            Button("Unlink", role: .destructive) { remote.forget(mac) }
                                 .buttonStyle(.borderless)
                         }
                     }
-                    Button(remote.pairedMacs.isEmpty ? "Pair with a Mac…" : "Pair with another Mac…") {
+                    Button(remote.pairedMacs.isEmpty ? "Link with a Mac…" : "Link with another Mac…") {
                         showPairing = true
                     }
                     Toggle("Control the Mac while mirroring", isOn: binding(\.controlMac))
                 } header: {
                     Text("Mac control")
                 } footer: {
-                    Text("With Mango Cast Remote running on the Mac, work the Mac on this screen while it mirrors: tap to click, swipe to scroll, pinch to zoom in and move around, and the keyboard button types on the Mac. A mouse, trackpad or keyboard attached to this iPad works the Mac too. Pair once; only paired iPads can control the Mac, and everything they send is encrypted.")
+                    Text("With Mango Cast Remote running on the Mac, work the Mac on this screen while it mirrors: tap to click, swipe to scroll, pinch to zoom in and move around, and the keyboard button types on the Mac. A mouse, trackpad or keyboard attached to this iPad works the Mac too. Link once: Link pops up a code on the Mac to enter here. Linked Macs stay linked, even if Mango Cast is deleted and installed again, until you unlink them. Only linked iPads can control a Mac, and everything they send is encrypted.")
                 }
 
                 Section {

@@ -24,6 +24,8 @@ struct MirrorView: View {
     @State private var stats: VideoRenderer.Stats?
     @State private var typing = false
     @State private var showPairing = false
+    /// The Mac to ask for a link code as the link screen opens.
+    @State private var linkTarget: String?
 
     private let ticker = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
@@ -95,7 +97,7 @@ struct MirrorView: View {
         }
         .animation(.easeInOut(duration: 0.2), value: screen.zoom)
         .sheet(isPresented: $showPairing) {
-            PairMacView()
+            PairMacView(linkTo: linkTarget)
                 .environmentObject(remote)
                 .environmentObject(settings)
         }
@@ -191,7 +193,12 @@ struct MirrorView: View {
                 .lineLimit(1)
             Spacer(minLength: 12)
             Button {
-                if remote.isConnected { settings.controlMac.toggle() } else { showPairing = true }
+                if remote.isConnected {
+                    settings.controlMac.toggle()
+                } else {
+                    linkTarget = linkableMac
+                    showPairing = true
+                }
             } label: {
                 Label(controlTitle, systemImage: controlling ? "hand.tap.fill" : "hand.tap")
                     .font(.headline)
@@ -261,7 +268,10 @@ struct MirrorView: View {
                 .font(.subheadline.weight(.semibold))
                 .fixedSize(horizontal: false, vertical: true)
             Spacer(minLength: 8)
-            Button(remote.pairedMacs.isEmpty ? "Set up" : "Help") { showPairing = true }
+            Button(linkableMac.map { _ in "Link" } ?? (remote.pairedMacs.isEmpty ? "Set up" : "Help")) {
+                linkTarget = linkableMac
+                showPairing = true
+            }
                 .buttonStyle(.borderedProminent)
                 .tint(Theme.mango)
                 .foregroundColor(.black)
@@ -273,8 +283,18 @@ struct MirrorView: View {
         .accessibilityIdentifier("controlSetupHint")
     }
 
+    /// A Mac with Mango Cast Remote open that this iPad isn't linked with:
+    /// the one mirroring, if it's one of them.
+    private var linkableMac: String? {
+        let unlinked = remote.macsAround.filter { !remote.pairedMacs.contains($0) }
+        return unlinked.first { $0 == receiver.status.clientName } ?? (unlinked.count == 1 ? unlinked[0] : nil)
+    }
+
     private var setupHintText: String {
         if case .failed(let reason) = remote.state { return reason }
+        if let mac = linkableMac {
+            return "Link with \(mac) once to tap to click, scroll and type on it from here."
+        }
         if remote.pairedMacs.isEmpty {
             return "Pinch to zoom and drag to move around. To tap to click, scroll and type on the Mac too, get Mango Cast Remote on the Mac and pair once."
         }

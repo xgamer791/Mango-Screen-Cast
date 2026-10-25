@@ -25,6 +25,12 @@ final class RemoteControl: ObservableObject {
     @Published private(set) var pairedMacs: [String] = RemoteKeys.names()
     /// Macs showing a pairing code right now.
     @Published private(set) var macsPairing: [String] = []
+    /// Macs on the network with Mango Cast Remote open, linked or not.
+    @Published private(set) var macsAround: [String] = []
+    /// Asking this Mac to pop up a code.
+    @Published private(set) var requestingCode: String?
+    /// The Mac showing a code for this iPad to enter.
+    @Published private(set) var codeShownOn: String?
     @Published private(set) var pairing = false
     @Published var pairingMessage: String?
     /// In the controls demo (UI tests), what would have gone to the Mac.
@@ -42,6 +48,11 @@ final class RemoteControl: ObservableObject {
     private var pairingEndpoints: [String: NWEndpoint] = [:]
     private var channel: RemoteChannel?
     private var pairingChannel: RemoteChannel?
+    private var linkBrowser: NWBrowser?
+    private var linkEndpoints: [String: NWEndpoint] = [:]
+    private var linkChannel: RemoteChannel?
+    /// The pairing screen is open (it looks for Macs too).
+    private var lookingFromView = false
     private var active = false
     private var preferred: String?
     private var ownName = "iPad"
@@ -67,6 +78,7 @@ final class RemoteControl: ObservableObject {
         preferred = mac
         ownName = name
         active = true
+        startLinkBrowser()
         guard !pairedMacs.isEmpty else {
             state = .notPaired
             return
@@ -85,6 +97,7 @@ final class RemoteControl: ObservableObject {
         found = [:]
         channel?.cancel()
         channel = nil
+        if !lookingFromView { stopLinkBrowser() }
         state = .off
     }
 
@@ -118,12 +131,19 @@ final class RemoteControl: ObservableObject {
     }
 
     /// The Mac to control: the mirroring one if it's paired and found, else
-    /// the only paired Mac that's around.
+    /// the only paired Mac that's around. A Mac renamed since it was linked
+    /// still counts when it's the one Mac linked and the one around.
     private func target() -> (name: String, endpoint: NWEndpoint, key: SymmetricKey)? {
         let candidates = pairedMacs.filter { found[$0] != nil }
-        let name = candidates.first { $0 == preferred } ?? (candidates.count == 1 ? candidates[0] : nil)
-        guard let name, let endpoint = found[name], let key = RemoteKeys.load(name) else { return nil }
-        return (name, endpoint, key)
+        if let name = candidates.first(where: { $0 == preferred }) ?? (candidates.count == 1 ? candidates[0] : nil),
+           let endpoint = found[name], let key = RemoteKeys.load(name) {
+            return (name, endpoint, key)
+        }
+        if candidates.isEmpty, pairedMacs.count == 1, found.count == 1, let only = found.first,
+           let key = RemoteKeys.load(pairedMacs[0]) {
+            return (only.key, only.value, key)
+        }
+        return nil
     }
 
     private func connectIfPossible() {
@@ -179,9 +199,90 @@ final class RemoteControl: ObservableObject {
         DispatchQueue.main.asyncAfter(deadline: .now() + 2, execute: work)
     }
 
-    // MARK: - Pairing (main thread)
+    // MARK: - Linking and pairing (main thread)
+
+    private func startLinkBrowser() {
+        guard linkBrowser == nil, !demo else { return }
+        let browser = NWBrowser(for: .bonjour(type: RemoteProtocol.linkServiceType, domain: nil), using: .tcp)
+        browser.browseResultsChangedHandler = { [weak self] results, _ in
+            var endpoints: [String: NWEndpoint] = [:]
+            for result in results {
+                if case .service(let name, _, _, _) = result.endpoint { endpoints[name] = result.endpoint }
+            }
+            DispatchQueue.main.async {
+                self?.linkEndpoints = endpoints
+                self?.macsAround = endpoints.keys.sorted()
+            }
+        }
+        browser.start(queue: queue)
+        linkBrowser = browser
+    }
+
+    private func stopLinkBrowser() {
+        linkBrowser?.cancel()
+        linkBrowser = nil
+        linkEndpoints = [:]
+        macsAround = []
+    }
+
+    /// Link on the iPad: `mac` pops up a code, to enter here (pair(with:)).
+    func requestCode(from mac: String, as name: String) {
+        guard let endpoint = linkEndpoints[mac] else {
+            pairingMessage = "\(mac) isn’t answering. Check that Mango Cast Remote is open on it (it’s in the menu bar)."
+            return
+        }
+        linkChannel?.cancel()
+        requestingCode = mac
+        codeShownOn = nil
+        pairingMessage = nil
+        let channel = RemoteChannel(connection: NWConnection(to: endpoint, using: RemoteProtocol.linkParameters()))
+        linkChannel = channel
+        channel.onState = { [weak self, weak channel] state in
+            DispatchQueue.main.async {
+                guard let self, let channel, self.linkChannel === channel else { return }
+                switch state {
+                case .ready:
+                    channel.send(.linkRequest(name: name))
+                case .waiting(let error), .failed(let error):
+                    self.linkFailed("Couldn’t reach \(mac): \(error.localizedDescription)")
+                default:
+                    break
+                }
+            }
+        }
+        channel.onMessage = { [weak self, weak channel] message in
+            DispatchQueue.main.async {
+                guard let self, let channel, self.linkChannel === channel else { return }
+                switch message {
+                case .codeShown:
+                    self.requestingCode = nil
+                    self.codeShownOn = mac
+                    self.linkChannel = nil
+                    channel.cancel()
+                case .rejected(let reason):
+                    self.linkFailed(reason)
+                default:
+                    break
+                }
+            }
+        }
+        channel.start(queue: queue)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 10) { [weak self, weak channel] in
+            guard let self, let channel, self.linkChannel === channel else { return }
+            self.linkFailed("\(mac) didn’t answer. Check that it’s on the same Wi-Fi network and Mango Cast Remote is open.")
+        }
+    }
+
+    private func linkFailed(_ message: String) {
+        linkChannel?.cancel()
+        linkChannel = nil
+        requestingCode = nil
+        pairingMessage = message
+    }
 
     func startLookingForPairing() {
+        lookingFromView = true
+        startLinkBrowser()
         guard pairingBrowser == nil else { return }
         let browser = NWBrowser(for: .bonjour(type: RemoteProtocol.pairingServiceType, domain: nil), using: .tcp)
         browser.browseResultsChangedHandler = { [weak self] results, _ in
@@ -199,6 +300,12 @@ final class RemoteControl: ObservableObject {
     }
 
     func stopLookingForPairing() {
+        lookingFromView = false
+        if !active { stopLinkBrowser() }
+        linkChannel?.cancel()
+        linkChannel = nil
+        requestingCode = nil
+        codeShownOn = nil
         pairingBrowser?.cancel()
         pairingBrowser = nil
         pairingChannel?.cancel()
@@ -209,14 +316,23 @@ final class RemoteControl: ObservableObject {
 
     /// Pairs with `mac` using the code it shows. Getting past TLS at all
     /// proves the code; the session key then comes sealed by a key agreement.
-    func pair(with mac: String, code: String, as name: String) {
+    func pair(with mac: String, code: String, as name: String, attempt: Int = 0) {
         let digits = code.filter(\.isNumber)
         guard digits.count == 6 else {
             pairingMessage = "Enter the 6 digits the Mac shows."
             return
         }
         guard let endpoint = pairingEndpoints[mac] else {
-            pairingMessage = "\(mac) isn’t pairing any more. Choose Pair an iPad on it again."
+            // The Mac has just popped the code up: give the network a moment to tell.
+            if attempt < 12 {
+                pairing = true
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
+                    self?.pair(with: mac, code: code, as: name, attempt: attempt + 1)
+                }
+                return
+            }
+            pairing = false
+            pairingMessage = "\(mac) isn’t showing a code any more. Tap Link to get a new one."
             return
         }
         pairingChannel?.cancel()
@@ -250,7 +366,8 @@ final class RemoteControl: ObservableObject {
                         let key = try RemoteProtocol.openPairing(own: own, macKey: macKey, sealedKey: sealed, code: digits)
                         RemoteKeys.save(key, for: macName.isEmpty ? mac : macName)
                         self.pairedMacs = RemoteKeys.names()
-                        self.pairingMessage = "Paired with \(macName.isEmpty ? mac : macName)."
+                        self.pairingMessage = "Linked with \(macName.isEmpty ? mac : macName). They stay linked, even if Mango Cast is reinstalled, until you unlink them."
+                        self.codeShownOn = nil
                         self.pairing = false
                         self.pairingChannel?.cancel()
                         self.pairingChannel = nil
@@ -297,17 +414,26 @@ private extension NWError {
     }
 }
 
-/// Session keys for paired Macs, in the keychain (this device only).
+/// Session keys for linked Macs, in the keychain (this device only). iOS
+/// keeps keychain items when an app is deleted, so a reinstall (signed by
+/// the same Apple ID) is still linked; the list of Macs is read from there
+/// too, not from the app's settings, which go with it.
 enum RemoteKeys {
     private static let service = "com.mangoscreencast.remote"
-    private static let namesKey = "remotePairedMacs"
 
     static func names() -> [String] {
-        UserDefaults.standard.stringArray(forKey: namesKey) ?? []
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword, kSecAttrService as String: service,
+            kSecReturnAttributes as String: true, kSecMatchLimit as String: kSecMatchLimitAll,
+        ]
+        var result: CFTypeRef?
+        guard SecItemCopyMatching(query as CFDictionary, &result) == errSecSuccess,
+              let items = result as? [[String: Any]] else { return [] }
+        return items.compactMap { $0[kSecAttrAccount as String] as? String }.sorted()
     }
 
     static func save(_ key: SymmetricKey, for mac: String) {
-        delete(mac, keepName: true)
+        delete(mac)
         let data = key.withUnsafeBytes { Data($0) }
         let item: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword, kSecAttrService as String: service,
@@ -315,9 +441,6 @@ enum RemoteKeys {
             kSecAttrAccessible as String: kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly,
         ]
         SecItemAdd(item as CFDictionary, nil)
-        var list = names()
-        if !list.contains(mac) { list.append(mac) }
-        UserDefaults.standard.set(list, forKey: namesKey)
     }
 
     static func load(_ mac: String) -> SymmetricKey? {
@@ -331,15 +454,12 @@ enum RemoteKeys {
         return SymmetricKey(data: data)
     }
 
-    static func delete(_ mac: String, keepName: Bool = false) {
+    static func delete(_ mac: String) {
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword, kSecAttrService as String: service,
             kSecAttrAccount as String: mac,
         ]
         SecItemDelete(query as CFDictionary)
-        if !keepName {
-            UserDefaults.standard.set(names().filter { $0 != mac }, forKey: namesKey)
-        }
     }
 }
 
@@ -359,6 +479,8 @@ extension RemoteProtocol.Message {
         case .text(let text): return "text \(text)"
         case .key(let code, let modifiers): return "key \(code)\(modifiers.isEmpty ? "" : " mods \(modifiers.rawValue)")"
         case .pair: return "pair"
+        case .linkRequest(let name): return "link \(name)"
+        case .codeShown(let name): return "code shown on \(name)"
         case .status(let name, let canControl): return "status \(name) \(canControl)"
         case .paired: return "paired"
         case .rejected(let reason): return "rejected \(reason)"

@@ -10,7 +10,10 @@ import Security
 ///
 /// Security: every connection is TLS with a pre-shared key, so it's
 /// encrypted and only a device holding the key gets in.
-///  - Pairing: the Mac shows a 6-digit code while "Pair an iPad" is open.
+///  - Linking: Link on the iPad asks the Mac (`linkRequest`, over plain
+///    TCP: nothing secret goes this way), and the Mac pops up a 6-digit code.
+///  - Pairing: with the Mac showing a code (popped up by Link, or from its
+///    menu's Pair an iPad), the iPad's code is entered.
 ///    The iPad connects with a key derived from that code, the two do a
 ///    Curve25519 key agreement, and the Mac sends its session key sealed
 ///    with the result. Someone who records the pairing and later guesses
@@ -22,6 +25,7 @@ import Security
 enum RemoteProtocol {
     static let serviceType = "_mangoremote._tcp"
     static let pairingServiceType = "_mangopair._tcp"
+    static let linkServiceType = "_mangolink._tcp"
     static let version = 1
 
     enum MouseButton: String, Codable {
@@ -61,10 +65,14 @@ enum RemoteProtocol {
         /// One key press with modifiers held (a Mac virtual key code).
         case key(code: UInt16, modifiers: Modifiers)
         case pair(publicKey: Data, name: String)
+        /// Link asked for on the iPad: the Mac pops up a code to enter there.
+        case linkRequest(name: String)
         // Mac → iPad
         case status(name: String, canControl: Bool)
         case paired(publicKey: Data, sealedKey: Data, name: String)
         case rejected(String)
+        /// The Mac is showing a code for the iPad that asked to link.
+        case codeShown(macName: String)
     }
 
     // MARK: - Keys and TLS
@@ -89,6 +97,16 @@ enum RemoteProtocol {
         tcp.keepaliveInterval = 2
         tcp.keepaliveCount = 3
         let parameters = NWParameters(tls: tls, tcp: tcp)
+        parameters.includePeerToPeer = false
+        return parameters
+    }
+
+    /// Asking to link happens in the open (plain TCP): it only makes the Mac
+    /// show a code, which the pairing then needs.
+    static func linkParameters() -> NWParameters {
+        let tcp = NWProtocolTCP.Options()
+        tcp.noDelay = true
+        let parameters = NWParameters(tls: nil, tcp: tcp)
         parameters.includePeerToPeer = false
         return parameters
     }

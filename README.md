@@ -244,7 +244,7 @@ Mango Cast restarts AirPlay when you come back.
 | Show stats while mirroring | Resolution, codec, frame rate and bitrate in a corner. |
 | Keep the screen on while waiting | On by default. It always stays on while mirroring. |
 | Updates | The version you have, Check for updates, and a button that adds the update source to AltStore or SideStore. |
-| Mac control | Pair with a Mac running Mango Cast Remote, forget paired Macs, and turn controlling on or off. |
+| Mac control | Link with a Mac running Mango Cast Remote (once), unlink Macs, and turn controlling on or off. |
 | Diagnostics | What the iPad offers and the recent AirPlay log, with a Share button. |
 
 ### Control the Mac from the iPad
@@ -266,28 +266,30 @@ screen:
 **Set it up once:**
 
 1. Download `MangoCastRemote-mac.zip` from the
-   [`ios-latest` pre-release](../../releases/tag/ios-latest), open it, and
-   move **MangoCastRemote** to Applications. (Or build the **MangoCastRemote**
+   [`ios-latest` pre-release](../../releases/tag/ios-latest) (the iPad can
+   AirDrop you the link: Settings → **Link with a Mac**), open it, and move
+   **MangoCastRemote** to Applications. (Or build the **MangoCastRemote**
    scheme in Xcode.) It's signed ad hoc, not by Apple, so the first time,
    Control-click it → **Open**, or allow it under System Settings → Privacy &
    Security → **Open Anyway**.
-2. It appears in the menu bar (a pointer icon). Click it, choose **Ask for
-   permission** and turn on **Mango Cast Remote** in System Settings → Privacy
-   & Security → **Accessibility**: macOS only lets apps it lists there click
-   and type. Allow **Local Network** too, if asked.
-3. In the menu, choose **Pair an iPad…**. The Mac shows a 6-digit code.
-4. On the iPad: Settings → **Mac control** → **Pair with a Mac…** (or the
-   **Control Mac** button while mirroring), pick the Mac and enter the code.
+2. The first time it runs, it asks to be allowed under Privacy & Security →
+   **Accessibility** (macOS only lets apps it lists there click and type),
+   and adds itself to your login items, so it's always there after that. It
+   lives in the menu bar (a pointer icon).
+3. On the iPad, tap **Link** (on the mirrored picture, or Settings → **Link
+   with a Mac**). A code pops up on the Mac; enter it on the iPad.
 
-From then on, while that Mac mirrors to the iPad, the iPad connects to it by
+That's it: they stay linked until you unlink them (Settings → Unlink on the
+iPad, or **Unlink all iPads** in the Mac's menu), even if Mango Cast is
+deleted and installed again (with the same Apple ID in AltStore or
+SideStore): the link is kept in the iPad's keychain, which iOS keeps. From
+then on, while that Mac mirrors to the iPad, the iPad connects to it by
 itself and the **Controlling** button shows at the top. Tap it to turn
 controlling off (taps then show the controls again, as without it).
-**Open at login** in the menu keeps it running.
 
-Everything goes over your Wi-Fi only, encrypted (TLS with a key only paired
-devices hold). The code is only accepted while the Mac shows it, for five
-minutes. **Forget paired iPads** on the Mac makes a new key, so every iPad has
-to pair again.
+Everything goes over your Wi-Fi only, encrypted (TLS with a key only linked
+devices hold). The code only works while the Mac shows it, for five minutes,
+and it's what keeps another device on the network from linking itself.
 
 **After updating Mango Cast Remote**, macOS may see it as a new app: if taps
 stop working and the iPad says to allow it under Accessibility, remove

@@ -18,6 +18,8 @@ final class RemoteProtocolTests: XCTestCase {
         .status(name: "Mac", canControl: false),
         .paired(publicKey: Data(repeating: 1, count: 32), sealedKey: Data(repeating: 2, count: 60), name: "Mac"),
         .rejected("Wrong code"),
+        .linkRequest(name: "Mango Cast iPad"),
+        .codeShown(macName: "Chris’s MacBook Pro"),
     ]
 
     func testEveryMessageSurvivesJSON() throws {
@@ -75,8 +77,11 @@ final class RemoteProtocolTests: XCTestCase {
         var received: [Message] = []
         var onReceive: ((Message) -> Void)?
 
-        init(key: SymmetricKey, identity: String, reply: @escaping (Message) -> Message?) throws {
-            let parameters = RemoteProtocol.parameters(key: key, identity: identity)
+        convenience init(key: SymmetricKey, identity: String, reply: @escaping (Message) -> Message?) throws {
+            try self.init(parameters: RemoteProtocol.parameters(key: key, identity: identity), reply: reply)
+        }
+
+        init(parameters: NWParameters, reply: @escaping (Message) -> Message?) throws {
             parameters.requiredLocalEndpoint = .hostPort(host: "127.0.0.1", port: .any)
             listener = try NWListener(using: parameters)
             listener.newConnectionHandler = { [unowned self] connection in
@@ -203,6 +208,30 @@ final class RemoteProtocolTests: XCTestCase {
 
         wait(for: [paired], timeout: 15)
         XCTAssertEqual(opened.map(bytes), bytes(sessionKey))
+    }
+
+    func testLinkAsksTheMacToShowACode() throws {
+        // What RemoteServer does on the Mac: Link pops up a code, and says so.
+        let mac = try Loopback(parameters: RemoteProtocol.linkParameters()) { message in
+            guard case .linkRequest = message else { return nil }
+            return .codeShown(macName: "Mac")
+        }
+        let port = try mac.start()
+        defer { mac.stop() }
+
+        let iPad = RemoteChannel(connection: NWConnection(host: "127.0.0.1", port: port,
+                                                          using: RemoteProtocol.linkParameters()))
+        let shown = expectation(description: "the code is showing")
+        iPad.onMessage = { message in
+            if message == .codeShown(macName: "Mac") { shown.fulfill() }
+        }
+        iPad.onState = { state in
+            if case .ready = state { iPad.send(.linkRequest(name: "Mango Cast iPad")) }
+        }
+        iPad.start(queue: DispatchQueue(label: "iPad"))
+        defer { iPad.cancel() }
+        wait(for: [shown], timeout: 15)
+        XCTAssertEqual(mac.queue.sync { mac.received }, [.linkRequest(name: "Mango Cast iPad")])
     }
 
     func testALongLineArrivesWhole() throws {

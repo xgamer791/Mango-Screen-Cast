@@ -18,7 +18,7 @@ struct MangoCastRemoteApp: App {
     }
 }
 
-private let mango = Color(red: 1, green: 164 / 255, blue: 27 / 255)
+let mango = Color(red: 1, green: 164 / 255, blue: 27 / 255)
 
 struct RemoteMenu: View {
     @EnvironmentObject private var server: RemoteServer
@@ -28,7 +28,7 @@ struct RemoteMenu: View {
         VStack(alignment: .leading, spacing: 14) {
             Text("Mango Cast Remote")
                 .font(.headline)
-            Text("Lets an iPad running Mango Cast control this Mac while it shows this Mac’s screen: tap to click, swipe to scroll, and type with the iPad’s keyboard.")
+            Text("Lets an iPad running Mango Cast control this Mac while it shows this Mac’s screen: tap to click, swipe to scroll, and type with the iPad’s keyboard. To link an iPad, tap Link on it: a code pops up here to enter there.")
                 .font(.callout)
                 .foregroundColor(.secondary)
                 .fixedSize(horizontal: false, vertical: true)
@@ -67,7 +67,7 @@ struct RemoteMenu: View {
 
             if let code = server.pairingCode {
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("On the iPad: Mango Cast → Settings → Pair with a Mac, then enter")
+                    Text("On the iPad, enter")
                         .font(.callout)
                         .fixedSize(horizontal: false, vertical: true)
                     Text(verbatim: String(code.prefix(3)) + " " + String(code.suffix(3)))
@@ -77,7 +77,7 @@ struct RemoteMenu: View {
                     Button("Cancel") { server.stopPairing() }
                 }
             } else {
-                Button("Pair an iPad…") { server.startPairing() }
+                Button("Show a link code…") { server.startPairing() }
             }
 
             if let message = server.message {
@@ -88,11 +88,11 @@ struct RemoteMenu: View {
             }
 
             if !server.pairedNames.isEmpty {
-                Text("Paired: \(server.pairedNames.joined(separator: ", "))")
+                Text("Linked: \(server.pairedNames.joined(separator: ", "))")
                     .font(.caption)
                     .foregroundColor(.secondary)
                     .fixedSize(horizontal: false, vertical: true)
-                Button("Forget paired iPads", role: .destructive) { server.forgetAll() }
+                Button("Unlink all iPads", role: .destructive) { server.forgetAll() }
             }
 
             Divider()

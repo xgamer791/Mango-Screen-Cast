@@ -32,6 +32,7 @@
 	<array>
 		<string>_mangoremote._tcp</string>
 		<string>_mangopair._tcp</string>
+		<string>_mangolink._tcp</string>
 	</array>
 	<key>NSLocalNetworkUsageDescription</key>
 	<string>Mango Cast Remote uses your local network so your iPad can find this Mac and control it.</string>

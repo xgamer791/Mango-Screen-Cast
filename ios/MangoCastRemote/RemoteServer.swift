@@ -2,18 +2,21 @@ import Combine
 import CryptoKit
 import Foundation
 import Network
+import ServiceManagement
 
 /// Lets paired iPads running Mango Cast control this Mac by touching its
 /// picture on their screen, and type on it (see RemoteProtocol).
 ///
-/// Two listeners: the session one, always on, which only a device holding
-/// the session key can connect to; and the pairing one, only while
-/// "Pair an iPad" is open, keyed with the code on screen. Published state is
-/// changed on the main thread.
+/// Three listeners: the session one, always on, which only a device holding
+/// the session key can connect to; the link one, always on, where an iPad's
+/// Link makes a code pop up here; and the pairing one, only while a code is
+/// showing, keyed with it. Published state is changed on the main thread.
 final class RemoteServer: ObservableObject {
     @Published private(set) var connected: [String] = []
     @Published private(set) var canControl = InputInjector.isAllowed
     @Published private(set) var pairingCode: String?
+    /// The iPad that asked for the code showing, if one did.
+    @Published private(set) var pairingFor: String?
     @Published private(set) var pairedNames: [String]
     @Published private(set) var message: String?
 
@@ -24,6 +27,9 @@ final class RemoteServer: ObservableObject {
     private var sessionKey: SymmetricKey
     private var sessionListener: NWListener?
     private var pairingListener: NWListener?
+    private var linkListener: NWListener?
+    /// Link requests being answered (server queue).
+    private var linkRequests: [ObjectIdentifier: RemoteChannel] = [:]
     private var pairingTimeout: DispatchWorkItem?
     /// Open sessions and the iPad's name (server queue).
     private var sessions: [ObjectIdentifier: (channel: RemoteChannel, name: String)] = [:]
@@ -32,12 +38,23 @@ final class RemoteServer: ObservableObject {
     private var pollTimer: Timer?
 
     private static let pairedKey = "pairedNames"
+    private static let setUpKey = "setUpOnFirstLaunch"
     private static let pairingWindow: TimeInterval = 5 * 60
 
     init() {
         sessionKey = KeyFile.load() ?? KeyFile.create()
         pairedNames = UserDefaults.standard.stringArray(forKey: Self.pairedKey) ?? []
         startSessionListener()
+        startLinkListener()
+        // The first time: ask for Accessibility (what lets it click and type)
+        // and open at login, so it's simply there from then on.
+        if !UserDefaults.standard.bool(forKey: Self.setUpKey) {
+            UserDefaults.standard.set(true, forKey: Self.setUpKey)
+            DispatchQueue.main.async {
+                if !InputInjector.isAllowed { InputInjector.requestAccess() }
+                try? SMAppService.mainApp.register()
+            }
+        }
         // Accessibility can be switched on in System Settings at any time.
         pollTimer = Timer.scheduledTimer(withTimeInterval: 2, repeats: true) { [weak self] _ in self?.refreshAccess() }
     }
@@ -49,8 +66,15 @@ final class RemoteServer: ObservableObject {
         refreshAccess()
     }
 
-    func startPairing() {
+    /// Shows a code for an iPad to enter (`name`: the iPad that asked, if one
+    /// did). An iPad asking again while a code shows gets the same one.
+    func startPairing(for name: String? = nil) {
+        if pairingCode != nil, let name, pairingFor == name {
+            CodeWindow.shared.show(server: self)
+            return
+        }
         stopPairing()
+        pairingFor = name
         let code = RemoteProtocol.newCode()
         do {
             let listener = try NWListener(using: RemoteProtocol.parameters(key: RemoteProtocol.pairingKey(code: code),
@@ -70,6 +94,7 @@ final class RemoteServer: ObservableObject {
             let timeout = DispatchWorkItem { [weak self] in self?.stopPairing() }
             pairingTimeout = timeout
             DispatchQueue.main.asyncAfter(deadline: .now() + Self.pairingWindow, execute: timeout)
+            CodeWindow.shared.show(server: self)
         } catch {
             message = "Couldn’t start pairing: \(error.localizedDescription)"
         }
@@ -81,6 +106,8 @@ final class RemoteServer: ObservableObject {
         pairingListener?.cancel()
         pairingListener = nil
         pairingCode = nil
+        pairingFor = nil
+        CodeWindow.shared.close()
     }
 
     /// A new session key: every paired iPad has to pair again.
@@ -95,7 +122,7 @@ final class RemoteServer: ObservableObject {
         }
         connected = []
         startSessionListener()
-        message = "Forgot all iPads. Pair again to control this Mac."
+        message = "Unlinked all iPads. Link again to control this Mac from one."
     }
 
     private func refreshAccess() {
@@ -170,6 +197,54 @@ final class RemoteServer: ObservableObject {
         DispatchQueue.main.async { self.connected = names }
     }
 
+    // MARK: - Linking
+
+    private func startLinkListener() {
+        linkListener?.cancel()
+        do {
+            let listener = try NWListener(using: RemoteProtocol.linkParameters())
+            listener.service = NWListener.Service(name: macName, type: RemoteProtocol.linkServiceType)
+            listener.newConnectionHandler = { [weak self] connection in self?.acceptLinkRequest(connection) }
+            listener.stateUpdateHandler = { [weak self] state in
+                guard case .failed = state else { return }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 3) { self?.startLinkListener() }
+            }
+            listener.start(queue: queue)
+            linkListener = listener
+        } catch {
+            message = "Couldn’t listen for iPads asking to link: \(error.localizedDescription)"
+        }
+    }
+
+    /// Server queue. Link on an iPad: a code pops up here to enter there.
+    /// Nothing secret goes this way; the code proves it in pairing.
+    private func acceptLinkRequest(_ connection: NWConnection) {
+        let channel = RemoteChannel(connection: connection)
+        let id = ObjectIdentifier(channel)
+        linkRequests[id] = channel
+        channel.onMessage = { [weak self, weak channel] message in
+            guard let self, let channel, case .linkRequest(let name) = message else { return }
+            DispatchQueue.main.async {
+                self.startPairing(for: name)
+                let shown = self.pairingCode != nil
+                self.queue.async {
+                    channel.send(shown ? .codeShown(macName: self.macName)
+                                       : .rejected("\(self.macName) couldn’t show a code. Open Mango Cast Remote on it and try again."))
+                    self.queue.asyncAfter(deadline: .now() + 2) { channel.cancel() }
+                }
+            }
+        }
+        channel.onState = { [weak self] state in
+            switch state {
+            case .failed, .cancelled: self?.linkRequests.removeValue(forKey: id)?.cancel()
+            default: break
+            }
+        }
+        channel.start(queue: queue)
+        // Whatever happens, a request doesn't hang around.
+        queue.asyncAfter(deadline: .now() + 30) { [weak self] in self?.linkRequests.removeValue(forKey: id)?.cancel() }
+    }
+
     // MARK: - Pairing
 
     /// Server queue. Getting past TLS here proves the iPad has the code.
@@ -204,8 +279,9 @@ final class RemoteServer: ObservableObject {
             pairedNames.append(name)
             UserDefaults.standard.set(pairedNames, forKey: Self.pairedKey)
         }
-        message = "Paired with \(name)."
+        message = "Linked with \(name). It stays linked until you choose Unlink all iPads."
         stopPairing()
+        if !canControl { requestAccess() }
     }
 }
 

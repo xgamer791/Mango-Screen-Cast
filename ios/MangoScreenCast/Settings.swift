@@ -1,5 +1,6 @@
 import Combine
 import Foundation
+import Security
 import UIKit
 
 /// The app's settings, kept in UserDefaults. Reads are safe from any
@@ -132,11 +133,18 @@ final class Settings: ObservableObject {
     }
 
     /// AirPlay identifies receivers by a MAC-style id. iOS doesn't expose
-    /// the real one, so make a random, locally administered one and keep it.
+    /// the real one, so make a random, locally administered one and keep it,
+    /// in the keychain, which iOS keeps when the app is deleted: installed
+    /// again, Macs see the same device.
     var deviceId: [UInt8] {
-        if let saved = defaults.data(forKey: Keys.deviceId), saved.count == 6 { return [UInt8](saved) }
+        if let saved = KeychainValue.load(Keys.deviceId), saved.count == 6 { return [UInt8](saved) }
+        if let saved = defaults.data(forKey: Keys.deviceId), saved.count == 6 {
+            KeychainValue.save(saved, Keys.deviceId)
+            return [UInt8](saved)
+        }
         var bytes = (0..<6).map { _ in UInt8.random(in: 0...255) }
         bytes[0] = (bytes[0] & 0xFC) | 0x02
+        KeychainValue.save(Data(bytes), Keys.deviceId)
         defaults.set(Data(bytes), forKey: Keys.deviceId)
         return bytes
     }
@@ -178,4 +186,32 @@ enum Device {
             String(decoding: raw.prefix { $0 != 0 }, as: UTF8.self)
         }
     }()
+}
+
+/// Small values kept in the keychain (this device only), which outlast the
+/// app being deleted and installed again.
+enum KeychainValue {
+    private static let service = "com.mangoscreencast.device"
+
+    static func load(_ name: String) -> Data? {
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword, kSecAttrService as String: service,
+            kSecAttrAccount as String: name, kSecReturnData as String: true, kSecMatchLimit as String: kSecMatchLimitOne,
+        ]
+        var result: CFTypeRef?
+        guard SecItemCopyMatching(query as CFDictionary, &result) == errSecSuccess else { return nil }
+        return result as? Data
+    }
+
+    static func save(_ data: Data, _ name: String) {
+        let match: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword, kSecAttrService as String: service,
+            kSecAttrAccount as String: name,
+        ]
+        SecItemDelete(match as CFDictionary)
+        var item = match
+        item[kSecValueData as String] = data
+        item[kSecAttrAccessible as String] = kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly
+        SecItemAdd(item as CFDictionary, nil)
+    }
 }
