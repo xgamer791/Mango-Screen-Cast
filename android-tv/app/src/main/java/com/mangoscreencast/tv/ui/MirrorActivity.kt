@@ -1,6 +1,7 @@
 package com.mangoscreencast.tv.ui
 
 import android.app.Activity
+import android.content.Intent
 import android.hardware.display.DisplayManager
 import android.os.Build
 import android.os.Bundle
@@ -24,7 +25,7 @@ import com.mangoscreencast.tv.display.DisplayCapabilities
 import com.mangoscreencast.tv.media.VideoDecoder
 import kotlin.math.abs
 
-/** Full-screen mirrored picture. Back twice disconnects; OK shows stats. */
+/** Full-screen mirrored picture. Back twice disconnects; OK shows stats; gear opens Settings. */
 class MirrorActivity : Activity(), SurfaceHolder.Callback, AirPlayReceiver.Listener, VideoDecoder.Listener {
     private lateinit var frame: AspectFrameLayout
     private lateinit var surfaceView: SurfaceView
@@ -264,6 +265,12 @@ class MirrorActivity : Activity(), SurfaceHolder.Callback, AirPlayReceiver.Liste
             KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_ENTER, KeyEvent.KEYCODE_INFO -> {
                 showStats = !showStats
                 updateStatsVisibility()
+                return true
+            }
+            KeyEvent.KEYCODE_SETTINGS -> {
+                // Same screen the gear opens from Home. The receiver stays up:
+                // Settings acquires it before this screen releases it.
+                if (event.repeatCount == 0) startActivity(Intent(this, SettingsActivity::class.java))
                 return true
             }
             KeyEvent.KEYCODE_DPAD_UP, KeyEvent.KEYCODE_DPAD_DOWN -> {

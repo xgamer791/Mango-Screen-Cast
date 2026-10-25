@@ -5,6 +5,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.view.KeyEvent
 import android.view.View
 import android.widget.Button
 import android.widget.TextView
@@ -63,6 +64,16 @@ class HomeActivity : Activity(), AirPlayReceiver.Listener, AppUpdater.Listener {
     }
 
     private fun openSettings() = startActivity(Intent(this, SettingsActivity::class.java))
+
+    // Some remotes deliver the gear as a key. The Hisense gear sends
+    // android.settings.SETTINGS instead; the manifest claims that intent.
+    override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
+        if (keyCode == KeyEvent.KEYCODE_SETTINGS) {
+            if (event.repeatCount == 0) openSettings()
+            return true
+        }
+        return super.onKeyDown(keyCode, event)
+    }
 
     // As the TV's Home app there is nowhere to go back to: Back must not close this screen.
     override fun onBackPressed() {}
