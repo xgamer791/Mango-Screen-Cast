@@ -30,6 +30,7 @@ class MirrorActivity : Activity(), SurfaceHolder.Callback, AirPlayReceiver.Liste
     private lateinit var statsView: TextView
     private lateinit var bannerView: TextView
     private lateinit var pausedView: TextView
+    private lateinit var coverView: View
 
     private val receiver get() = MangoApp.receiver
     private val settings get() = MangoApp.settings
@@ -44,6 +45,9 @@ class MirrorActivity : Activity(), SurfaceHolder.Callback, AirPlayReceiver.Liste
         }
     }
     private val hideBanner = Runnable { bannerView.animate().alpha(0f).setDuration(400).start() }
+    private val uncover = Runnable { coverView.visibility = View.GONE }
+    /** The shape of the picture being shown (0 before the first). */
+    private var pictureAspect = 0f
     private val displayListener = object : DisplayManager.DisplayListener {
         override fun onDisplayChanged(displayId: Int) {
             if (displayId == currentDisplay().displayId) receiver.video.setRefreshRate(currentDisplay().refreshRate)
@@ -61,6 +65,7 @@ class MirrorActivity : Activity(), SurfaceHolder.Callback, AirPlayReceiver.Liste
         statsView = findViewById(R.id.stats)
         bannerView = findViewById(R.id.banner)
         pausedView = findViewById(R.id.paused)
+        coverView = findViewById(R.id.shape_cover)
 
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
         @Suppress("DEPRECATION")
@@ -118,6 +123,7 @@ class MirrorActivity : Activity(), SurfaceHolder.Callback, AirPlayReceiver.Liste
     override fun onStop() {
         handler.removeCallbacks(statsTick)
         handler.removeCallbacks(hideBanner)
+        handler.removeCallbacks(uncover)
         getSystemService(DisplayManager::class.java).unregisterDisplayListener(displayListener)
         receiver.removeListener(this)
         receiver.video.listener = null
@@ -130,6 +136,12 @@ class MirrorActivity : Activity(), SurfaceHolder.Callback, AirPlayReceiver.Liste
     override fun surfaceCreated(holder: SurfaceHolder) {}
 
     override fun surfaceChanged(holder: SurfaceHolder, format: Int, width: Int, height: Int) {
+        receiver.video.setSurfaceSize(width, height)
+        if (coverView.visibility == View.VISIBLE) {
+            // Laid out for the new shape: show it once a frame or two has been drawn at it.
+            handler.removeCallbacks(uncover)
+            handler.postDelayed(uncover, UNCOVER_DELAY_MS)
+        }
         if (Build.VERSION.SDK_INT >= 30) {
             try {
                 holder.surface.setFrameRate(streamFps.toFloat(), Surface.FRAME_RATE_COMPATIBILITY_FIXED_SOURCE)
@@ -145,6 +157,16 @@ class MirrorActivity : Activity(), SurfaceHolder.Callback, AirPlayReceiver.Liste
 
     override fun onVideoSize(width: Int, height: Int) {
         runOnUiThread {
+            if (width <= 0 || height <= 0) return@runOnUiThread
+            // A new shape (the iPhone was turned): black for a moment, as the
+            // last frame would otherwise show stretched while the player resizes.
+            val aspect = width.toFloat() / height
+            if (pictureAspect != 0f && abs(aspect - pictureAspect) > pictureAspect * 0.02f) {
+                coverView.visibility = View.VISIBLE
+                handler.removeCallbacks(uncover)
+                handler.postDelayed(uncover, MAX_COVER_MS)
+            }
+            pictureAspect = aspect
             frame.setAspect(width, height)
             val root = frame.parent as View
             logLayout(width, height)
@@ -238,5 +260,12 @@ class MirrorActivity : Activity(), SurfaceHolder.Callback, AirPlayReceiver.Liste
             }
         }
         return super.onKeyDown(keyCode, event)
+    }
+
+    private companion object {
+        /** After the player is laid out for a new shape, before it's shown. */
+        const val UNCOVER_DELAY_MS = 80L
+        /** The longest the picture stays covered. */
+        const val MAX_COVER_MS = 700L
     }
 }

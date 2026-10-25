@@ -16,6 +16,14 @@
             android:layout_height="match_parent" />
     </com.mangoscreencast.tv.ui.AspectFrameLayout>
 
+    <!-- Black for a moment while the picture changes shape (an iPhone turned), so it's never seen stretched. -->
+    <View
+        android:id="@+id/shape_cover"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@android:color/black"
+        android:visibility="gone" />
+
     <TextView
         android:id="@+id/stats"
         android:layout_width="wrap_content"

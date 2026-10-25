@@ -8,6 +8,7 @@ import android.util.Log
 import android.view.Surface
 import com.mangoscreencast.tv.LatencyMode
 import java.nio.ByteBuffer
+import kotlin.math.abs
 
 /**
  * Hardware H.264/HEVC decoding straight onto a Surface.
@@ -90,6 +91,14 @@ class VideoDecoder internal constructor(
 
     @Volatile
     private var vsyncPeriodNs = 16_666_667L
+
+    // The player surface's shape and the picture's. While they differ (the
+    // iPhone was just turned) frames wait, so none is drawn stretched.
+    @Volatile
+    private var surfaceAspect = 0f
+    @Volatile
+    private var pictureAspect = 0f
+    private var shapeWaitSinceNs = 0L
 
     // Output-thread state and counters.
     @Volatile
@@ -182,6 +191,11 @@ class VideoDecoder internal constructor(
             }
         }
         wakeInput()
+    }
+
+    /** The player's surface is now `width` x `height` (from surfaceChanged). */
+    fun setSurfaceSize(width: Int, height: Int) {
+        if (width > 0 && height > 0) surfaceAspect = width.toFloat() / height
     }
 
     /** The display switched modes (e.g. to 60 Hz after the player asked for it). */
@@ -459,7 +473,7 @@ class VideoDecoder internal constructor(
     private fun render(codec: VideoCodec, index: Int, info: OutputInfo) {
         val now = System.nanoTime()
         try {
-            if (parked || info.ptsUs < catchUpUntilUs) {
+            if (parked || info.ptsUs < catchUpUntilUs || !shapeMatches(now)) {
                 codec.discard(index)
                 return
             }
@@ -500,7 +514,25 @@ class VideoDecoder internal constructor(
         if (width != outputWidth || height != outputHeight) note("decoded picture ${width}x$height")
         outputWidth = width
         outputHeight = height
+        if (width > 0 && height > 0) pictureAspect = width.toFloat() / height
+        shapeWaitSinceNs = 0
         listener?.onVideoSize(width, height)
+    }
+
+    /**
+     * Whether the player's surface has the picture's shape (or has had long
+     * enough to get it): until the player is laid out for a new shape, a
+     * frame drawn would be squeezed into the old one.
+     */
+    private fun shapeMatches(now: Long): Boolean {
+        val picture = pictureAspect
+        val surface = surfaceAspect
+        if (picture == 0f || surface == 0f || abs(surface - picture) <= picture * SHAPE_TOLERANCE) {
+            shapeWaitSinceNs = 0
+            return true
+        }
+        if (shapeWaitSinceNs == 0L) shapeWaitSinceNs = now
+        return now - shapeWaitSinceNs > MAX_SHAPE_WAIT_NS
     }
 
     // --- Helpers ----------------------------------------------------------------
@@ -535,6 +567,8 @@ class VideoDecoder internal constructor(
         const val MAX_QUEUED_FRAMES = 240
         const val MAX_GOP_BYTES = 48 shl 20
         const val MAX_POOLED_BYTES = 24 shl 20
+        const val SHAPE_TOLERANCE = 0.02f
+        const val MAX_SHAPE_WAIT_NS = 500_000_000L
     }
 }
 

@@ -38,10 +38,11 @@ class Settings(private val context: Context) {
             if (prefs.getString(KEY_FRAME_RATE, null) == FrameRateSetting.FPS_60.name) editor.remove(KEY_FRAME_RATE)
             editor.apply()
         }
-        // Auto, the TV's own resolution, is the default again after a while
-        // at 720p: every TV goes back to it once; what's picked after that is kept.
-        if (!prefs.getBoolean(KEY_RESOLUTION_AUTO_DEFAULT, false)) {
-            prefs.edit().putBoolean(KEY_RESOLUTION_AUTO_DEFAULT, true).remove(KEY_RESOLUTION).apply()
+        // 1080p is the default resolution, with an iPhone in landscape filling
+        // the screen: every TV starts there once, whatever it had; what's
+        // picked after that is kept.
+        if (!prefs.getBoolean(KEY_RESOLUTION_1080_DEFAULT, false)) {
+            prefs.edit().putBoolean(KEY_RESOLUTION_1080_DEFAULT, true).remove(KEY_RESOLUTION).remove(KEY_FILL_WIDE).apply()
         }
     }
 
@@ -58,7 +59,7 @@ class Settings(private val context: Context) {
 
     var resolution: ResolutionSetting
         get() = runCatching { ResolutionSetting.valueOf(prefs.getString(KEY_RESOLUTION, null)!!) }
-            .getOrDefault(ResolutionSetting.AUTO)
+            .getOrDefault(DEFAULT_RESOLUTION)
         set(value) = prefs.edit().putString(KEY_RESOLUTION, value.name).apply()
 
     var frameRate: FrameRateSetting
@@ -114,7 +115,8 @@ class Settings(private val context: Context) {
         const val KEY_ID = "device_id"
         const val KEY_NAME = "tv_name"
         const val KEY_RESOLUTION = "resolution"
-        const val KEY_RESOLUTION_AUTO_DEFAULT = "resolution_auto_default"
+        const val KEY_RESOLUTION_1080_DEFAULT = "resolution_1080_default"
+        val DEFAULT_RESOLUTION = ResolutionSetting.FHD_1080
         const val KEY_FRAME_RATE = "frame_rate"
         const val KEY_FRAME_RATE_120_DEFAULT = "frame_rate_120_default"
         const val KEY_LATENCY = "latency_mode"

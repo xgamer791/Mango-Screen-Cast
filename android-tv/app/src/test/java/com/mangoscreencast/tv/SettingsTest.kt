@@ -53,16 +53,24 @@ class SettingsTest {
     }
 
     @Test
-    fun resolutionIsAutoByDefault() {
-        assertEquals(ResolutionSetting.AUTO, Settings(context).resolution)
+    fun resolutionIs1080pByDefault() {
+        assertEquals(ResolutionSetting.FHD_1080, Settings(context).resolution)
     }
 
     @Test
-    fun anyResolutionSavedBeforeGoesBackToAutoOnce() {
-        for (old in listOf("HD_720", "UHD_2160", "QHD_1440", "FHD_1080")) {
+    fun anyResolutionSavedBeforeStartsAt1080pOnce() {
+        for (old in listOf("HD_720", "AUTO", "UHD_2160", "QHD_1440")) {
             prefs.edit().clear().putString("resolution", old).commit()
-            assertEquals(old, ResolutionSetting.AUTO, Settings(context).resolution)
+            assertEquals(old, ResolutionSetting.FHD_1080, Settings(context).resolution)
         }
+    }
+
+    @Test
+    fun fillingTheScreenWithALandscapeIPhoneIsBackOnOnceThenKept() {
+        prefs.edit().putBoolean("fill_wide", false).commit()
+        assertEquals(true, Settings(context).fillWidePictures)
+        Settings(context).fillWidePictures = false
+        assertEquals(false, Settings(context).fillWidePictures)
     }
 
     @Test
