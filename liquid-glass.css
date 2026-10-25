@@ -5,7 +5,7 @@
   --lg-blur: 6.5px;
   --lg-saturate: 100%;
   --lg-brightness: 70%;
-  --lg-tint: rgb(0 0 0 / 0.29);
+  --lg-tint: rgb(0 0 0 / 0.09);
   --lg-grain: none;
   --lg-light: 0deg; /* where light comes from, 0deg = top */
   --lg-rim: 0;
@@ -13,7 +13,7 @@
   --lg-rim-blur: 1.5px;
   --lg-sheen: 0;
   --lg-depth: 0;
-  --lg-shadow: 0 8.1px 18.8px rgb(0 0 0 / 0.11), 0 1px 2px rgb(0 0 0 / 0.04);
+  --lg-shadow: none;
   --lg-text: #16161d;
   --lg-fallback: rgb(205 205 207 / 0.9); /* used without backdrop-filter */
 
@@ -95,7 +95,7 @@
 /* Dark mode. Toggling themes with a class? Use that selector instead. */
 @media (prefers-color-scheme: dark) {
   .liquid-glass {
-    --lg-tint: rgb(9 9 12 / 0.55);
+    --lg-tint: rgb(9 9 12 / 0.31);
     --lg-text: #ffffff;
     --lg-fallback: rgb(20 20 25 / 0.9);
   }
