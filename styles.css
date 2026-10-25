@@ -1,0 +1,300 @@
+/* Mango Screen Cast — "Ready to Cast" TV screen.
+   Authored at 2560×1440 (1440p). Every coordinate below is in screen pixels
+   measured from the reference mock, then scaled to the 1440p canvas. */
+
+:root {
+  color-scheme: dark;
+
+  --bg-top: #1a2e6b;
+  --bg-mid: #172d68;
+  --bg-bottom: #152a63;
+  --text: #ffffff;
+  --cast-blue: #3770fa;
+
+  /* Center glass strip. --glass-base is the swappable frosted layer. */
+  --glass-base: rgba(0, 0, 0, 0.22);
+  --glass-blur: 36px;
+  --glass-rim: rgba(255, 255, 255, 0.13);
+
+  --tile-indigo-top: #555cfb;
+  --tile-indigo-bottom: #525edf;
+  --tile-blue-top: #4272fa;
+  --tile-blue-bottom: #4160e6;
+
+  --font: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
+          "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+html, body { margin: 0; height: 100%; }
+
+body {
+  overflow: hidden;
+  background: #000;
+  color: var(--text);
+  font-family: var(--font);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---------- Stage (the TV screen) ---------- */
+
+.stage {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 2560px;
+  height: 1440px;
+  margin: -720px 0 0 -1280px;
+  transform-origin: 50% 50%;
+  overflow: hidden;
+  background: linear-gradient(180deg, var(--bg-top) 0%, var(--bg-mid) 50%, var(--bg-bottom) 100%);
+}
+
+.stage > * { position: absolute; }
+
+.wallpaper {
+  inset: 0;
+  /* Blank on purpose. Wallpaper art goes here. */
+}
+
+/* Soft light behind the cast badge; the reference has a mist of light there. */
+.glow {
+  inset: 0;
+  background: radial-gradient(circle 980px at 1956px 352px,
+              rgba(84, 108, 214, 0.34) 0%,
+              rgba(84, 108, 214, 0.16) 34%,
+              rgba(84, 108, 214, 0) 68%);
+  pointer-events: none;
+}
+
+/* ---------- Copy ---------- */
+
+.headline {
+  left: 155px;
+  top: 186px;
+  margin: 0;
+  font-size: 118px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+
+.subtitle {
+  left: 157px;
+  top: 349px;
+  margin: 0;
+  font-size: 83px;
+  font-weight: 400;
+  line-height: 107px;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+}
+
+/* ---------- Cast badge (solid disc + two translucent rings) ---------- */
+
+.cast-badge {
+  left: 1771px;
+  top: 167px;
+  width: 370px;
+  height: 370px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 38% 30%, #3b73fb 0%, var(--cast-blue) 55%, #356cf6 100%);
+  display: grid;
+  place-items: center;
+  color: #fff;
+}
+
+.cast-badge::before,
+.cast-badge::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  z-index: -1;
+  pointer-events: none;
+}
+
+.cast-badge::before {
+  width: 473px;
+  height: 473px;
+  background: rgba(55, 112, 250, 0.52);
+}
+
+.cast-badge::after {
+  width: 569px;
+  height: 569px;
+  background: rgba(55, 112, 250, 0.23);
+}
+
+.cast-badge__icon {
+  width: 240px;
+  height: 226px;
+  margin-top: -16px;
+}
+
+/* ---------- Glass strip ---------- */
+
+.glass {
+  left: 154px;
+  top: 699px;
+  width: 2252px;
+  height: 343px;
+  border-radius: 34px;
+  isolation: isolate;
+}
+
+.glass__base,
+.glass__sheen,
+.glass__rim {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+}
+
+/* Black frosted layer. Swap this block for the supplied glass code. */
+.glass__base {
+  background: var(--glass-base);
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(1.25);
+  backdrop-filter: blur(var(--glass-blur)) saturate(1.25);
+}
+
+.glass__sheen {
+  background: linear-gradient(180deg,
+              rgba(255, 255, 255, 0.11) 0%,
+              rgba(255, 255, 255, 0.035) 38%,
+              rgba(255, 255, 255, 0) 62%,
+              rgba(255, 255, 255, 0.03) 100%);
+}
+
+.glass__rim {
+  box-shadow: inset 0 0 0 2px var(--glass-rim),
+              inset 0 2px 0 0 rgba(255, 255, 255, 0.18),
+              inset 0 -2px 0 0 rgba(0, 0, 0, 0.16);
+}
+
+/* Column dividers sit where the reference has them (not equal thirds). */
+.glass::before,
+.glass::after {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  top: 66px;
+  width: 3px;
+  height: 234px;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.glass::before { left: 701px; }
+.glass::after  { left: 1457px; }
+
+.step {
+  position: absolute;
+  top: 73px;
+  height: 200px;
+}
+
+.step--connect { left: 8px; }
+.step--detect  { left: 766px; }
+.step--cast    { left: 1518px; }
+
+.step__tile {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 144px;
+  height: 144px;
+  border-radius: 34px;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  background: linear-gradient(180deg, var(--tile-blue-top), var(--tile-blue-bottom));
+}
+
+.step--connect .step__tile {
+  background: linear-gradient(180deg, var(--tile-indigo-top), var(--tile-indigo-bottom));
+}
+
+.step__tile svg { width: 144px; height: 144px; }
+
+.step__title {
+  position: absolute;
+  left: 206px;
+  top: -1px;
+  margin: 0;
+  font-size: 64px;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.step__desc {
+  position: absolute;
+  left: 206px;
+  top: 80px;
+  margin: 0;
+  font-size: 48px;
+  font-weight: 400;
+  line-height: 70px;
+  white-space: nowrap;
+}
+
+/* ---------- Supported devices ---------- */
+
+.devices {
+  left: 154px;
+  top: 1110px;
+  width: 2252px;
+}
+
+.devices__label {
+  margin: 0 0 0 2px;
+  font-size: 54px;
+  font-weight: 600;
+  line-height: 1;
+}
+
+.devices__list {
+  position: absolute;
+  left: 0;
+  top: 98px;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 70px;
+}
+
+.device {
+  width: 100%;
+  height: 154px;
+  padding: 0;
+  border: 0;
+  border-radius: 22px;
+  background: #fff;
+  color: #000;
+  font: 500 58px/1 var(--font);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+}
+
+.device:focus-visible {
+  outline: 5px solid #fff;
+  outline-offset: 5px;
+}
+
+.device__logo { display: block; width: auto; }
+.device__logo--samsung { height: 41px; }
+.device__logo--lg      { height: 86px; }
+.device__logo--sony    { height: 41px; }
+.device__logo--tcl     { height: 60px; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .device { transition: transform 120ms ease; }
+  .device:hover { transform: translateY(-2px); }
+}

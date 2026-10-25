@@ -4,52 +4,77 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Mango Screen Cast For macOS/iOS</title>
-<style>
-  :root { color-scheme: dark; }
-  html, body { margin: 0; }
-  body {
-    min-height: 100vh;
-    min-height: 100dvh;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-sizing: border-box;
-    padding: 32px 24px;
-    background: #07070a;
-    color: #f2f2f5;
-    font: 400 16px/1.55 ui-sans-serif, -apple-system, "Segoe UI", Roboto, sans-serif;
-    text-align: center;
-  }
-  main { width: 100%; max-width: 34rem; }
-  h1 {
-    margin: 0 0 8px;
-    font-size: 22px;
-    font-weight: 600;
-    letter-spacing: -0.01em;
-    text-wrap: balance;
-  }
-  p {
-    margin: 0 auto;
-    max-width: 30rem;
-    color: #a6a6b2;
-    text-wrap: pretty;
-    overflow-wrap: break-word;
-  }
-  .dot {
-    width: 9px;
-    height: 9px;
-    border-radius: 50%;
-    background: #ff5c3d;
-    display: inline-block;
-    margin-right: 8px;
-    vertical-align: 1px;
-  }
-</style>
+<link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <main>
-    <h1><span class="dot" aria-hidden="true"></span>Mango Screen Cast For macOS/iOS</h1>
-    <p>Ready for the screen-share build. Nothing is published here yet.</p>
+  <!-- The TV screen is authored at 2560×1440 and scaled to fit the window (app.js). -->
+  <main class="stage" aria-label="Ready to Cast">
+    <!-- Wallpaper slot: intentionally blank for now. Drop an <img> or background here later. -->
+    <div class="wallpaper" aria-hidden="true"></div>
+    <div class="glow" aria-hidden="true"></div>
+
+    <h1 class="headline">Ready to Cast</h1>
+    <p class="subtitle">Get started by connecting<br>your devices to the TV</p>
+
+    <div class="cast-badge" aria-hidden="true">
+      <svg class="cast-badge__icon" viewBox="0 0 100 94" fill="none" stroke="currentColor" stroke-width="8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 56V31q0-10 10-10h61.5q10 0 10 10v45q0 10-10 10H56"/>
+        <path d="M37.5 9l12 12M61.5 9l-12 12"/>
+        <path d="M26 86a17 17 0 0 0-17-17M41 86a32 32 0 0 0-32-32"/>
+        <circle cx="9" cy="86" r="4.5" fill="currentColor" stroke="none"/>
+      </svg>
+    </div>
+
+    <section class="glass" aria-label="How it works">
+      <div class="glass__base" aria-hidden="true"></div>
+      <div class="glass__sheen" aria-hidden="true"></div>
+      <div class="glass__rim" aria-hidden="true"></div>
+
+      <div class="step step--connect">
+        <div class="step__tile" aria-hidden="true">
+          <svg viewBox="0 0 60 60" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round">
+            <path d="M13 24a24 24 0 0 1 34 0M18.7 29.7a16 16 0 0 1 22.6 0M24.3 35.3a8 8 0 0 1 11.4 0"/>
+            <circle cx="30" cy="42" r="3.5" fill="currentColor" stroke="none"/>
+          </svg>
+        </div>
+        <h2 class="step__title">Connect</h2>
+        <p class="step__desc">Ensure phone &amp; TV<br>on same Wi-Fi</p>
+      </div>
+
+      <div class="step step--detect">
+        <div class="step__tile" aria-hidden="true">
+          <svg viewBox="0 0 60 60" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round">
+            <circle cx="26" cy="26" r="12.5"/>
+            <path d="M35.5 35.5l8.5 9.5"/>
+          </svg>
+        </div>
+        <h2 class="step__title">Detect</h2>
+        <p class="step__desc">App will search for<br>nearby devices</p>
+      </div>
+
+      <div class="step step--cast">
+        <div class="step__tile" aria-hidden="true">
+          <svg viewBox="0 0 60 60" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="12.5" y="18" width="30.5" height="23.5" rx="4"/>
+            <path d="M22 13l5.75 5M33.5 13l-5.75 5"/>
+          </svg>
+        </div>
+        <h2 class="step__title">Cast</h2>
+        <p class="step__desc">Tap to connect and<br>start casting</p>
+      </div>
+    </section>
+
+    <section class="devices" aria-labelledby="devices-label">
+      <h2 class="devices__label" id="devices-label">Supported Devices</h2>
+      <ul class="devices__list">
+        <li><button class="device" type="button"><img class="device__logo device__logo--samsung" src="assets/logos/samsung.svg" alt="Samsung"></button></li>
+        <li><button class="device" type="button"><img class="device__logo device__logo--lg" src="assets/logos/lg.svg" alt="LG"></button></li>
+        <li><button class="device" type="button"><img class="device__logo device__logo--sony" src="assets/logos/sony.svg" alt="Sony"></button></li>
+        <li><button class="device" type="button"><img class="device__logo device__logo--tcl" src="assets/logos/tcl.svg" alt="TCL"></button></li>
+        <li><button class="device device--more" type="button">+More</button></li>
+      </ul>
+    </section>
   </main>
+  <script src="app.js"></script>
 </body>
 </html>
