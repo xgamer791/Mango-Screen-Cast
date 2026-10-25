@@ -20,6 +20,7 @@ struct SessionOptions {
     int fps = 60;
     double bitrateMbps = 0;  // 0: chosen from the picture size
     std::string encoder = "auto";  // auto, hardware, software
+    std::string capture = "auto";  // auto (Windows.Graphics.Capture, else Desktop Duplication), wgc, duplication
     double seconds = 0;      // 0: until stopped
 };
 

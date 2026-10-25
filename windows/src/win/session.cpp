@@ -15,6 +15,7 @@
 #include "core/stream_math.h"
 #include "d3d.h"
 #include "discovery.h"
+#include "duplication.h"
 #include "encoder.h"
 #include "log.h"
 #include "monitors.h"
@@ -130,8 +131,9 @@ namespace {
 class VideoSender {
 public:
     VideoSender(Connection& conn, Codec codec, Size maxSize, int fps, double bitrateOverride, std::string mode,
-                int64_t originUs)
-        : conn_(conn),
+                std::string captureMode, int64_t originUs)
+        : captureMode_(std::move(captureMode)),
+          conn_(conn),
           codec_(codec),
           maxSize_(maxSize),
           fps_(fps),
@@ -143,6 +145,7 @@ public:
     ~VideoSender() {
         encoder_.close();
         capture_.stop();
+        duplication_.stop();
     }
 
     bool setup(HMONITOR monitor, std::string* error) {
@@ -159,19 +162,25 @@ public:
         LOG("Graphics: %s%s", d3d_.adapterName.c_str(), d3d_.software ? " (drawn on the CPU)" : "");
         if (!converter_.init(d3d_.device.Get(), error)) return false;
         canRenderNv12_ = Nv12Converter::canRenderNv12(d3d_.device.Get());
-        if (!capture_.start(d3d_.device.Get(), monitor, error)) return false;
-        return true;
+        std::string why;
+        useDuplication_ = captureMode_ == "duplication";
+        if (captureMode_ == "auto" && !ScreenCapture::supported(&why)) {
+            LOG("%s; using Desktop Duplication", why.c_str());
+            useDuplication_ = true;
+        }
+        if (useDuplication_) return duplication_.start(d3d_.device.Get(), monitor, error);
+        return capture_.start(d3d_.device.Get(), monitor, error);
     }
 
     void requestKeyframe() { keyRequested_ = true; }
     Size size() const { return size_; }
     std::string encoderName() const { return encoder_.name() + (encoder_.hardware() ? "" : " (software)"); }
-    bool captureClosed() const { return capture_.closed(); }
+    bool captureClosed() const { return useDuplication_ ? duplication_.closed() : capture_.closed(); }
 
     // One tick of the frame clock. False (and why) when it can't go on.
     bool tick(int64_t nowUs, std::string* error) {
         ScreenCapture::Frame frame;
-        if (capture_.latest(frame)) {
+        if (useDuplication_ ? duplication_.latest(frame) : capture_.latest(frame)) {
             Size out = fitInside(frame.content, maxSize_);
             if (out != size_ || !encoder_.isOpen()) {
                 if (!openEncoder(out, error)) return false;
@@ -385,6 +394,7 @@ private:
         if (r.key) keys_++;
     }
 
+    std::string captureMode_;
     Connection& conn_;
     Codec codec_;
     Size maxSize_;
@@ -395,6 +405,8 @@ private:
 
     D3DDevice d3d_;
     ScreenCapture capture_;
+    DesktopDuplication duplication_;
+    bool useDuplication_ = false;
     Nv12Converter converter_;
     VideoEncoder encoder_;
     std::vector<EncoderCandidate> candidates_;
@@ -448,7 +460,8 @@ SessionResult Session::run(const SessionOptions& opt, StatusFn status, std::stri
     // What we can do, checked before connecting.
     std::string why;
     if (!startWinsock(&why) || !startMediaFoundation(&why)) return finish(SessionResult::Error, why);
-    if (!ScreenCapture::supported(&why)) return finish(SessionResult::Error, "Can't capture the screen: " + why);
+    if (opt.capture == "wgc" && !ScreenCapture::supported(&why))
+        return finish(SessionResult::Error, "Can't capture the screen: " + why + " (try --capture duplication)");
     auto monitors = listMonitors();
     if (monitors.empty()) return finish(SessionResult::Error, "No screen to capture.");
     const MonitorInfo* monitor = &monitors.front();
@@ -549,7 +562,7 @@ SessionResult Session::run(const SessionOptions& opt, StatusFn status, std::stri
     const Size maxSize{welcome.maxWidth, welcome.maxHeight};
     const int64_t originUs = qpcNowUs();
 
-    VideoSender video(conn, welcome.codec, maxSize, fps, opt.bitrateMbps * 1e6, opt.encoder, originUs);
+    VideoSender video(conn, welcome.codec, maxSize, fps, opt.bitrateMbps * 1e6, opt.encoder, opt.capture, originUs);
     conn.start([&](MsgType type, const std::vector<uint8_t>&) {
         if (type == MsgType::Keyframe) video.requestKeyframe();
     });

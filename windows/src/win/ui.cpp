@@ -302,6 +302,7 @@ private:
         so.fps = options_.fps;
         so.bitrateMbps = options_.bitrateMbps;
         so.encoder = options_.encoder;
+        so.capture = options_.capture;
         writeNumber(L"Monitor", static_cast<DWORD>(so.monitor));
         writeNumber(L"Sound", so.audio ? 1 : 0);
 
