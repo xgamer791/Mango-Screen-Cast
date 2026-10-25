@@ -226,6 +226,7 @@ class SettingsActivity : Activity(), AppUpdater.Listener {
             ResolutionSetting.UHD_2160 -> "4K (3840 × 2160)"
             ResolutionSetting.QHD_1440 -> "2K / 1440p (2560 × 1440)"
             ResolutionSetting.FHD_1080 -> "1080p (1920 × 1080)"
+            ResolutionSetting.HD_720 -> "720p (1280 × 720)"
         }
     }
 

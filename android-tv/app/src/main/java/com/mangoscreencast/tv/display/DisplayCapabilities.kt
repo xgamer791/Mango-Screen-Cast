@@ -17,6 +17,7 @@ enum class ResolutionSetting(val maxHeight: Int) {
     UHD_2160(2160),
     QHD_1440(1440),
     FHD_1080(1080),
+    HD_720(720),
 }
 
 /**
@@ -69,6 +70,8 @@ private object SystemDecoders : DecoderInfo {
 
 object DisplayCapabilities {
     private val CANDIDATES = listOf(3840 to 2160, 2560 to 1440, 1920 to 1080)
+    /** 720p is only offered when it's picked (it's the default); Auto never goes below 1080p. */
+    private val HD = listOf(1280 to 720)
     private const val HEVC = MediaFormat.MIMETYPE_VIDEO_HEVC
     private const val AVC = MediaFormat.MIMETYPE_VIDEO_AVC
 
@@ -129,12 +132,13 @@ object DisplayCapabilities {
         resolution: ResolutionSetting, frameRate: FrameRateSetting, panel: Panel, screenMaxHz: Float,
         decoders: DecoderInfo,
     ): MirrorProfile {
-        val sizes = CANDIDATES.filter { (width, height) -> height <= resolution.maxHeight && takes(decoders, width, height) }
+        val candidates = if (resolution == ResolutionSetting.HD_720) HD else CANDIDATES
+        val sizes = candidates.filter { (width, height) -> height <= resolution.maxHeight && takes(decoders, width, height) }
         val best = sizes.firstOrNull()
         val refresh = refreshFor(panel)
         fun offer(size: Pair<Int, Int>?, fps: Int, refreshRate: Int, note: String? = null): MirrorProfile {
-            // Nothing reported 1080p; ask for it anyway and let the decoder try.
-            val (width, height) = size ?: (1920 to 1080)
+            // Nothing reported the smallest size; ask for it anyway and let the decoder try.
+            val (width, height) = size ?: candidates.last()
             val h265 = if (size == null) decoders.hevcAvailable else decoders.supportsSize(HEVC, width, height)
             return MirrorProfile(width, height, refreshRate, fps, h265, panel, note)
         }

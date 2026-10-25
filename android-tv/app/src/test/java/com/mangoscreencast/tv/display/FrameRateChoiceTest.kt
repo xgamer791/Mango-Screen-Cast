@@ -72,4 +72,26 @@ class FrameRateChoiceTest {
         val p = choose(FrameRateSetting.FPS_30)
         assertEquals(listOf(3840, 2160, 30, 60), listOf(p.width, p.height, p.maxFps, p.refreshRate))
     }
+
+    @Test
+    fun sevenTwentyIsOfferedAtEveryFrameRate() {
+        val hd = ResolutionSetting.HD_720
+        val p30 = choose(FrameRateSetting.FPS_30, resolution = hd)
+        assertEquals(listOf(1280, 720, 30, 60), listOf(p30.width, p30.height, p30.maxFps, p30.refreshRate))
+        val p60 = choose(FrameRateSetting.FPS_60, resolution = hd)
+        assertEquals(listOf(1280, 720, 60, 60), listOf(p60.width, p60.height, p60.maxFps, p60.refreshRate))
+        assertEquals("720p", p60.sizeName)
+        val p120 = choose(FrameRateSetting.FPS_120, resolution = hd, fastSizes = setOf(720))
+        assertEquals(listOf(1280, 720, 120, 120), listOf(p120.width, p120.height, p120.maxFps, p120.refreshRate))
+        assertNull(p120.note)
+        // A decoder not rated for 720p120: 60, and says why.
+        val slow = choose(FrameRateSetting.FPS_120, resolution = hd, fastSizes = emptySet())
+        assertEquals(listOf(1280, 720, 60), listOf(slow.width, slow.height, slow.maxFps))
+    }
+
+    @Test
+    fun autoNeverGoesBelow1080p() {
+        val p = choose(FrameRateSetting.FPS_120, fastSizes = setOf(720))
+        assertEquals(listOf(3840, 2160, 60), listOf(p.width, p.height, p.maxFps))
+    }
 }
