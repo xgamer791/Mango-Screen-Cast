@@ -2,9 +2,9 @@
 
 #include <windows.h>
 #include <audioclient.h>
+#include <mmdeviceapi.h>  // (before the property keys: it brings DEFINE_PROPERTYKEY)
 #include <functiondiscoverykeys_devpkey.h>
 #include <ksmedia.h>
-#include <mmdeviceapi.h>
 #include <wrl/client.h>
 
 #include <vector>

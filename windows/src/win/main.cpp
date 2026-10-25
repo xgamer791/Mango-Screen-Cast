@@ -16,6 +16,7 @@
 #include "encoder.h"
 #include "log.h"
 #include "monitors.h"
+#include "net.h"
 #include "audio.h"
 #include "session.h"
 #include "ui.h"
