@@ -188,6 +188,11 @@ bool Nv12Converter::configure(Size size, Output output, std::string* error) {
             td.Width = w;
             td.Height = h;
             td.Format = DXGI_FORMAT_NV12;
+            // Some encoders read their input with shaders; let them when the driver allows.
+            UINT support = 0;
+            if (SUCCEEDED(device_->CheckFormatSupport(DXGI_FORMAT_NV12, &support)) &&
+                (support & D3D11_FORMAT_SUPPORT_SHADER_SAMPLE))
+                td.BindFlags |= D3D11_BIND_SHADER_RESOURCE;
             hr = device_->CreateTexture2D(&td, nullptr, &t.texture);
             D3D11_RENDER_TARGET_VIEW_DESC rv{};
             rv.ViewDimension = D3D11_RTV_DIMENSION_TEXTURE2D;

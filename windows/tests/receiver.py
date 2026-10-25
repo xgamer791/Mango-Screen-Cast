@@ -152,6 +152,7 @@ class Receiver:
     pause:        (start, seconds): stop reading for a while
     rcvbuf:       socket receive buffer size
     unknown_at:   seconds after WELCOME to send a message type nobody knows
+    run_at:       (seconds, command): run a command then (e.g. change the screen's resolution)
     """
 
     def __init__(self, scenario, host="127.0.0.1", port=0):
@@ -171,6 +172,7 @@ class Receiver:
         self.pings_sent = {}     # payload -> time sent
         self.pongs = {}          # payload -> time answered
         self.keyframe_sent = None
+        self.run_result = None
         self.closed_by_sender = False
         self.connected = threading.Event()
         self.done = threading.Event()
@@ -260,7 +262,7 @@ class Receiver:
         """Our side of the conversation: PINGs, KEYFRAME, an unknown message, BYE."""
         sc, t0 = self.sc, self.welcome_time
         next_ping = t0 + sc.get("ping_every", 1.0)
-        keyframe_done = unknown_done = False
+        keyframe_done = unknown_done = run_done = False
         while not self.done.is_set():
             now = time.monotonic() - t0
             if sc.get("silent_after") is not None and now >= sc["silent_after"]:
@@ -278,6 +280,9 @@ class Receiver:
                 keyframe_done = True
                 self.keyframe_sent = time.monotonic()
                 self.send(KEYFRAME)
+            if sc.get("run_at") and not run_done and now >= sc["run_at"][0]:
+                run_done = True
+                threading.Thread(target=self._run_command, args=(sc["run_at"][1],), daemon=True).start()
             if sc.get("unknown_at") is not None and not unknown_done and now >= sc["unknown_at"]:
                 unknown_done = True
                 self.send(0x5A, b"\x00" * 100)
@@ -287,6 +292,10 @@ class Receiver:
                 self.send(PING, payload)
                 next_ping += sc.get("ping_every", 1.0)
             time.sleep(0.02)
+
+    def _run_command(self, command):
+        proc = subprocess.run(command, capture_output=True, timeout=60)
+        self.run_result = (proc.returncode, proc.stdout.decode("utf-8", "replace").strip())
 
     def _listen(self):
         sc = self.sc
@@ -540,6 +549,8 @@ def decode(codec, video, findings, rx, sc, seconds, out_path=None):
             rx.problem(f"picture size {w}x{h} isn't even")
         if rx.welcome.get("maxWidth") and (w > rx.welcome["maxWidth"] or h > rx.welcome["maxHeight"]):
             rx.problem(f"picture size {w}x{h} is over the receiver's {rx.welcome['maxWidth']}x{rx.welcome['maxHeight']}")
+    if sc.get("expect_resize") and len(sizes) < 2:
+        rx.problem(f"the screen changed size but the pictures didn't ({findings['sizes']})")
     if sc.get("expect_size"):
         want = fit_inside(hello["width"], hello["height"], rx.welcome["maxWidth"], rx.welcome["maxHeight"])
         if sizes != [want]:
@@ -563,6 +574,7 @@ def decode(codec, video, findings, rx, sc, seconds, out_path=None):
 # --- Scenarios ------------------------------------------------------------------
 
 AUDIO_ON = {"format": "pcm_s16le", "rate": 48000, "channels": 2}
+DISPLAY_PS1 = os.path.join(os.path.dirname(os.path.abspath(__file__)), "display.ps1")
 
 
 def scenarios(sound):
@@ -593,6 +605,24 @@ def scenarios(sound):
              expect_audio=sound, min_fps=8, expect_congestion=True,
              about="the receiver stops reading for 3 s: the sender drops pictures until a keyframe, "
                    "lowers its bitrate, and the stream stays decodable"),
+        dict(name="textures", seconds=4, env={"MANGO_TEST_TEXTURES": "1"},
+             welcome=dict(protocol=1, name="Test Receiver", maxWidth=800, maxHeight=600, fps=30, audio=None),
+             expect_audio=False, expect_size=True, min_fps=12,
+             about="the hardware encoders' path: NV12 textures drawn on the GPU, handed to the encoder as "
+                   "Direct3D surfaces (scaled to 800x600)"),
+        dict(name="resize", seconds=8, keyframe_at=6.0,
+             run_at=(3.0, ["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", DISPLAY_PS1,
+                           "-Width", "1280", "-Height", "720"]),
+             cleanup=["powershell", "-NoProfile", "-ExecutionPolicy", "Bypass", "-File", DISPLAY_PS1,
+                      "-Width", "1024", "-Height", "768"],
+             welcome=dict(protocol=1, name="Test Receiver", maxWidth=1920, maxHeight=1080, fps=30, audio=None),
+             expect_audio=False, expect_resize=True, min_fps=10,
+             about="the screen goes from 1024x768 to 1280x720 mid-stream: a keyframe with new parameter sets"),
+        dict(name="window", window=True, seconds=4,
+             welcome=dict(protocol=1, name="Window Test TV", maxWidth=1920, maxHeight=1080, fps=30,
+                          audio=AUDIO_ON),
+             expect_audio=sound, min_fps=12,
+             about="the window: type an address, Connect, watch the status line, Stop, close"),
         dict(name="refuse", refuse={"reason": "busy", "message": "An iPhone is mirroring to this TV."},
              expect_exit=3, expect_text="An iPhone is mirroring to this TV.",
              about="REFUSE busy: the sender exits with code 3 and says why"),
@@ -614,14 +644,22 @@ def run_scenario(exe, sc, out_dir):
     args = [exe, "--connect", f"127.0.0.1:{rx.port}", "--log", log_path] + sc.get("args", [])
     if sc.get("seconds"):
         args += ["--seconds", str(sc["seconds"])]
+    env = dict(os.environ, **sc.get("env", {}))
     started = time.monotonic()
     try:
-        proc = subprocess.run(args, capture_output=True, timeout=90)
+        proc = subprocess.run(args, capture_output=True, timeout=90, env=env)
     except subprocess.TimeoutExpired:
         rx.problem("the sender didn't finish within 90 s")
         return findings, rx.problems, ""
+    finally:
+        if sc.get("cleanup"):
+            subprocess.run(sc["cleanup"], capture_output=True, timeout=60)
     runtime = time.monotonic() - started
     rx.done.wait(10)
+    if sc.get("run_at"):
+        findings["command"] = rx.run_result
+        if not rx.run_result or rx.run_result[0] != 0:
+            rx.problem(f"the scenario's command failed: {rx.run_result}")
     stderr = proc.stderr.decode("utf-8", "replace")
     findings["exit_code"] = proc.returncode
     findings["runtime_s"] = round(runtime, 1)
@@ -654,6 +692,93 @@ def run_scenario(exe, sc, out_dir):
     return findings, rx.problems, stderr + ("\n--- log ---\n" + log if rx.problems else "")
 
 
+# The window's control IDs (src/win/ui.cpp).
+ID_ADDRESS, ID_CONNECT, ID_STOP, ID_STATUS = 102, 105, 106, 107
+
+
+def run_window_scenario(exe, sc, out_dir):
+    """MangoCast.exe without options: type an address, Connect, Stop, close
+    the window, all through window messages, as a person would with clicks."""
+    import ctypes
+    from ctypes import wintypes
+
+    user32 = ctypes.WinDLL("user32", use_last_error=True)
+    user32.FindWindowW.restype = wintypes.HWND
+    user32.FindWindowW.argtypes = [wintypes.LPCWSTR, wintypes.LPCWSTR]
+    user32.GetDlgItem.restype = wintypes.HWND
+    user32.GetDlgItem.argtypes = [wintypes.HWND, ctypes.c_int]
+    user32.PostMessageW.argtypes = [wintypes.HWND, wintypes.UINT, wintypes.WPARAM, wintypes.LPARAM]
+    user32.SendMessageTimeoutW.argtypes = [wintypes.HWND, wintypes.UINT, wintypes.WPARAM, ctypes.c_void_p,
+                                           wintypes.UINT, wintypes.UINT, ctypes.POINTER(ctypes.c_size_t)]
+    WM_SETTEXT, WM_GETTEXT, WM_COMMAND, WM_CLOSE = 0x000C, 0x000D, 0x0111, 0x0010
+
+    def text_of(hwnd):
+        buf = ctypes.create_unicode_buffer(512)
+        res = ctypes.c_size_t()
+        user32.SendMessageTimeoutW(hwnd, WM_GETTEXT, 512, ctypes.cast(buf, ctypes.c_void_p), 2, 2000,
+                                   ctypes.byref(res))
+        return buf.value
+
+    def wait_for(cond, seconds):
+        until = time.monotonic() + seconds
+        while time.monotonic() < until:
+            if cond():
+                return True
+            time.sleep(0.1)
+        return False
+
+    findings = {}
+    rx = Receiver(sc)
+    log_path = os.path.join(out_dir, sc["name"] + ".log")
+    proc = subprocess.Popen([exe, "--log", log_path])
+    hwnd = None
+    try:
+        if not wait_for(lambda: user32.FindWindowW("MangoCastWindow", "Mango Cast"), 15):
+            rx.problem("the window didn't open")
+            return findings, rx.problems, ""
+        hwnd = user32.FindWindowW("MangoCastWindow", "Mango Cast")
+        status = user32.GetDlgItem(hwnd, ID_STATUS)
+        findings["status_at_start"] = text_of(status)
+        address = ctypes.create_unicode_buffer(f"127.0.0.1:{rx.port}")
+        res = ctypes.c_size_t()
+        user32.SendMessageTimeoutW(user32.GetDlgItem(hwnd, ID_ADDRESS), WM_SETTEXT, 0,
+                                   ctypes.cast(address, ctypes.c_void_p), 2, 2000, ctypes.byref(res))
+        user32.PostMessageW(hwnd, WM_COMMAND, ID_CONNECT, 0)
+        if not wait_for(lambda: text_of(status).startswith("Streaming to"), 20):
+            rx.problem(f"the status never said it was streaming (it says {text_of(status)!r})")
+        findings["status_streaming"] = text_of(status)
+        time.sleep(sc["seconds"])
+        user32.PostMessageW(hwnd, WM_COMMAND, ID_STOP, 0)
+        rx.done.wait(10)
+        if not wait_for(lambda: text_of(status).startswith("Stopped"), 10):
+            rx.problem(f"after Stop the status says {text_of(status)!r}")
+        findings["status_stopped"] = text_of(status)
+        user32.PostMessageW(hwnd, WM_CLOSE, 0, 0)
+        try:
+            findings["exit_code"] = proc.wait(15)
+            if proc.returncode != 0:
+                rx.problem(f"the window closed with exit code {proc.returncode}")
+        except subprocess.TimeoutExpired:
+            rx.problem("the program didn't end when its window was closed")
+    finally:
+        if proc.poll() is None:
+            proc.kill()
+    check_hello(rx, findings)
+    if rx.welcome_time is not None:
+        end = rx.messages[-1][0] if rx.messages else rx.welcome_time
+        seconds = max(1.0, end - rx.welcome_time)
+        video = check_stream(rx, sc, findings, seconds)
+        if video:
+            decode(rx.codec, video, findings, rx, sc, seconds, os.path.join(out_dir, sc["name"] + ".h264"))
+        if findings.get("bye") != "stopped":
+            rx.problem(f"BYE said {findings.get('bye')!r}, expected 'stopped'")
+    log = ""
+    if rx.problems and os.path.exists(log_path):
+        with open(log_path, encoding="utf-8", errors="replace") as f:
+            log = "--- log ---\n" + f.read()
+    return findings, rx.problems, log
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--exe", required=True)
@@ -668,7 +793,8 @@ def main():
         if a.only and sc["name"] not in a.only:
             continue
         print(f"\n=== {sc['name']}: {sc['about']}", flush=True)
-        findings, problems, output = run_scenario(os.path.abspath(a.exe), sc, a.out)
+        run = run_window_scenario if sc.get("window") else run_scenario
+        findings, problems, output = run(os.path.abspath(a.exe), sc, a.out)
         summary[sc["name"]] = {"findings": findings, "problems": problems}
         for k, v in findings.items():
             if k != "hello":

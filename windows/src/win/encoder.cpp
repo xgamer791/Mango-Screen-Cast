@@ -284,10 +284,11 @@ public:
     STDMETHODIMP Invoke(IMFAsyncResult* result) override {
         auto impl = impl_.lock();
         if (!impl) return S_OK;
+        // Under the lock: close() lets go of `events` under it too.
+        std::lock_guard<std::mutex> lock(impl->mutex);
+        if (impl->closed || !impl->events) return S_OK;
         ComPtr<IMFMediaEvent> event;
         HRESULT hr = impl->events->EndGetEvent(result, &event);
-        std::lock_guard<std::mutex> lock(impl->mutex);
-        if (impl->closed) return S_OK;
         if (FAILED(hr)) {
             impl->fail("lost the encoder's events: " + hresultText(hr));
             return S_OK;
@@ -365,6 +366,7 @@ bool VideoEncoder::open(const EncoderCandidate& candidate, const Config& config,
         attrs->GetUINT32(MF_TRANSFORM_ASYNC, &async);
         impl->async = async != 0;
         if (impl->async) attrs->SetUINT32(MF_TRANSFORM_ASYNC_UNLOCK, TRUE);
+        attrs->SetUINT32(MF_LOW_LATENCY, TRUE);
     }
     hr = impl->mft->GetStreamIDs(1, &impl->inId, 1, &impl->outId);
     if (hr == E_NOTIMPL) {
@@ -392,6 +394,7 @@ bool VideoEncoder::open(const EncoderCandidate& candidate, const Config& config,
             }
         }
     }
+    if (device && config.forceTextures && !impl->textures) impl->textures = true;
 
     impl->mft.As(&impl->codecApi);
     impl->applySettings();
@@ -482,7 +485,6 @@ void VideoEncoder::close() {
         ComPtr<IMFShutdown> shutdown;
         if (SUCCEEDED(impl->mft.As(&shutdown))) shutdown->Shutdown();
     }
-    if (impl->mft && impl->manager) impl->mft->ProcessMessage(MFT_MESSAGE_SET_D3D_MANAGER, 0);
     if (impl->activate) impl->activate->ShutdownObject();
     std::lock_guard<std::mutex> lock(impl->mutex);
     impl->events.Reset();

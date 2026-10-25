@@ -278,7 +278,9 @@ private:
                 cfg.bitrate = bitrateOverride_ > 0 ? bitrateOverride_ : defaultBitrate(s, fps_);
                 // Textures only on our own adapter, when we can draw NV12.
                 bool sameAdapter = !c.hasAdapter || sameLuid(c.adapter, d3d_.luid);
-                ID3D11Device* device = c.hardware && sameAdapter && canRenderNv12_ ? d3d_.device.Get() : nullptr;
+                cfg.forceTextures = testTextures_ && canRenderNv12_;
+                ID3D11Device* device =
+                    (c.hardware && sameAdapter && canRenderNv12_) || cfg.forceTextures ? d3d_.device.Get() : nullptr;
                 std::string why;
                 auto output = [this](const uint8_t* data, size_t n, int64_t time100ns, bool clean) {
                     onEncoded(data, n, time100ns, clean);
@@ -372,6 +374,8 @@ private:
     VideoEncoder encoder_;
     std::vector<EncoderCandidate> candidates_;
     bool canRenderNv12_ = false;
+    // MANGO_TEST_TEXTURES=1: the hardware encoders' texture path, with any encoder (for CI).
+    const bool testTextures_ = GetEnvironmentVariableW(L"MANGO_TEST_TEXTURES", nullptr, 0) > 0;
     Size size_;
     std::vector<uint8_t> picture_;  // NV12 in memory (software path)
     int64_t captureUs_ = 0, lastEncodeUs_ = 0, lastTs_ = -1;
@@ -484,7 +488,8 @@ SessionResult Session::run(const SessionOptions& opt, StatusFn status, std::stri
         std::string text(payload.begin(), payload.end());
         if (type == MsgType::Refuse) {
             LOG("REFUSE %s", text.c_str());
-            return finish(SessionResult::Refused, targetName + " said no: " + describeRefusal(parseRefuse(text)));
+            std::string who = opt.targetName.empty() && targetName == opt.target ? "The receiver" : targetName;
+            return finish(SessionResult::Refused, who + " said no: " + describeRefusal(parseRefuse(text)));
         }
         if (type == MsgType::Ping) {
             conn.sendNow(MsgType::Pong, text, nullptr);

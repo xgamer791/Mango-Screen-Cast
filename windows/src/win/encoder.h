@@ -43,6 +43,10 @@ public:
         Size size;
         int fps = 60;
         double bitrate = 16e6;
+        // Tests only: feed Direct3D textures even to an encoder that doesn't
+        // ask for them (Media Foundation copies them to memory), so the path
+        // hardware encoders take runs on a machine without one.
+        bool forceTextures = false;
     };
     // One encoded picture, as the encoder made it (Annex B).
     using Output = std::function<void(const uint8_t* data, size_t size, int64_t time100ns, bool cleanPoint)>;
