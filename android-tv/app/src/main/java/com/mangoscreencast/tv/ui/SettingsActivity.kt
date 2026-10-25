@@ -53,6 +53,17 @@ class SettingsActivity : Activity(), AppUpdater.Listener {
         updater.addListener(this)
     }
 
+    // In front: the gear closes it (GearKeyService).
+    override fun onResume() {
+        super.onResume()
+        FrontSettings.shown(this)
+    }
+
+    override fun onPause() {
+        FrontSettings.hidden(this)
+        super.onPause()
+    }
+
     override fun onStop() {
         updater.removeListener(this)
         receiver.release(this)

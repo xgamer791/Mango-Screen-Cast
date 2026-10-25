@@ -1,6 +1,7 @@
 package com.mangoscreencast.tv.ui
 
 import android.accessibilityservice.AccessibilityService
+import android.app.Activity
 import android.app.Application
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -24,13 +25,17 @@ import org.xmlpull.v1.XmlPullParser
  * The Hisense remote's gear sends KEYCODE_NOTIFICATION, which the system
  * takes before any app sees it and gives only to a system app's panel. The
  * gear service sees keys first, as an accessibility service filtering them,
- * and opens Mango Settings instead; every other key goes on as it was.
+ * and opens Mango Settings instead, or closes it when it's in front, as the
+ * dashboard did; every other key goes on as it was.
  */
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [34], application = Application::class)
 class GearKeyServiceTest {
     private val context get() = RuntimeEnvironment.getApplication()
     private val service = Robolectric.setupService(GearKeyService::class.java)
+
+    @org.junit.After
+    fun nothingInFront() = FrontSettings.clear()
 
     private fun key(action: Int, code: Int, repeat: Int = 0, flags: Int = 0) =
         KeyEvent(0, 0, action, code, repeat, 0, 9, 0, flags)
@@ -50,6 +55,47 @@ class GearKeyServiceTest {
         assertEquals(SettingsActivity::class.java.name, intent!!.component?.className)
         assertTrue("from the service, a task of its own", intent.flags and Intent.FLAG_ACTIVITY_NEW_TASK != 0)
         assertNull(started())
+    }
+
+    /** A Settings screen in front, as SettingsActivity reports itself while it's resumed. */
+    private fun settingsInFront(): Activity =
+        Robolectric.buildActivity(Activity::class.java).create().start().resume().get().also { FrontSettings.shown(it) }
+
+    @Test
+    fun pressingTheGearAgainClosesMangoSettings() {
+        val shown = settingsInFront()
+        assertEquals(true to true, press(KeyEvent.KEYCODE_NOTIFICATION))
+        assertTrue("it closes", shown.isFinishing)
+        assertNull("nothing opens", started())
+    }
+
+    @Test
+    fun theGearOpensSettingsAgainOnceItsClosed() {
+        val shown = settingsInFront()
+        press(KeyEvent.KEYCODE_NOTIFICATION)
+        assertTrue(shown.isFinishing)
+        FrontSettings.hidden(shown) // its onPause
+        press(KeyEvent.KEYCODE_NOTIFICATION)
+        assertEquals(SettingsActivity::class.java.name, started()?.component?.className)
+    }
+
+    @Test
+    fun settingsBehindAnotherAppIsOpenedNotClosed() {
+        val behind = settingsInFront()
+        FrontSettings.hidden(behind) // paused: another app came in front of it
+        press(KeyEvent.KEYCODE_NOTIFICATION)
+        assertFalse(behind.isFinishing)
+        assertEquals(SettingsActivity::class.java.name, started()?.component?.className)
+    }
+
+    @Test
+    fun anOlderScreenPausingLateDoesntHideTheNewOne() {
+        val old = settingsInFront()
+        val new = settingsInFront()
+        FrontSettings.hidden(old)
+        press(KeyEvent.KEYCODE_NOTIFICATION)
+        assertTrue("the one in front closes", new.isFinishing)
+        assertFalse(old.isFinishing)
     }
 
     @Test
