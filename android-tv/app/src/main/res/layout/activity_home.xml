@@ -9,13 +9,20 @@
     android:layout_height="match_parent"
     android:background="@drawable/home_background">
 
-    <!-- Wallpaper slot: blank on purpose until there is art for it. -->
+    <!-- Wallpaper: Manhattan in fog at dusk, 3840 x 2160 (half of it on a 1080p UI, pixel for pixel). -->
     <ImageView
         android:id="@+id/wallpaper"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:contentDescription="@null"
-        android:scaleType="centerCrop" />
+        android:scaleType="centerCrop"
+        android:src="@drawable/home_wallpaper" />
+
+    <!-- 30% black over the wallpaper, so the text stands off it. -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#4D000000" />
 
     <!-- Soft light behind the cast badge. -->
     <View
