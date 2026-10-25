@@ -17,10 +17,17 @@
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
     <uses-permission android:name="android.permission.UPDATE_PACKAGES_WITHOUT_USER_ACTION" />
 
-    <queries>
+        <queries>
         <!-- So Settings can tell whether this TV has a "Display over other apps" screen. -->
         <intent>
             <action android:name="android.settings.action.MANAGE_OVERLAY_PERMISSION" />
+        </intent>
+        <!-- So Settings can find the TV's own settings app and open that dashboard
+             directly. On Android 11 and later, other apps that handle this action
+             are hidden unless they are declared here. -->
+        <intent>
+            <action android:name="android.settings.SETTINGS" />
+            <category android:name="android.intent.category.DEFAULT" />
         </intent>
         <!-- The home screen's streaming apps (apps/StreamingApps.kt): Android 11 and
              later hide other apps, their banners and their launch intents otherwise. -->
@@ -78,9 +85,26 @@
             android:theme="@style/Theme.Mango.Fullscreen"
             android:configChanges="keyboard|keyboardHidden|navigation|screenSize|screenLayout|smallestScreenSize|orientation|uiMode|density" />
 
+        <!--
+            The remote's gear key is consumed by the system, which starts
+            android.settings.SETTINGS. TvSettings handles that action at the
+            default priority, and Android drops a higher priority set by an app
+            that is not privileged, so the two tie. The first press then asks
+            which Settings to use; choosing Mango and Always makes the gear,
+            and `am start -a android.settings.SETTINGS`, open this screen.
+            The Google dashboard stays installed. The last row here opens it
+            by its own component, so it still opens after Mango is chosen.
+        -->
         <activity
             android:name=".ui.SettingsActivity"
-            android:exported="false" />
+            android:exported="true"
+            android:launchMode="singleTop">
+            <intent-filter android:label="@string/settings_gear_label">
+                <action android:name="android.intent.action.MAIN" />
+                <action android:name="android.settings.SETTINGS" />
+                <category android:name="android.intent.category.DEFAULT" />
+            </intent-filter>
+        </activity>
 
         <service
             android:name=".ReceiverService"
