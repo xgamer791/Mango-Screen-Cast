@@ -2,6 +2,4 @@
 <resources>
     <!-- Mango Liquid Glass, dark (the web version's prefers-color-scheme: dark):
          rgb(9 9 12 / 0.22) over the frosted backdrop; rgb(20 20 25 / 0.9) without one. -->
-    <color name="glass_tint">#3809090C</color>
-    <color name="glass_fallback">#E6141419</color>
 </resources>

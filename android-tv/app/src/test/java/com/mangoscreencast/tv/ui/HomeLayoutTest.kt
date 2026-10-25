@@ -79,21 +79,8 @@ class HomeLayoutTest {
     }
 
     @Test
-    fun connected() = check("connected") { root ->
+    fun failedUpdateCheck() = check("errors") { root ->
         ready(root)
-        root.text(R.id.status, root.context.getString(R.string.status_connected, "Christopher’s MacBook Air"))
-        root.text(R.id.subtitle, root.context.getString(R.string.status_connected_detail))
-        root.findViewById<TextView>(R.id.status_detail).visibility = View.GONE
-        root.text(R.id.update_status, root.context.getString(R.string.version_up_to_date, "1.2.31"))
-    }
-
-    @Test
-    fun failedUpdateCheckAndTwoLineStatus() = check("errors") { root ->
-        ready(root)
-        root.text(R.id.status, root.context.getString(R.string.status_failed))
-        root.findViewById<TextView>(R.id.subtitle).visibility = View.GONE
-        root.findViewById<TextView>(R.id.status_detail).visibility = View.VISIBLE
-        root.text(R.id.status_detail, "Couldn't announce the TV on the network. Check that the TV is on Wi-Fi or Ethernet.")
         root.text(R.id.update_status,
             "Couldn't check for updates (Unable to resolve host \"github.com\": No address associated with hostname)")
         root.findViewById<Button>(R.id.update_button).apply {
@@ -102,20 +89,35 @@ class HomeLayoutTest {
         }
     }
 
+    /** Under the wallpaper, only the apps, the version and an update's button: no headline,
+     * no lines under it, no glass strip of steps. */
+    @Test
+    fun noTextOnTopAndNoGlassStrip() {
+        val root = home()
+        val ids = mutableListOf<String>()
+        val kinds = mutableListOf<String>()
+        visit(root) { view ->
+            if (view.id != View.NO_ID) ids += view.resources.getResourceEntryName(view.id)
+            kinds += view.javaClass.simpleName
+        }
+        for (gone in listOf("status", "subtitle", "status_detail", "steps")) assertTrue("$gone: $ids", gone !in ids)
+        assertTrue(kinds.toString(), "LiquidGlassLayout" !in kinds)
+    }
+
     @Test
     fun noSettingsButtonTheGearOpensTheMenu() {
-        val activity = Robolectric.buildActivity(Activity::class.java).setup().get()
-        val root = LayoutInflater.from(ContextThemeWrapper(activity, R.style.Theme_Mango)).inflate(R.layout.activity_home, null)
+        val root = home()
         val buttons = mutableListOf<String>()
-        visit(root) { if (it is android.widget.Button) buttons += it.text.toString() }
-        assertTrue(buttons.toString(), activity.getString(R.string.settings) !in buttons)
+        visit(root) { if (it is Button) buttons += it.text.toString() }
+        assertTrue(buttons.toString(), root.context.getString(R.string.settings) !in buttons)
+    }
+
+    private fun home(): View {
+        val activity = Robolectric.buildActivity(Activity::class.java).setup().get()
+        return LayoutInflater.from(ContextThemeWrapper(activity, R.style.Theme_Mango)).inflate(R.layout.activity_home, null)
     }
 
     private fun ready(root: View) {
-        val c = root.context
-        root.text(R.id.status, c.getString(R.string.status_ready))
-        root.text(R.id.subtitle, c.getString(R.string.ready_subtitle))
-        root.findViewById<TextView>(R.id.status_detail).visibility = View.GONE
         AppTiles.fill(root.findViewById(R.id.apps_row)) {}
     }
 

@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  The "Ready to Cast" home screen, on Android TV's 960 x 540 dp canvas (the
-  same on 1080p and 4K panels). Content sits in a 60 dp margin on both
-  sides; the vertical rhythm from the top is 48 / 114 / 204 / 255.2 / 380 / 416 / 490.
+  The home screen, on Android TV's 960 x 540 dp canvas (the same on 1080p
+  and 4K panels): the wallpaper, and the apps along the bottom in a 60 dp
+  margin on both sides. No headline or glass strip over it.
 -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
@@ -18,7 +18,7 @@
         android:scaleType="centerCrop"
         android:src="@drawable/home_wallpaper" />
 
-    <!-- 30% black over the wallpaper, so the text stands off it. -->
+    <!-- 30% black over the wallpaper, so the apps and their label stand off it. -->
     <View
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -31,132 +31,6 @@
         android:layout_marginStart="353.5dp"
         android:layout_marginTop="-248dp"
         android:background="@drawable/home_glow" />
-
-    <TextView
-        android:id="@+id/status"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="60dp"
-        android:layout_marginTop="48dp"
-        android:fontFamily="@font/geist_bold"
-        android:includeFontPadding="false"
-        android:maxLines="1"
-        android:textColor="#FFFFFF"
-        android:textSize="31.68sp" />
-
-    <TextView
-        android:id="@+id/subtitle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="60dp"
-        android:layout_marginTop="114dp"
-        android:fontFamily="@font/geist_regular"
-        android:includeFontPadding="false"
-        android:maxLines="2"
-        android:maxWidth="560dp"
-        android:textColor="#FFFFFF"
-        android:textSize="22.32sp" />
-
-    <!-- Only when something needs saying: a lost connection, or why AirPlay isn't running. -->
-    <TextView
-        android:id="@+id/status_detail"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="60dp"
-        android:layout_marginTop="204dp"
-        android:fontFamily="@font/geist_regular"
-        android:includeFontPadding="false"
-        android:maxLines="2"
-        android:maxWidth="540dp"
-        android:textColor="#D9FFFFFF"
-        android:textSize="12sp" />
-
-    <!-- The glass strip (Mango Liquid Glass), as wide as the app row under it: three equal columns, each with its icon and text centred. -->
-    <com.mangoscreencast.tv.ui.LiquidGlassLayout
-        android:id="@+id/steps"
-        android:layout_width="840dp"
-        android:layout_height="89.6dp"
-        android:layout_marginStart="60dp"
-        android:layout_marginTop="255.2dp"
-        android:baselineAligned="false"
-        android:orientation="horizontal">
-
-        <LinearLayout style="@style/Mango.StepColumn">
-
-            <LinearLayout style="@style/Mango.StepRow">
-
-                <ImageView
-                    style="@style/Mango.StepIcon"
-                    android:background="@drawable/step_tile_indigo"
-                    android:contentDescription="@null"
-                    android:src="@drawable/ic_step_connect" />
-
-                <LinearLayout style="@style/Mango.StepText">
-
-                    <TextView
-                        android:id="@+id/step_connect"
-                        style="@style/Mango.StepTitle"
-                        android:text="@string/step_connect" />
-
-                    <TextView
-                        style="@style/Mango.StepBody"
-                        android:text="@string/step_connect_body" />
-                </LinearLayout>
-            </LinearLayout>
-        </LinearLayout>
-
-        <View style="@style/Mango.StepDivider" />
-
-        <LinearLayout style="@style/Mango.StepColumn">
-
-            <LinearLayout style="@style/Mango.StepRow">
-
-                <ImageView
-                    style="@style/Mango.StepIcon"
-                    android:background="@drawable/step_tile_blue"
-                    android:contentDescription="@null"
-                    android:src="@drawable/ic_step_detect" />
-
-                <LinearLayout style="@style/Mango.StepText">
-
-                    <TextView
-                        android:id="@+id/step_detect"
-                        style="@style/Mango.StepTitle"
-                        android:text="@string/step_detect" />
-
-                    <TextView
-                        style="@style/Mango.StepBody"
-                        android:text="@string/step_detect_body" />
-                </LinearLayout>
-            </LinearLayout>
-        </LinearLayout>
-
-        <View style="@style/Mango.StepDivider" />
-
-        <LinearLayout style="@style/Mango.StepColumn">
-
-            <LinearLayout style="@style/Mango.StepRow">
-
-                <ImageView
-                    style="@style/Mango.StepIcon"
-                    android:background="@drawable/step_tile_blue"
-                    android:contentDescription="@null"
-                    android:src="@drawable/ic_step_cast" />
-
-                <LinearLayout style="@style/Mango.StepText">
-
-                    <TextView
-                        android:id="@+id/step_cast"
-                        style="@style/Mango.StepTitle"
-                        android:text="@string/step_cast" />
-
-                    <TextView
-                        style="@style/Mango.StepBody"
-                        android:text="@string/step_cast_body" />
-                </LinearLayout>
-            </LinearLayout>
-        </LinearLayout>
-    </com.mangoscreencast.tv.ui.LiquidGlassLayout>
 
     <TextView
         android:id="@+id/apps_label"

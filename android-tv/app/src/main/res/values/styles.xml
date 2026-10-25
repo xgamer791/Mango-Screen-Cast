@@ -26,64 +26,14 @@
     </style>
 
     <!-- Home screen: one column of the glass strip, its icon and text centred both ways. -->
-    <style name="Mango.StepColumn" parent="">
-        <item name="android:layout_width">0dp</item>
-        <item name="android:layout_height">match_parent</item>
-        <item name="android:layout_weight">1</item>
-        <item name="android:gravity">center</item>
-        <item name="android:orientation">horizontal</item>
-    </style>
 
     <!-- The icon and text of one step, centred in the column as a pair. -->
-    <style name="Mango.StepRow" parent="">
-        <item name="android:layout_width">wrap_content</item>
-        <item name="android:layout_height">wrap_content</item>
-        <item name="android:orientation">horizontal</item>
-    </style>
 
     <!-- The icon tile sits level with the top of the title's capitals (Geist: 0.295 em of ascent above them). -->
-    <style name="Mango.StepIcon" parent="">
-        <item name="android:layout_width">38.88dp</item>
-        <item name="android:layout_height">38.88dp</item>
-        <item name="android:layout_gravity">top</item>
-        <item name="android:layout_marginTop">5.04dp</item>
-    </style>
 
-    <style name="Mango.StepText" parent="">
-        <item name="android:layout_width">wrap_content</item>
-        <item name="android:layout_height">wrap_content</item>
-        <item name="android:layout_marginStart">14.4dp</item>
-        <item name="android:orientation">vertical</item>
-    </style>
 
-    <style name="Mango.StepTitle" parent="">
-        <item name="android:layout_width">wrap_content</item>
-        <item name="android:layout_height">wrap_content</item>
-        <item name="android:fontFamily">@font/geist_semibold</item>
-        <item name="android:includeFontPadding">false</item>
-        <item name="android:maxLines">1</item>
-        <item name="android:textColor">#FFFFFF</item>
-        <item name="android:textSize">17.28sp</item>
-    </style>
 
-    <style name="Mango.StepBody" parent="">
-        <item name="android:layout_width">wrap_content</item>
-        <item name="android:layout_height">wrap_content</item>
-        <item name="android:layout_marginTop">2.88dp</item>
-        <item name="android:fontFamily">@font/geist_regular</item>
-        <item name="android:includeFontPadding">false</item>
-        <item name="android:lineSpacingExtra">1.44dp</item>
-        <item name="android:maxLines">2</item>
-        <item name="android:textColor">#F2FFFFFF</item>
-        <item name="android:textSize">12.96sp</item>
-    </style>
 
-    <style name="Mango.StepDivider" parent="">
-        <item name="android:layout_width">1dp</item>
-        <item name="android:layout_height">44.8dp</item>
-        <item name="android:layout_gravity">center_vertical</item>
-        <item name="android:background">#1FFFFFFF</item>
-    </style>
 
     <!-- Home screen: a streaming app's tile. Focusable, so the remote can walk the row. -->
     <style name="Mango.AppTile" parent="">

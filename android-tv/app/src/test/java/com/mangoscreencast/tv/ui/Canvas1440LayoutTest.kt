@@ -52,14 +52,10 @@ class Canvas1440LayoutTest {
         val page = frame.page!!
         assertEquals(1920, page.width)
         assertEquals(1080, page.height)
-        // The glass strip where the layout puts it: 60 dp in, 255.2 dp down (xhdpi: × 2).
-        val steps = activity.findViewById<View>(R.id.steps)
-        assertEquals(120, steps.left)
-        assertEquals(510, steps.top)
-        // As wide as the app row under it, edge to edge.
+        // The app row where the layout puts it: 60 dp in on both sides (xhdpi: × 2).
         val apps = activity.findViewById<View>(R.id.apps_row)
-        assertEquals(apps.left, steps.left)
-        assertEquals(apps.right, steps.right)
+        assertEquals(120, apps.left)
+        assertEquals(1920 - 120, apps.right)
         assertEquals(Size(2560, 1440), frame.requestedSize)
         assertNotNull(frame.findSurfaceView())
     }
@@ -76,14 +72,14 @@ class Canvas1440LayoutTest {
         assertTrue(frame.showing)
 
         // The surface holds the page 4/3 larger: each of its points is the page's point at 3/4.
-        val strip = page.findViewById<View>(R.id.steps)
-        val y = strip.top + strip.height / 2
-        for ((x, wy) in listOf(30 to 30, 60 to y, strip.left + 40 to y, 900 to 1000)) {
+        val row = page.findViewById<View>(R.id.apps_row)
+        val y = row.top + row.height / 2
+        for ((x, wy) in listOf(30 to 30, 60 to y, row.left + 40 to y, 900 to 400)) {
             assertClose("at $x, $wy", reference.getPixel(x, wy), surfaceFrame.getPixel(x * 4 / 3, wy * 4 / 3))
         }
-        // The strip's left edge, 120 px in on the window, is 160 px in on the surface.
-        assertClose("left of the strip", reference.getPixel(strip.left - 10, y), surfaceFrame.getPixel((strip.left - 10) * 4 / 3, y * 4 / 3))
-        assertClose("in the strip", reference.getPixel(strip.left + 10, y), surfaceFrame.getPixel((strip.left + 10) * 4 / 3, y * 4 / 3))
+        // The app row's left edge, 120 px in on the window, is 160 px in on the surface.
+        assertClose("left of the apps", reference.getPixel(row.left - 10, y), surfaceFrame.getPixel((row.left - 10) * 4 / 3, y * 4 / 3))
+        assertClose("in the first app", reference.getPixel(row.left + 10, y), surfaceFrame.getPixel((row.left + 10) * 4 / 3, y * 4 / 3))
 
         // The window draws only the surface's place, not the page.
         assertEquals(Color.MAGENTA, drawWindow(frame).getPixel(60, y))

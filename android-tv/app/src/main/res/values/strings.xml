@@ -7,19 +7,6 @@
     <string name="a_device">a device</string>
 
     <!-- Home -->
-    <string name="status_starting">Starting…</string>
-    <string name="status_ready">Ready to Cast</string>
-    <string name="ready_subtitle">Get started by connecting\nyour devices to the TV</string>
-    <string name="status_connected">%1$s is connected</string>
-    <string name="status_connected_detail">Start Screen Mirroring on it to show its screen here.</string>
-    <string name="status_mirroring">Mirroring %1$s</string>
-    <string name="status_failed">AirPlay isn’t running</string>
-    <string name="step_connect">Connect</string>
-    <string name="step_connect_body">Ensure device &amp; TV\non same Wi‑Fi</string>
-    <string name="step_detect">Detect</string>
-    <string name="step_detect_body">App will search for\nnearby devices</string>
-    <string name="step_cast">Cast</string>
-    <string name="step_cast_body">Tap to connect and\nstart casting</string>
     <string name="apps_label">Apps</string>
     <string name="app_not_installed">%1$s isn’t on this TV yet: here it is in the app store</string>
     <string name="app_open_failed">Couldn’t open %1$s or an app store on this TV</string>

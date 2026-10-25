@@ -21,9 +21,6 @@ import com.mangoscreencast.tv.update.AppUpdater
 
 /** The "Ready to Cast" screen: the name to pick on a Mac or iPhone, the three steps, and the streaming apps. */
 class HomeActivity : Activity(), AirPlayReceiver.Listener, AppUpdater.Listener {
-    private lateinit var statusView: TextView
-    private lateinit var subtitleView: TextView
-    private lateinit var detailView: TextView
     private lateinit var updateStatus: TextView
     private lateinit var updateButton: Button
 
@@ -44,9 +41,6 @@ class HomeActivity : Activity(), AirPlayReceiver.Listener, AppUpdater.Listener {
         super.onCreate(savedInstanceState)
         // Drawn at 1440p, whatever size the TV draws its screens at.
         Canvas1440Layout.setContentView(this, R.layout.activity_home)
-        statusView = findViewById(R.id.status)
-        subtitleView = findViewById(R.id.subtitle)
-        detailView = findViewById(R.id.status_detail)
         updateStatus = findViewById(R.id.update_status)
         updateButton = findViewById(R.id.update_button)
         updateButton.setOnClickListener {
@@ -106,26 +100,6 @@ class HomeActivity : Activity(), AirPlayReceiver.Listener, AppUpdater.Listener {
     }
 
     override fun onStatus(status: AirPlayReceiver.Status) {
-        val name = status.tvName.ifBlank { MangoApp.settings.tvName }
-        val client = status.clientName ?: getString(R.string.a_device)
-
-        // Headline, the big line under it, and the small line under that (blank unless something needs saying).
-        val (title, subtitle, detail) = when (status.state) {
-            State.STOPPED, State.STARTING -> Triple(getString(R.string.status_starting), "", "")
-            State.READY -> Triple(getString(R.string.status_ready), getString(R.string.ready_subtitle), "")
-            State.CONNECTED -> Triple(
-                getString(R.string.status_connected, client), getString(R.string.status_connected_detail), "",
-            )
-            State.MIRRORING -> Triple(getString(R.string.status_mirroring, client), "", "")
-            // The reason is a sentence or two: it goes in the small line, where it fits.
-            State.FAILED -> Triple(getString(R.string.status_failed), "", status.message ?: "")
-        }
-        statusView.text = title
-        subtitleView.text = subtitle
-        subtitleView.visibility = if (subtitle.isBlank()) View.GONE else View.VISIBLE
-        detailView.text = status.message?.takeIf { status.state != State.FAILED } ?: detail
-        detailView.visibility = if (detailView.text.isNullOrBlank()) View.GONE else View.VISIBLE
-
         // Something that waited for the TV to be free can go ahead now.
         if (status.state == State.READY) updater.checkIfDue()
     }
