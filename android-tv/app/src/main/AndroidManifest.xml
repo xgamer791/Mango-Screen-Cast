@@ -22,6 +22,13 @@
         <intent>
             <action android:name="android.settings.action.MANAGE_OVERLAY_PERMISSION" />
         </intent>
+        <!-- So Settings can find the TV's own settings app and open that dashboard
+             directly. On Android 11 and later, other apps that handle this action
+             are hidden unless they are declared here. -->
+        <intent>
+            <action android:name="android.settings.SETTINGS" />
+            <category android:name="android.intent.category.DEFAULT" />
+        </intent>
         <!-- The home screen's streaming apps (apps/StreamingApps.kt): Android 11 and
              later hide other apps, their banners and their launch intents otherwise. -->
         <package android:name="com.netflix.ninja" />
@@ -78,20 +85,54 @@
             android:theme="@style/Theme.Mango.Fullscreen"
             android:configChanges="keyboard|keyboardHidden|navigation|screenSize|screenLayout|smallestScreenSize|orientation|uiMode|density" />
 
-        <!-- The gear on the Hisense remote sends android.settings.SETTINGS, which
-             stock TvSettings claims at priority 1. Same priority so Android can
-             offer Mango once; DEFAULT is required for that implicit intent.
-             LEANBACK_SETTINGS marks this as the TV settings screen and does not
-             add a second launcher tile (that needs MAIN + LEANBACK_LAUNCHER). -->
+        <!--
+            The remote's gear. On this Hisense (Google TV) the gear goes through
+            Hisense's key handling (com.hisense.KEY_EVENT) to the system, which
+            looks up activities for MAIN + LEANBACK_SETTINGS, as TvSettings'
+            MainSettings declares them (at priority 3, with no DEFAULT), and
+            opens what it finds by component. So this filter has MAIN and
+            LEANBACK_SETTINGS. android.settings.SETTINGS with DEFAULT is what
+            `am start -a android.settings.SETTINGS` and other apps start.
+
+            The priority is a request only: Android sets an intent filter's
+            priority to 0 for an app that isn't privileged, so stock TvSettings
+            (privileged, priority 3) comes first while it's enabled. For the
+            gear to open Mango Settings, TvSettings has to stay off
+            (adb shell pm disable-user com.android.tv.settings), which
+            leaves Mango the only MAIN + LEANBACK_SETTINGS handler. Settings'
+            last row opens the TV's own settings by component when they're on.
+        -->
+        <!-- No task affinity: opened by the gear (ui/GearKeyService.kt) it's a task
+             of its own, so Back goes back to the app the gear was pressed in.
+             Opened from Home, it's in Home's task as before. -->
         <activity
             android:name=".ui.SettingsActivity"
-            android:exported="true">
-            <intent-filter android:priority="1">
+            android:exported="true"
+            android:launchMode="singleTop"
+            android:taskAffinity="">
+            <intent-filter android:label="@string/settings_gear_label" android:priority="1000">
+                <action android:name="android.intent.action.MAIN" />
                 <action android:name="android.settings.SETTINGS" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.LEANBACK_SETTINGS" />
             </intent-filter>
         </activity>
+
+        <!-- The remote's gear (ui/GearKeyService.kt): the system takes it before any
+             app and gives it only to a system app's panel, so Mango takes it first,
+             as an accessibility service filtering keys. Turned on once over adb. -->
+        <service
+            android:name=".ui.GearKeyService"
+            android:exported="true"
+            android:label="@string/gear_service_label"
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+            <intent-filter>
+                <action android:name="android.accessibilityservice.AccessibilityService" />
+            </intent-filter>
+            <meta-data
+                android:name="android.accessibilityservice"
+                android:resource="@xml/gear_key_service" />
+        </service>
 
         <service
             android:name=".ReceiverService"
