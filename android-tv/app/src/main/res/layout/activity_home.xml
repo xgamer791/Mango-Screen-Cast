@@ -2,7 +2,7 @@
 <!--
   The "Ready to Cast" home screen, on Android TV's 960 x 540 dp canvas (the
   same on 1080p and 4K panels). Content sits in a 60 dp margin on both
-  sides; the vertical rhythm from the top is 48 / 114 / 204 / 250 / 384 / 420 / 494.
+  sides; the vertical rhythm from the top is 48 / 114 / 204 / 255.2 / 380 / 416 / 490.
 -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
@@ -91,10 +91,10 @@
     <!-- The glass strip (Mango Liquid Glass): three equal columns, each with its icon and text centred. -->
     <com.mangoscreencast.tv.ui.LiquidGlassLayout
         android:id="@+id/steps"
-        android:layout_width="840dp"
-        android:layout_height="112dp"
+        android:layout_width="672dp"
+        android:layout_height="89.6dp"
         android:layout_marginStart="60dp"
-        android:layout_marginTop="244dp"
+        android:layout_marginTop="255.2dp"
         android:baselineAligned="false"
         android:orientation="horizontal">
 

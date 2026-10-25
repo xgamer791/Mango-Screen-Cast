@@ -43,16 +43,16 @@
 
     <!-- The icon tile sits level with the top of the title's capitals (Geist: 0.295 em of ascent above them). -->
     <style name="Mango.StepIcon" parent="">
-        <item name="android:layout_width">54dp</item>
-        <item name="android:layout_height">54dp</item>
+        <item name="android:layout_width">43.2dp</item>
+        <item name="android:layout_height">43.2dp</item>
         <item name="android:layout_gravity">top</item>
-        <item name="android:layout_marginTop">7dp</item>
+        <item name="android:layout_marginTop">5.6dp</item>
     </style>
 
     <style name="Mango.StepText" parent="">
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
-        <item name="android:layout_marginStart">20dp</item>
+        <item name="android:layout_marginStart">16dp</item>
         <item name="android:orientation">vertical</item>
     </style>
 
@@ -69,10 +69,10 @@
     <style name="Mango.StepBody" parent="">
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
-        <item name="android:layout_marginTop">4dp</item>
+        <item name="android:layout_marginTop">3.2dp</item>
         <item name="android:fontFamily">@font/geist_regular</item>
         <item name="android:includeFontPadding">false</item>
-        <item name="android:lineSpacingExtra">2dp</item>
+        <item name="android:lineSpacingExtra">1.6dp</item>
         <item name="android:maxLines">2</item>
         <item name="android:textColor">#F2FFFFFF</item>
         <item name="android:textSize">14.4sp</item>
@@ -80,7 +80,7 @@
 
     <style name="Mango.StepDivider" parent="">
         <item name="android:layout_width">1dp</item>
-        <item name="android:layout_height">56dp</item>
+        <item name="android:layout_height">44.8dp</item>
         <item name="android:layout_gravity">center_vertical</item>
         <item name="android:background">#1FFFFFFF</item>
     </style>

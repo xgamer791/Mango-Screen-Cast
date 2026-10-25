@@ -52,10 +52,10 @@ class Canvas1440LayoutTest {
         val page = frame.page!!
         assertEquals(1920, page.width)
         assertEquals(1080, page.height)
-        // The glass strip where it always was: 60 dp in, 244 dp down (xhdpi: × 2).
+        // The glass strip where the layout puts it: 60 dp in, 255.2 dp down (xhdpi: × 2).
         val steps = activity.findViewById<View>(R.id.steps)
         assertEquals(120, steps.left)
-        assertEquals(488, steps.top)
+        assertEquals(510, steps.top)
         assertEquals(Size(2560, 1440), frame.requestedSize)
         assertNotNull(frame.findSurfaceView())
     }
