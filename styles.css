@@ -67,7 +67,7 @@ body {
   left: 155px;
   top: 186px;
   margin: 0;
-  font-size: 118px;
+  font-size: 94.4px;
   font-weight: 700;
   line-height: 1;
   letter-spacing: 0.01em;
@@ -78,7 +78,7 @@ body {
   left: 157px;
   top: 349px;
   margin: 0;
-  font-size: 83px;
+  font-size: 66.4px;
   font-weight: 400;
   line-height: 107px;
   letter-spacing: 0.01em;
@@ -195,7 +195,7 @@ body {
   left: 206px;
   top: -1px;
   margin: 0;
-  font-size: 64px;
+  font-size: 51.2px;
   font-weight: 600;
   line-height: 1;
   white-space: nowrap;
@@ -206,7 +206,7 @@ body {
   left: 206px;
   top: 80px;
   margin: 0;
-  font-size: 48px;
+  font-size: 38.4px;
   font-weight: 400;
   line-height: 70px;
   white-space: nowrap;
@@ -222,7 +222,7 @@ body {
 
 .devices__label {
   margin: 0 0 0 2px;
-  font-size: 54px;
+  font-size: 43.2px;
   font-weight: 600;
   line-height: 1;
 }
@@ -248,7 +248,7 @@ body {
   border-radius: 22px;
   background: #fff;
   color: #000;
-  font: 500 58px/1 var(--font);
+  font: 500 46.4px/1 var(--font);
   display: grid;
   place-items: center;
   cursor: pointer;
