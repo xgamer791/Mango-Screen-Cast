@@ -165,7 +165,7 @@ struct WindowsTouchpadView: View {
                     Text("Looking for PCs with Mango Screen Cast For Windows open…")
                         .font(.headline)
                 }
-                Text("Open Mango Screen Cast For Windows on your PC; it needs to be on the same Wi-Fi network as this iPhone. Its Control from iPhone setting is on unless it was turned off.")
+                Text("Open Mango Screen Cast For Windows on your PC, on the same Wi-Fi network as this iPhone. If Windows Firewall is in the way, the app’s iPhone control row says so: click it to allow.")
                     .foregroundColor(Theme.textSecondary)
                     .fixedSize(horizontal: false, vertical: true)
             } else {
