@@ -64,6 +64,9 @@ class HomeActivity : Activity(), AirPlayReceiver.Listener, AppUpdater.Listener {
 
     private fun openSettings() = startActivity(Intent(this, SettingsActivity::class.java))
 
+    // As the TV's Home app there is nowhere to go back to: Back must not close this screen.
+    override fun onBackPressed() {}
+
     /** Starts the app; one the TV doesn't have opens its app store page, and says so. */
     private fun openApp(app: StreamingApp) {
         val entry = launcher.entry(app)

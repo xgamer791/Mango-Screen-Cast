@@ -26,7 +26,8 @@ iPad: put your Mac's screen on it, or use it as a second display. See
   the service's logo: Netflix, YouTube, HBO Max, Paramount+, Peacock, Prime
   Video, Hulu, Disney+ and Tubi. **OK** on a tile opens the app. One the TV
   doesn't have opens its page in Google Play (the Amazon Appstore on a Fire
-  TV) to install it, and opens on the next press after that.
+  TV) to install it, and opens on the next press after that. The app can
+  also be set as the TV's Home app, so this screen is what **Home** brings up.
 - **Sharp screens:** the home screen and Settings are drawn at 1440p
   (2560 × 1440) whatever size the TV runs its menus at. Most 4K TVs run apps
   at 1920 × 1080 and stretch them 2× onto the panel; these two pages go to a
