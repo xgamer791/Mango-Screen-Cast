@@ -56,6 +56,9 @@ struct MirrorView: View {
                 if controlsVisible {
                     topBar.transition(.move(edge: .top).combined(with: .opacity))
                 }
+                if controlsVisible && !remote.isConnected && !demo {
+                    setupHint.transition(.opacity)
+                }
                 if remote.isConnected && settings.controlMac && !remote.canControl {
                     Label("On the Mac, allow Mango Cast Remote under System Settings → Privacy & Security → Accessibility.",
                           systemImage: "exclamationmark.triangle.fill")
@@ -212,6 +215,36 @@ struct MirrorView: View {
         .padding(.trailing, 10)
         .padding(.vertical, 10)
         .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+    }
+
+    /// Taps only click on the Mac with Mango Cast Remote running there; until
+    /// then, say so, with the way to set it up.
+    private var setupHint: some View {
+        HStack(spacing: 12) {
+            Image(systemName: "hand.tap.fill")
+                .foregroundColor(Theme.mango)
+            Text(setupHintText)
+                .font(.subheadline.weight(.semibold))
+                .fixedSize(horizontal: false, vertical: true)
+            Spacer(minLength: 8)
+            Button(remote.pairedMacs.isEmpty ? "Set up" : "Help") { showPairing = true }
+                .buttonStyle(.borderedProminent)
+                .tint(Theme.mango)
+                .foregroundColor(.black)
+        }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 10)
+        .frame(maxWidth: 640)
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .accessibilityIdentifier("controlSetupHint")
+    }
+
+    private var setupHintText: String {
+        if case .failed(let reason) = remote.state { return reason }
+        if remote.pairedMacs.isEmpty {
+            return "Pinch to zoom and drag to move around. To tap to click, scroll and type on the Mac too, get Mango Cast Remote on the Mac and pair once."
+        }
+        return "Looking for Mango Cast Remote on your Mac. Make sure it’s open there (it lives in the menu bar) and on the same Wi-Fi."
     }
 
     /// What the Control button says: controlling, paused, or how to set it up.

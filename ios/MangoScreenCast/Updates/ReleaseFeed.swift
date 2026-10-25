@@ -7,6 +7,8 @@ enum ReleaseFeed {
     static let repository = "xgamer791/Mango-Screen-Cast"
     static let sourceURL = URL(string: "https://github.com/\(repository)/releases/download/ios-latest/altstore-source.json")!
     static let releasePage = URL(string: "https://github.com/\(repository)/releases/tag/ios-latest")!
+    /// Mango Cast Remote for the Mac, published with every build.
+    static let macRemoteDownload = URL(string: "https://github.com/\(repository)/releases/download/ios-latest/MangoCastRemote-mac.zip")!
 
     struct Release: Equatable {
         let version: String

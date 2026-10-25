@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 /// Pairing with the Mac helper: the Mac shows a code, this asks for it.
 struct PairMacView: View {
@@ -7,19 +8,39 @@ struct PairMacView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var selected: String?
     @State private var code = ""
+    @State private var linkCopied = false
 
     var body: some View {
         NavigationStack {
             Form {
                 Section {
-                    Text("1. On your Mac, open Mango Cast Remote. It’s in the menu bar once it’s running.")
-                    Text("2. Choose Pair an iPad. The Mac shows a 6-digit code.")
-                    Text("3. Pick the Mac here and enter the code.")
+                    Text("AirPlay only sends the Mac’s picture here, so to click and type on the Mac, a small app on the Mac does it for this iPad: Mango Cast Remote.")
+                    ShareLink(item: ReleaseFeed.macRemoteDownload) {
+                        Label("Send the download link to your Mac", systemImage: "square.and.arrow.up")
+                    }
+                    Button {
+                        UIPasteboard.general.url = ReleaseFeed.macRemoteDownload
+                        linkCopied = true
+                    } label: {
+                        Label(linkCopied ? "Link copied" : "Copy the download link", systemImage: linkCopied ? "checkmark" : "doc.on.doc")
+                    }
+                    Text(verbatim: ReleaseFeed.macRemoteDownload.absoluteString)
+                        .font(.footnote.monospaced())
+                        .foregroundColor(.secondary)
+                        .textSelection(.enabled)
+                } header: {
+                    Text("1. Get Mango Cast Remote on the Mac")
                 } footer: {
-                    Text("Don’t have it yet? Download Mango Cast Remote for the Mac from the same page as Mango Cast, or build it in Xcode (the MangoCastRemote scheme). The first time, the Mac asks to allow it under Privacy & Security → Accessibility. Once paired, tap, swipe and type on the Mac’s picture here while it mirrors.")
+                    Text("AirDrop the link to the Mac (or open it there), open the zip and move MangoCastRemote to Applications. The first time, Control-click it and choose Open, then allow it under System Settings → Privacy & Security → Accessibility when it asks: that’s what lets it click and type.")
                 }
 
-                Section("Macs ready to pair") {
+                Section {
+                    Text("On the Mac, click Mango Cast Remote in the menu bar (the pointer icon) and choose Pair an iPad. It shows a 6-digit code.")
+                } header: {
+                    Text("2. Show a code on the Mac")
+                }
+
+                Section("3. Pick the Mac and enter the code") {
                     if remote.macsPairing.isEmpty {
                         HStack(spacing: 10) {
                             ProgressView()
