@@ -1,15 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- The Connect step: Lucide's "signal-high" (lucide-static 1.61.0, ISC; see
+     android-tv/third_party/lucide/LICENSE), its 24-unit grid scaled into the step's 60
+     like the other steps. Lucide draws it left of centre, leaving room for "signal"'s
+     fourth bar, so it moves 2.5 units right and 2 up to sit centred in the tile. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
     android:width="54dp"
     android:height="54dp"
     android:viewportWidth="60"
     android:viewportHeight="60">
-    <path
-        android:pathData="M13 24a24 24 0 0 1 34 0M18.7 29.7a16 16 0 0 1 22.6 0M24.3 35.3a8 8 0 0 1 11.4 0"
-        android:strokeColor="#FFFFFF"
-        android:strokeWidth="3"
-        android:strokeLineCap="round" />
-    <path
-        android:fillColor="#FFFFFF"
-        android:pathData="M30 42m-3.5 0a3.5 3.5 0 1 0 7 0a3.5 3.5 0 1 0 -7 0" />
+    <group
+        android:scaleX="1.6"
+        android:scaleY="1.6"
+        android:translateX="14.8"
+        android:translateY="7.6">
+        <path
+            android:pathData="M2 20h0.01M7 20v-4M12 20v-8M17 20V8"
+            android:strokeColor="#FFFFFF"
+            android:strokeWidth="2"
+            android:strokeLineCap="round"
+            android:strokeLineJoin="round" />
+    </group>
 </vector>
