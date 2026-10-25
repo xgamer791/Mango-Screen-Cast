@@ -5,8 +5,13 @@
     <color name="surface_focused">#2C2836</color>
     <color name="text_primary">#F4F2F7</color>
     <color name="text_secondary">#A9A4B5</color>
+    <!-- The accents, a ripe mango from its sunny top to its blushing side: tiles, rings, the badge, focus. -->
     <color name="mango">#FFA41B</color>
+    <color name="mango_bright">#FFB72E</color>
+    <color name="mango_ripe">#FF8A1A</color>
     <color name="mango_deep">#FF6A2B</color>
+    <!-- Text on a mango (or white) surface: the dark of a mango's stone. -->
+    <color name="mango_ink">#2A1600</color>
     <color name="status_ready">#4CD38A</color>
     <color name="status_waiting">#FFB547</color>
     <color name="status_error">#FF5C5C</color>

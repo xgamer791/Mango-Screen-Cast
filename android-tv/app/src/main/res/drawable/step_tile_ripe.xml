@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!-- The Connect tile: a touch riper than the other two, as the reference had it a touch apart. -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android">
     <gradient
         android:angle="270"
-        android:startColor="#4272FA"
-        android:endColor="#4160E6" />
+        android:startColor="@color/mango_ripe"
+        android:endColor="@color/mango_deep" />
     <corners android:radius="@dimen/card_radius" />
 </shape>

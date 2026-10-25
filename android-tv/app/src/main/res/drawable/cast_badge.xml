@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- A white disc for the logo, with two translucent blue rings around it. Drawn in a 213 x 213 dp box. -->
+<!-- A white disc for the logo, with two translucent mango rings (23% and 52%) around it. Drawn in a 213 x 213 dp box. -->
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
     <item>
         <shape android:shape="oval">
-            <solid android:color="#3B3770FA" />
+            <solid android:color="#3BFFA41B" />
         </shape>
     </item>
     <item
@@ -12,7 +12,7 @@
         android:right="18dp"
         android:top="18dp">
         <shape android:shape="oval">
-            <solid android:color="#853770FA" />
+            <solid android:color="#85FFA41B" />
         </shape>
     </item>
     <item
