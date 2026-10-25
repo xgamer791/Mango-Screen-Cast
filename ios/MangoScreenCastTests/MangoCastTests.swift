@@ -39,6 +39,23 @@ final class MangoCastTests: XCTestCase {
         XCTAssertNil(offer.codec(for: hello(#"{"codecs": []}"#)))
     }
 
+    func testH264IsOfferedNoBiggerThan1080p() {
+        XCTAssertEqual(offer.forCodec("h265"), offer)
+        let h264 = offer.forCodec("h264")
+        XCTAssertEqual([h264.maxWidth, h264.maxHeight], [1554, 1080])
+        var pro = offer
+        (pro.maxWidth, pro.maxHeight) = (2752, 2064)
+        let proH264 = pro.forCodec("h264")
+        XCTAssertEqual([proH264.maxWidth, proH264.maxHeight], [1440, 1080])
+        var tv = offer
+        (tv.maxWidth, tv.maxHeight) = (3840, 2160)
+        let tvH264 = tv.forCodec("h264")
+        XCTAssertEqual([tvH264.maxWidth, tvH264.maxHeight], [1920, 1080])
+        var small = offer
+        (small.maxWidth, small.maxHeight) = (1280, 720)
+        XCTAssertEqual(small.forCodec("h264"), small)
+    }
+
     func testScalesThePictureToFitKeepingItsShape() {
         let hd = Offer(name: "x", maxWidth: 1920, maxHeight: 1080, fps: 60, h265: false, audio: false)
         XCTAssertTrue(hd.picture(for: hello(#"{"width": 2560, "height": 1440}"#)) == (1920, 1080))

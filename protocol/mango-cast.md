@@ -74,8 +74,10 @@ without breaking the other.
     "audio": {"format": "pcm_s16le", "rate": 48000, "channels": 2}}
    ```
 
-   `codec` is the first of the sender's codecs the receiver decodes. `audio`
-   is `null` when the receiver's sound is off; the sender then sends none.
+   `codec` is the first of the sender's codecs the receiver decodes. With
+   `h264`, `maxWidth` × `maxHeight` is at most 1920 × 1080 (the receiver's
+   shape, smaller), as Apple devices send H.264. `audio` is `null` when the
+   receiver's sound is off; the sender then sends none.
 
    REFUSE reasons: `busy` (another device is mirroring), `protocol` (no
    shared version or codec), `off` (Windows connections are turned off on the

@@ -229,6 +229,19 @@ class MangoCastServerTest {
     }
 
     @Test
+    fun anH264SenderIsAskedForNoMoreThan1080p() {
+        sink.decide = { Decision.Accept(offer.copy(maxWidth = 3840, maxHeight = 2160)) }
+        val sender = Sender(port)
+        sender.hello("""{"protocol": 1, "name": "OLD-PC", "codecs": ["h264"], "width": 3840, "height": 2160}""")
+        val welcome = json(sender.readSkippingPings().second)
+        assertEquals("h264", welcome.getString("codec"))
+        assertEquals(1920, welcome.getInt("maxWidth"))
+        assertEquals(1080, welcome.getInt("maxHeight"))
+        assertTrue(sink.startLatch.await(2, TimeUnit.SECONDS))
+        assertEquals(1920 to 1080, sink.started.single().let { it.width to it.height })
+    }
+
+    @Test
     fun noSoundUnlessItWasAskedFor() {
         sink.decide = { Decision.Accept(offer.copy(audio = false)) }
         val sender = Sender(port)

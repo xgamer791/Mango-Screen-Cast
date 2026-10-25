@@ -262,13 +262,14 @@ final class MangoCastServer {
                 decision = server.sink?.mangoCastHello(hello)
                     ?? .refuse(reason: "off", message: "This device isn't ready yet. Try again in a moment.")
             }
-            guard case .accept(let offer) = decision else {
+            guard case .accept(let offered) = decision else {
                 if case .refuse(let reason, let message) = decision { refuse(reason, message) }
                 return
             }
-            guard let codec = offer.codec(for: hello) else {
+            guard let codec = offered.codec(for: hello) else {
                 return refuse("protocol", "This device can't decode \(hello.codecs.joined(separator: " or ")).")
             }
+            let offer = offered.forCodec(codec)
             server.current = self
             self.codec = codec
             let picture = offer.picture(for: hello)

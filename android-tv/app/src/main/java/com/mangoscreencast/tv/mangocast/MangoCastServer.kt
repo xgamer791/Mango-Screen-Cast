@@ -243,12 +243,13 @@ class MangoCastServer(private val sink: Sink, private val log: (String) -> Unit)
                 busy != null -> Decision.Refuse("busy", "${busy.hello.name} is showing on this TV right now.")
                 else -> sink.onHello(hello)
             }
-            val offer = when (decision) {
+            val offered = when (decision) {
                 is Decision.Refuse -> return refuse(decision)
                 is Decision.Accept -> decision.offer
             }
-            val codec = offer.codecFor(hello)
+            val codec = offered.codecFor(hello)
                 ?: return refuse(Decision.Refuse("protocol", "This TV can't decode ${hello.codecs.joinToString(" or ")}."))
+            val offer = offered.forCodec(codec)
             val claimed = synchronized(lock) {
                 if (current == null) {
                     current = this

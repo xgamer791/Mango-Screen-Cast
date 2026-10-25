@@ -43,6 +43,18 @@ class MangoCastTest {
     }
 
     @Test
+    fun h264IsOfferedNoBiggerThan1080p() {
+        assertEquals(offer, offer.forCodec("h265"))
+        val h264 = offer.forCodec("h264")
+        assertEquals(1920 to 1080, h264.maxWidth to h264.maxHeight)
+        // Another shape stays that shape.
+        val square = offer.copy(maxWidth = 2752, maxHeight = 2064).forCodec("h264")
+        assertEquals(1440 to 1080, square.maxWidth to square.maxHeight)
+        val small = offer.copy(maxWidth = 1280, maxHeight = 720)
+        assertEquals(small, small.forCodec("h264"))
+    }
+
+    @Test
     fun scalesThePictureToFitKeepingItsShape() {
         val tv1080 = offer.copy(maxWidth = 1920, maxHeight = 1080)
         assertEquals(1920 to 1080, tv1080.pictureFor(hello("""{"width": 2560, "height": 1440}""")))

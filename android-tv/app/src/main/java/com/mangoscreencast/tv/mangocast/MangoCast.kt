@@ -87,6 +87,21 @@ data class Offer(
     val h265: Boolean,
     val audio: Boolean,
 ) {
+    /**
+     * What the TV takes in `codec`: H.264 no bigger than 1920 × 1080 (the same
+     * shape, smaller), as Apple devices send it, because TVs decode H.264 no
+     * bigger and a PC without an HEVC encoder can't keep up beyond it.
+     */
+    fun forCodec(codec: String): Offer {
+        if (codec != MangoCast.H264 || (maxWidth <= H264_WIDTH && maxHeight <= H264_HEIGHT)) return this
+        val (w, h) = if (maxWidth.toLong() * H264_HEIGHT >= maxHeight.toLong() * H264_WIDTH) {
+            H264_WIDTH to (maxHeight.toLong() * H264_WIDTH / maxWidth).toInt()
+        } else {
+            (maxWidth.toLong() * H264_HEIGHT / maxHeight).toInt() to H264_HEIGHT
+        }
+        return copy(maxWidth = w and 1.inv(), maxHeight = h and 1.inv())
+    }
+
     /** The first of the sender's codecs the TV decodes, or null. */
     fun codecFor(hello: Hello): String? = hello.codecs.firstOrNull { it == MangoCast.H264 || (it == MangoCast.H265 && h265) }
 
@@ -134,6 +149,11 @@ data class Offer(
         "codecs" to if (h265) "h265,h264" else "h264",
         "audio" to if (audio) "1" else "0",
     )
+
+    private companion object {
+        const val H264_WIDTH = 1920
+        const val H264_HEIGHT = 1080
+    }
 }
 
 /** The TV's answer to a HELLO. */
