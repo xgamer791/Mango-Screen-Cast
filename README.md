@@ -111,17 +111,21 @@ receiver, with the same AirPlay core as the TV app. Your Mac finds it in Screen
 Mirroring as *Mango Cast iPad*, and mirrors to it or uses it as a second display
 with **Use As Separate Display**. Sound plays on the iPad.
 
-**Resolution fills the screen.** By default the iPad offers exactly its own
-screen: its full pixel count (for example 2360 × 1640 on an iPad Air,
-2752 × 2064 on a 13-inch iPad Pro), in the orientation it's held, with HEVC. So
-a separate display fills the screen edge to edge at full sharpness, in
-landscape or portrait. Turn the iPad while nothing is connected and it offers
-the new shape to the next Mac. Macs that can't send HEVC (Intel Macs) get the
-same shape at about 1080p.
+**Sideways only.** Mango Cast always runs in landscape, whichever way the iPad
+is held, and takes the whole screen (no Split View).
+
+**Resolution fills the screen.** The iPad offers exactly its own screen
+sideways: its native pixel count (for example 2160 × 1620 on a 10.2-inch iPad,
+2360 × 1640 on an iPad Air, 2752 × 2064 on a 13-inch iPad Pro), with HEVC. So a
+separate display fills the screen edge to edge at full sharpness. Macs that
+can't send HEVC (Intel Macs) get the same shape at about 1080p. On the iPad
+(9th generation) it starts at half, 1080 × 810; pick **Native** for the full
+2160 × 1620.
 
 To find a sweet spot (smoother over busy Wi-Fi, or bigger text on a separate
-display), Settings → **Resolution** lists smaller sizes: 90%, 80%, 75%, 66%,
-60% and 50% of full. **Every size listed has the iPad's exact shape**, so
+display), Settings → **Resolution** lists **Native** and smaller sizes, every
+5% from 95% down to 40% (and 66%). **Every size listed has the iPad's exact
+shape**, so
 whatever size you pick, the picture still fills the screen. That's the size
 the iPad tells the Mac (or iPhone, or any other AirPlay sender) to send. On the
 Mac, leave the AirPlay display's resolution in System Settings → Displays at
@@ -137,8 +141,8 @@ display change:
   mirroring stops before you keep it, or if the app closes mid-try.
 - While a size is being tried, the home screen says so with a **Go back**
   button, and Settings has one too.
-- Whenever you're below full size, the home screen has **Back to full
-  resolution**, which is always safe.
+- Whenever you're not at the size the iPad starts with, the home screen has
+  **Back to the default resolution**, which is always safe.
 
 A *mirrored* Mac keeps its own shape (a MacBook is wider than an iPad), so it
 shows with thin bars; tap **Fill** (or double-tap) to zoom it to cover the
@@ -211,7 +215,7 @@ Mango Cast restarts AirPlay when you come back.
 | Setting | What it does |
 |---|---|
 | Name | What your Mac shows in Screen Mirroring. *Mango Cast iPad* unless you change it. |
-| Resolution | Full (default) or 90% down to 50% of it, all in the iPad's exact shape. New sizes are tried first and go back by themselves unless kept (see above). |
+| Resolution | Native (the screen's own pixels) or 95% down to 40% of it, all in the iPad's exact shape, sideways. New sizes are tried first and go back by themselves unless kept (see above). |
 | Fill the screen | Zoom a mirrored picture of another shape to cover the screen, cutting off its edges. Same as Fill / Fit while mirroring. |
 | Sound | Play the Mac's audio on the iPad. |
 | Keep running in the background | On by default: leaving the app or locking the screen keeps the Mac connected (see above). Off, Mango Cast stops receiving when you leave it. |
@@ -376,7 +380,7 @@ service records and the `/info` reply Apple devices read (display size,
 60 fps, HEVC flag, no password). CI runs both and builds the APKs. For the
 iPad app, CI runs its tests on an iPad simulator, uploads the build to
 TestFlight, and takes screenshots of the home and Settings screens on every iPad simulator (and
-an iPhone) in both orientations (the `ios-screenshots` artifact).
+an iPhone), sideways (the `ios-screenshots` artifact).
 
 ## License
 

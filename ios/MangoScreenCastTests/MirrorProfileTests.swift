@@ -61,6 +61,17 @@ final class MirrorProfileTests: XCTestCase {
         XCTAssertEqual(MirrorProfile.choices(screen: air, landscape: true, hevc: true).count, MirrorProfile.scales.count)
     }
 
+    func testTheFullSizeIsNativeWithHEVC() {
+        let choices = MirrorProfile.choices(screen: classic, landscape: true, hevc: true)
+        XCTAssertEqual([choices[0].width, choices[0].height], [2160, 1620])
+        XCTAssertTrue(choices[0].isNative)
+        XCTAssertFalse(choices.dropFirst().contains(where: \.isNative))
+        // Without HEVC, full is about 1080p: not the screen's own pixels.
+        XCTAssertFalse(MirrorProfile.make(screen: classic, landscape: true, hevc: false).isNative)
+        // An odd side, rounded down to even, still counts.
+        XCTAssertTrue(MirrorProfile.make(screen: CGSize(width: 1179, height: 2556), landscape: true, hevc: true).isNative)
+    }
+
     func testFitKeepsTheShapeAndEvenSizes() {
         XCTAssertTrue(MirrorProfile.fit(4000, 3000, within: 3840, 2160) == (2880, 2160))
         XCTAssertTrue(MirrorProfile.fit(2361, 1641, within: 3840, 2160) == (2360, 1640))

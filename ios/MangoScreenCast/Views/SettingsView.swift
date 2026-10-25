@@ -22,8 +22,7 @@ struct SettingsView: View {
                     Text("What your Mac shows in Screen Mirroring.")
                 }
 
-                resolutionSection(landscape: false)
-                resolutionSection(landscape: true)
+                resolutionSection
 
                 Section {
                     Toggle("Fill the screen", isOn: binding(\.fillScreen) { receiver.video.fillsScreen = $0 })
@@ -114,11 +113,12 @@ struct SettingsView: View {
         .onDisappear(perform: commitName)
     }
 
-    /// The sizes on offer held upright or sideways: each exactly the
-    /// screen's shape that way round.
-    private func resolutionSection(landscape: Bool) -> some View {
-        Section {
-            Picker(landscape ? "Held sideways" : "Held upright", selection: resolution(landscape: landscape)) {
+    /// The sizes on offer, each exactly the screen's shape sideways (the app
+    /// only runs sideways), from its native size down.
+    private var resolutionSection: some View {
+        let landscape = true
+        return Section {
+            Picker("Resolution", selection: resolution(landscape: landscape)) {
                 ForEach(receiver.resolutionChoices(landscape: landscape), id: \.scale) { choice in
                     HStack {
                         Text(verbatim: choice.sizeText)
@@ -139,16 +139,14 @@ struct SettingsView: View {
                 }
             }
         } header: {
-            Text(landscape ? "Resolution held sideways" : "Resolution held upright")
+            Text("Resolution")
         } footer: {
-            if landscape {
-                Text("Every size has this screen’s exact shape held that way, so the picture fills it with no black bars and nothing cut off. A Mac’s display takes the shape the iPad has when the Mac connects: turned the other way, tap Reconnect on the picture to get the other shape. Full is the sharpest; smaller sizes are smoother on busy Wi-Fi and make everything bigger on a Mac’s separate display. A new size is only tried at first: the next time you mirror, you’re asked to keep it, and it goes back by itself after 20 seconds, if no picture arrives, or if mirroring stops first.")
-            }
+            Text("Every size has this screen’s exact shape, so the picture fills it with no black bars and nothing cut off. Native is the screen’s own pixels, the sharpest; smaller sizes are smoother on busy Wi-Fi and make everything bigger on a Mac’s separate display. A new size is only tried at first: the next time you mirror, you’re asked to keep it, and it goes back by itself after 20 seconds, if no picture arrives, or if mirroring stops first.")
         }
     }
 
     private func label(for choice: MirrorProfile, landscape: Bool) -> String {
-        var parts = [choice.scale == 100 ? "Full" : "\(choice.scale)%"]
+        var parts = [choice.isNative ? "Native" : choice.scale == 100 ? "Full" : "\(choice.scale)%"]
         if choice.scale == Settings.defaultResolutionScale { parts.append("default") }
         if settings.resolutionOnTrial(landscape: landscape) {
             if choice.scale == settings.resolutionScale(landscape: landscape) { parts.append("trying") }

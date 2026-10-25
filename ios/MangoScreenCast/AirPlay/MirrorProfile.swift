@@ -23,6 +23,8 @@ struct MirrorProfile: Equatable {
     var scale = 100
 
     var codecs: String { h265 ? "HEVC + H.264" : "H.264" }
+    /// Exactly the screen's own pixels (to within the even rounding).
+    var isNative: Bool { abs(width - screenWidth) <= 1 && abs(height - screenHeight) <= 1 }
     var sizeText: String { "\(width) × \(height)" }
 
     /// The steps offered, as percent of the full size.

@@ -1,8 +1,9 @@
 import XCTest
 
 /// Not a behaviour test: takes screenshots of the home and Settings screens
-/// in both orientations, so CI can show how the layout looks on every
-/// simulated iPad and iPhone (the Screenshots scheme; see ios.yml).
+/// (sideways, the only way the app runs), so CI can show how the layout
+/// looks on every simulated iPad and iPhone (the Screenshots scheme; see
+/// ios.yml).
 ///
 /// With SCREENSHOT_DIR set (TEST_RUNNER_SCREENSHOT_DIR for xcodebuild), the
 /// pictures are also written there as "<device> - <name>.png".
@@ -13,23 +14,15 @@ final class ScreenshotTests: XCTestCase {
 
     func testScreens() {
         let app = XCUIApplication()
-        XCUIDevice.shared.orientation = .portrait
+        XCUIDevice.shared.orientation = .landscapeLeft
         app.launch()
         _ = app.staticTexts["Ready to mirror"].waitForExistence(timeout: 20)
         settle()
-        snap("1 home portrait")
-
-        XCUIDevice.shared.orientation = .landscapeLeft
-        settle()
-        snap("2 home landscape")
+        snap("1 home")
 
         app.buttons["Settings"].firstMatch.tap()
         settle()
-        snap("3 settings landscape")
-
-        XCUIDevice.shared.orientation = .portrait
-        settle()
-        snap("4 settings portrait")
+        snap("2 settings")
     }
 
     private func settle() {

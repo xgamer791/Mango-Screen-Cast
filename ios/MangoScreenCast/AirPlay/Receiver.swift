@@ -179,18 +179,6 @@ final class Receiver: ObservableObject {
         return profile.screenWidth > profile.screenHeight
     }
 
-    /// The device was turned while a Mac shows it the other way round: offer
-    /// the new shape (whoever's connected is disconnected, and connects again
-    /// to get a display that fills the screen this way).
-    func reconnectForCurrentShape() {
-        guard running else { return }
-        let who = status.clientName
-        log("turned; offering \(currentProfile().sizeText) instead")
-        notice = "Ready for \(Self.isLandscape() ? "sideways" : "upright"): on \(who ?? "your Mac"), choose “\(settings.receiverName)” in Screen Mirroring again."
-        endCheck()
-        restart()
-    }
-
     // MARK: - Trying a picture size (main thread)
 
     /// Switches to another picture size. Anything but full size is a trial:
@@ -641,7 +629,8 @@ final class Receiver: ObservableObject {
         windowScene?.screen.nativeBounds.size ?? CGSize(width: 1920, height: 1080)
     }
 
-    /// Whether the device is held in landscape. Main thread.
+    /// Whether the app is sideways, which it always is: it only runs in
+    /// landscape (Info.plist). Main thread.
     static func isLandscape() -> Bool {
         windowScene?.effectiveGeometry.interfaceOrientation.isLandscape ?? true
     }
