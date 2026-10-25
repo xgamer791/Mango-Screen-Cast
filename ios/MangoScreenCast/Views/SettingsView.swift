@@ -114,7 +114,7 @@ struct SettingsView: View {
     }
 
     /// The sizes on offer, each exactly the screen's shape sideways (the app
-    /// only runs sideways), from its native size down.
+    /// only runs sideways), from the largest the codec allows down.
     private var resolutionSection: some View {
         let landscape = true
         return Section {
@@ -141,7 +141,7 @@ struct SettingsView: View {
         } header: {
             Text("Resolution")
         } footer: {
-            Text("Every size has this screen’s exact shape, so the picture fills it with no black bars and nothing cut off. Native is the screen’s own pixels, the sharpest; smaller sizes are smoother on busy Wi-Fi and make everything bigger on a Mac’s separate display. A new size is only tried at first: the next time you mirror, you’re asked to keep it, and it goes back by itself after 20 seconds, if no picture arrives, or if mirroring stops first.")
+            Text("Every size has this screen’s exact shape, so the picture fills it with no black bars and nothing cut off. Native is the screen’s own pixels. Sizes above it, up to 4K’s height, give a Mac’s separate display more room (everything smaller), shrunk to fit this screen; smaller sizes are smoother on busy Wi-Fi and make everything bigger. A new size is only tried at first: the next time you mirror, you’re asked to keep it, and it goes back by itself after 20 seconds, if no picture arrives, or if mirroring stops first.")
         }
     }
 

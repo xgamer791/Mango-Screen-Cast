@@ -46,7 +46,7 @@ final class Settings: ObservableObject {
     }
 
     /// The picture size offered with the device held upright (portrait) or
-    /// sideways (landscape), as percent of full (see MirrorProfile.scales).
+    /// sideways (landscape), as percent of full (see MirrorProfile.choices).
     /// Each way has its own: a Mac's display takes the shape the device has
     /// when it connects. `defaultResolutionScale` unless changed.
     func resolutionScale(landscape: Bool) -> Int {

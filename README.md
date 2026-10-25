@@ -122,10 +122,13 @@ can't send HEVC (Intel Macs) get the same shape at about 1080p. On the iPad
 (9th generation) it starts at half, 1080 × 810; pick **Native** for the full
 2160 × 1620.
 
-To find a sweet spot (smoother over busy Wi-Fi, or bigger text on a separate
-display), Settings → **Resolution** lists **Native** and smaller sizes, every
-5% from 95% down to 40% (and 66%). **Every size listed has the iPad's exact
-shape**, so
+To find a sweet spot, Settings → **Resolution** lists sizes above **Native**,
+every 5% up to the largest HEVC allows at 4K's height (2880 × 2160, 133%, on a
+10.2-inch iPad; 3108 × 2160 on an iPad Air), which give a separate display
+more room (everything smaller) and are shrunk to fit the iPad; then
+**Native**; then smaller sizes, every 5% from 95% down to 40% (and 66%),
+smoother over busy Wi-Fi and bigger text on a separate display. **Every size
+listed has the iPad's exact shape**, so
 whatever size you pick, the picture still fills the screen. That's the size
 the iPad tells the Mac (or iPhone, or any other AirPlay sender) to send. On the
 Mac, leave the AirPlay display's resolution in System Settings → Displays at
@@ -215,7 +218,7 @@ Mango Cast restarts AirPlay when you come back.
 | Setting | What it does |
 |---|---|
 | Name | What your Mac shows in Screen Mirroring. *Mango Cast iPad* unless you change it. |
-| Resolution | Native (the screen's own pixels) or 95% down to 40% of it, all in the iPad's exact shape, sideways. New sizes are tried first and go back by themselves unless kept (see above). |
+| Resolution | Larger than Native (up to 4K's height), Native (the screen's own pixels), or 95% down to 40% of it, all in the iPad's exact shape, sideways. New sizes are tried first and go back by themselves unless kept (see above). |
 | Fill the screen | Zoom a mirrored picture of another shape to cover the screen, cutting off its edges. Same as Fill / Fit while mirroring. |
 | Sound | Play the Mac's audio on the iPad. |
 | Keep running in the background | On by default: leaving the app or locking the screen keeps the Mac connected (see above). Off, Mango Cast stops receiving when you leave it. |
