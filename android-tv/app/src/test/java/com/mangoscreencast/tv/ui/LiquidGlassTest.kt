@@ -8,6 +8,7 @@ import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.view.View
 import android.widget.FrameLayout
+import com.mangoscreencast.tv.R
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -24,12 +25,13 @@ import kotlin.math.roundToInt
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 @Config(sdk = [34], qualifiers = "w960dp-h540dp-land-television-xhdpi", application = Application::class)
 class LiquidGlassTest {
+    private val activity: Activity get() = Robolectric.buildActivity(Activity::class.java).setup().get()
+
     /** A 600 x 200 px glass at (100, 100) over `behind`, drawn; returns the screen. */
     private fun render(behind: View): Bitmap {
-        val activity = Robolectric.buildActivity(Activity::class.java).setup().get()
-        val root = FrameLayout(activity)
+        val root = FrameLayout(behind.context).apply { clipChildren = false }
         root.addView(behind, FrameLayout.LayoutParams(800, 400))
-        val glass = LiquidGlassLayout(activity)
+        val glass = LiquidGlassLayout(behind.context)
         root.addView(glass, FrameLayout.LayoutParams(600, 200).apply { leftMargin = 100; topMargin = 100 })
         root.measure(View.MeasureSpec.makeMeasureSpec(800, View.MeasureSpec.EXACTLY),
             View.MeasureSpec.makeMeasureSpec(400, View.MeasureSpec.EXACTLY))
@@ -37,37 +39,73 @@ class LiquidGlassTest {
         return Bitmap.createBitmap(800, 400, Bitmap.Config.ARGB_8888).also { root.draw(Canvas(it)) }
     }
 
-    /** CSS: saturate(125%) brightness(70%) on `c`, clamped per step, then rgb(10 10 16 / 0.63) over it. */
-    private fun expected(c: Int): IntArray {
-        val r = Color.red(c).toDouble(); val g = Color.green(c).toDouble(); val b = Color.blue(c).toDouble()
-        val s = 1.25
-        fun clamp(x: Double) = x.coerceIn(0.0, 255.0)
-        val sr = clamp((0.213 + 0.787 * s) * r + (0.715 - 0.715 * s) * g + (0.072 - 0.072 * s) * b)
-        val sg = clamp((0.213 - 0.213 * s) * r + (0.715 + 0.285 * s) * g + (0.072 - 0.072 * s) * b)
-        val sb = clamp((0.213 - 0.213 * s) * r + (0.715 - 0.715 * s) * g + (0.072 + 0.928 * s) * b)
-        val a = 0xA1 / 255.0
-        return doubleArrayOf(10.0, 10.0, 16.0).zip(listOf(sr, sg, sb)) { t, f -> (a * t + (1 - a) * 0.7 * f).roundToInt() }
-            .toIntArray()
+    private fun flat(context: android.content.Context, colour: Int) = View(context).apply { background = ColorDrawable(colour) }
+
+    /** CSS: saturate(100%) brightness(70%) on `c`, then the glass tint over it. */
+    private fun expected(c: Int, tint: Int): IntArray {
+        val a = Color.alpha(tint) / 255.0
+        return intArrayOf(
+            (a * Color.red(tint) + (1 - a) * 0.7 * Color.red(c)).roundToInt(),
+            (a * Color.green(tint) + (1 - a) * 0.7 * Color.green(c)).roundToInt(),
+            (a * Color.blue(tint) + (1 - a) * 0.7 * Color.blue(c)).roundToInt(),
+        )
+    }
+
+    private fun assertColour(want: IntArray, got: Int, slack: Int = 3) {
+        val rgb = intArrayOf(Color.red(got), Color.green(got), Color.blue(got))
+        for (i in 0..2) assertTrue("got ${rgb.toList()}, want ${want.toList()}", abs(rgb[i] - want[i]) <= slack)
     }
 
     @Test
-    fun aFlatBackdropIsTintedOverItsFilteredColour() {
+    fun aFlatBackdropIsTintedOverItsDarkenedColour() {
         val colour = Color.rgb(150, 110, 70)
-        val screen = render(View(Robolectric.buildActivity(Activity::class.java).get()).apply {
-            background = ColorDrawable(colour)
-        })
-        val inside = screen.getPixel(400, 200)
-        val want = expected(colour)
-        val got = intArrayOf(Color.red(inside), Color.green(inside), Color.blue(inside))
-        for (i in 0..2) assertTrue("channel $i: got ${got.toList()}, want ${want.toList()}", abs(got[i] - want[i]) <= 3)
-        // Outside the glass the backdrop is untouched.
-        assertEquals(colour, screen.getPixel(50, 50))
+        val context = activity
+        assertEquals(0x4A000000, context.getColor(R.color.glass_tint))
+        val screen = render(flat(context, colour))
+        assertColour(expected(colour, context.getColor(R.color.glass_tint)), screen.getPixel(400, 200))
+        // Away from the glass and its shadow the backdrop is untouched.
+        assertEquals(colour, screen.getPixel(30, 30))
+    }
+
+    @Test
+    @Config(qualifiers = "+night")
+    fun inNightModeTheDarkTintIsUsed() {
+        val colour = Color.rgb(150, 110, 70)
+        val context = activity
+        assertEquals(0x8C09090C.toInt(), context.getColor(R.color.glass_tint))
+        val screen = render(flat(context, colour))
+        assertColour(expected(colour, 0x8C09090C.toInt()), screen.getPixel(400, 200))
+    }
+
+    @Test
+    fun theCornersAreRoundedLikeTheAppTiles() {
+        val colour = Color.rgb(200, 200, 200)
+        val context = activity
+        val radius = context.resources.getDimension(R.dimen.card_radius)
+        assertEquals(8 * context.resources.displayMetrics.density, radius)
+        val screen = render(flat(context, colour))
+        val glass = expected(colour, context.getColor(R.color.glass_tint))
+        // Just inside the top-left corner's curve: the backdrop (the shadow falls below, not here).
+        val corner = screen.getPixel(101, 101)
+        assertTrue("corner is glass: ${Integer.toHexString(corner)}", Color.red(corner) > glass[0] + 30)
+        // A radius in, it's glass.
+        assertColour(glass, screen.getPixel(100 + radius.toInt(), 100 + radius.toInt()))
+    }
+
+    @Test
+    fun itCastsASoftShadowBelowIt() {
+        val colour = Color.rgb(200, 200, 200)
+        val screen = render(flat(activity, colour))
+        val below = Color.red(screen.getPixel(400, 304)) // 4 px under the glass
+        val above = Color.red(screen.getPixel(400, 96))  // 4 px over it
+        assertTrue("no shadow below: $below", below < 200)
+        assertTrue("shadow should fall below more than above: above $above, below $below", below < above)
     }
 
     @Test
     fun aSharpEdgeBehindTheGlassIsBlurredAcrossIt() {
         // White on the left half, black on the right, meeting at x = 400 (glass x 300).
-        val behind = object : View(Robolectric.buildActivity(Activity::class.java).get()) {
+        val behind = object : View(activity) {
             override fun onDraw(canvas: Canvas) {
                 canvas.drawColor(Color.BLACK)
                 canvas.clipRect(0, 0, 400, 400)
@@ -75,20 +113,18 @@ class LiquidGlassTest {
             }
         }.apply { setWillNotDraw(false) }
         val screen = render(behind)
-        val row = (360..440).map { Color.red(screen.getPixel(it, 200)) }
-        // Light to dark, gradually: no single step does more than a fraction of the change.
+        val row = (380..420).map { Color.red(screen.getPixel(it, 200)) }
         assertTrue("not darkening: $row", row.first() > row.last() + 40)
         assertTrue("not monotonic: $row", row.zipWithNext().all { (a, b) -> b <= a + 1 })
         val biggestStep = row.zipWithNext().maxOf { (a, b) -> a - b }
-        assertTrue("edge still sharp (step $biggestStep): $row", biggestStep < (row.first() - row.last()) / 4)
-        // Far from the edge, each side is its own colour filtered and tinted.
-        assertEquals(expected(Color.WHITE)[0].toDouble(), Color.red(screen.getPixel(140, 200)).toDouble(), 3.0)
-        assertEquals(expected(Color.BLACK)[0].toDouble(), Color.red(screen.getPixel(660, 200)).toDouble(), 3.0)
+        assertTrue("edge still sharp (step $biggestStep): $row", biggestStep < (row.first() - row.last()) / 3)
+        val tint = behind.context.getColor(R.color.glass_tint)
+        assertEquals(expected(Color.WHITE, tint)[0].toDouble(), Color.red(screen.getPixel(140, 200)).toDouble(), 3.0)
+        assertEquals(expected(Color.BLACK, tint)[0].toDouble(), Color.red(screen.getPixel(660, 200)).toDouble(), 3.0)
     }
 
     @Test
     fun boxesApproximateTheGaussian() {
-        // Three boxes whose combined variance matches sigma^2 within a pixel's worth.
         for (sigma in listOf(2f, 3.66f, 7.3f, 14.6f)) {
             val sizes = LiquidGlassLayout.boxSizes(sigma)
             val variance = sizes.sumOf { (it * it - 1) / 12.0 }

@@ -16,7 +16,7 @@
                 android:top="3dp">
                 <shape>
                     <solid android:color="#FFFFFF" />
-                    <corners android:radius="8dp" />
+                    <corners android:radius="@dimen/card_radius" />
                 </shape>
             </item>
         </layer-list>
@@ -24,7 +24,7 @@
     <item>
         <shape>
             <solid android:color="#FFFFFF" />
-            <corners android:radius="8dp" />
+            <corners android:radius="@dimen/card_radius" />
         </shape>
     </item>
 </selector>
