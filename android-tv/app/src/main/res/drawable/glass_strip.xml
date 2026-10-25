@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  The center glass strip: a faint grey base over the black, a light sheen
-  from the top edge, and a visible rim. With a wallpaper behind it, the base
-  layer is what gets a blurred copy of the wallpaper drawn under it.
+  The center glass strip: a dark frosted base, a light sheen from the top
+  edge, and a thin rim. With a wallpaper behind it, the base layer is what
+  gets a blurred copy of the wallpaper drawn under it.
 -->
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
     <item>
         <shape>
-            <solid android:color="@color/home_glass_base" />
+            <solid android:color="#38000000" />
             <corners android:radius="12.75dp" />
         </shape>
     </item>
@@ -15,8 +15,8 @@
         <shape>
             <gradient
                 android:angle="270"
-                android:startColor="#14FFFFFF"
-                android:centerColor="#06FFFFFF"
+                android:startColor="#1CFFFFFF"
+                android:centerColor="#09FFFFFF"
                 android:centerY="0.4"
                 android:endColor="#00FFFFFF" />
             <corners android:radius="12.75dp" />
@@ -25,8 +25,8 @@
     <item>
         <shape>
             <stroke
-                android:width="1dp"
-                android:color="@color/border" />
+                android:width="0.75dp"
+                android:color="#24FFFFFF" />
             <corners android:radius="12.75dp" />
         </shape>
     </item>

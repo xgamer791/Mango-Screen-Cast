@@ -17,6 +17,14 @@
         android:contentDescription="@null"
         android:scaleType="centerCrop" />
 
+    <!-- Soft light behind the cast badge. -->
+    <View
+        android:layout_width="760dp"
+        android:layout_height="760dp"
+        android:layout_marginStart="353.5dp"
+        android:layout_marginTop="-248dp"
+        android:background="@drawable/home_glow" />
+
     <TextView
         android:id="@+id/status"
         android:layout_width="wrap_content"
@@ -90,7 +98,7 @@
 
                 <ImageView
                     style="@style/Mango.StepIcon"
-                    android:background="@drawable/step_tile"
+                    android:background="@drawable/step_tile_indigo"
                     android:contentDescription="@null"
                     android:src="@drawable/ic_step_wifi" />
 
@@ -116,7 +124,7 @@
 
                 <ImageView
                     style="@style/Mango.StepIcon"
-                    android:background="@drawable/step_tile"
+                    android:background="@drawable/step_tile_blue"
                     android:contentDescription="@null"
                     android:src="@drawable/ic_step_search" />
 
@@ -142,7 +150,7 @@
 
                 <ImageView
                     style="@style/Mango.StepIcon"
-                    android:background="@drawable/step_tile"
+                    android:background="@drawable/step_tile_blue"
                     android:contentDescription="@null"
                     android:src="@drawable/ic_step_tv" />
 
@@ -246,7 +254,7 @@
                 android:fontFamily="@font/geist_medium"
                 android:includeFontPadding="false"
                 android:text="@string/more_devices"
-                android:textColor="#FFFFFF"
+                android:textColor="#000000"
                 android:textSize="20sp" />
         </FrameLayout>
     </LinearLayout>

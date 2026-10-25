@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- The square behind each step's icon. -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android">
-    <solid android:color="@color/home_tile" />
+    <gradient
+        android:angle="270"
+        android:startColor="#4272FA"
+        android:endColor="#4160E6" />
     <corners android:radius="12.75dp" />
 </shape>
