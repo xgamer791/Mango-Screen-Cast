@@ -1,7 +1,6 @@
 package com.mangoscreencast.tv.ui
 
 import android.app.Activity
-import android.content.Intent
 import android.hardware.display.DisplayManager
 import android.os.Build
 import android.os.Bundle
@@ -249,6 +248,11 @@ class MirrorActivity : Activity(), SurfaceHolder.Callback, AirPlayReceiver.Liste
 
     // --- Remote -----------------------------------------------------------------
 
+    override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+        if (consumeGearKey(event)) return true
+        return super.dispatchKeyEvent(event)
+    }
+
     override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
         when (keyCode) {
             KeyEvent.KEYCODE_BACK -> {
@@ -265,12 +269,6 @@ class MirrorActivity : Activity(), SurfaceHolder.Callback, AirPlayReceiver.Liste
             KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_ENTER, KeyEvent.KEYCODE_INFO -> {
                 showStats = !showStats
                 updateStatsVisibility()
-                return true
-            }
-            KeyEvent.KEYCODE_SETTINGS -> {
-                // Same screen the gear opens from Home. The receiver stays up:
-                // Settings acquires it before this screen releases it.
-                if (event.repeatCount == 0) startActivity(Intent(this, SettingsActivity::class.java))
                 return true
             }
             KeyEvent.KEYCODE_DPAD_UP, KeyEvent.KEYCODE_DPAD_DOWN -> {

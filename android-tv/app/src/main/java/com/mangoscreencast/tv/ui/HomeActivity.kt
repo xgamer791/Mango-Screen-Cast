@@ -65,14 +65,12 @@ class HomeActivity : Activity(), AirPlayReceiver.Listener, AppUpdater.Listener {
 
     private fun openSettings() = startActivity(Intent(this, SettingsActivity::class.java))
 
-    // Some remotes deliver the gear as a key. The Hisense gear sends
-    // android.settings.SETTINGS instead; the manifest claims that intent.
-    override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
-        if (keyCode == KeyEvent.KEYCODE_SETTINGS) {
-            if (event.repeatCount == 0) openSettings()
-            return true
-        }
-        return super.onKeyDown(keyCode, event)
+    // Backup for a remote that actually delivers KEYCODE_SETTINGS. The Hisense
+    // gear does not: com.hisense.KEY_EVENT, then Katniss opens the activity
+    // with MAIN + LEANBACK_SETTINGS (see the manifest).
+    override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+        if (consumeGearKey(event)) return true
+        return super.dispatchKeyEvent(event)
     }
 
     // As the TV's Home app there is nowhere to go back to: Back must not close this screen.
