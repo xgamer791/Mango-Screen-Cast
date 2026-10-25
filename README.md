@@ -90,6 +90,12 @@ cd Mango-Screen-Cast/android-tv
    the menu bar under System Settings → **Menu Bar**. Without it, use System
    Settings → Displays → **Add Display** and pick the TV.
 3. On an **iPhone or iPad**: Control Center → Screen Mirroring → your TV.
+   **Two names for one TV?** Hisense, Sony and some other Android TVs have
+   Apple's AirPlay built in, listed under the TV's own name (*Master Bedroom
+   TV*, say). That one mirrors at 1080p. Pick the app's name for the full
+   picture; the TV's home screen says so whenever it sees the other one. To
+   hide the TV's own entry, turn AirPlay off in the TV's settings (*Apple
+   AirPlay and HomeKit*).
 4. To stop: stop mirroring on the Apple device, or press **Back twice** on the
    TV remote. Press **OK** while mirroring to show live stats (resolution,
    fps, decode time).

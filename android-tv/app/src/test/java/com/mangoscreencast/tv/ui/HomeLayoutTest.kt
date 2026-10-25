@@ -48,6 +48,13 @@ class HomeLayoutTest {
     }
 
     @Test
+    fun readyNextToTheTvsOwnAirPlay() = check("two-receivers") { root ->
+        ready(root)
+        root.text(R.id.status_detail, root.context.getString(R.string.status_ready_detail_other, name, "Master Bedroom TV"))
+        root.text(R.id.update_status, root.context.getString(R.string.version_label, "1.2.0"))
+    }
+
+    @Test
     fun failedUpdateCheckAndTwoLineStatus() = check("errors") { root ->
         ready(root)
         root.text(R.id.status, root.context.getString(R.string.status_failed))

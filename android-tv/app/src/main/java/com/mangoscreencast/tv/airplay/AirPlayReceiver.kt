@@ -36,6 +36,8 @@ class AirPlayReceiver(private val context: Context, private val settings: Settin
         val clientModel: String? = null,
         val paused: Boolean = false,
         val message: String? = null,
+        /** The TV's own AirPlay, when it is on next to this app. */
+        val otherReceiver: OtherReceiver? = null,
     )
 
     fun interface Listener {
@@ -53,6 +55,7 @@ class AirPlayReceiver(private val context: Context, private val settings: Settin
         private set
 
     private val advertiser = ServiceAdvertiser(context)
+    private val others = OtherReceivers(context)
     private val main = Handler(Looper.getMainLooper())
     private val control = Handler(HandlerThread("AirPlayControl").apply { start() }.looper)
     private val owners = mutableSetOf<Any>()
@@ -66,7 +69,17 @@ class AirPlayReceiver(private val context: Context, private val settings: Settin
             log("advertising failed: $reason")
             update { it.copy(state = State.FAILED, message = "Couldn't announce the TV on the network ($reason).") }
         }
-        advertiser.onRegistered = { type, name -> log("advertising $type as \"$name\"") }
+        advertiser.onRegistered = { type, name ->
+            log("advertising $type as \"$name\"")
+            if (type == OtherReceivers.SERVICE_TYPE) others.ownNames = others.ownNames + name
+        }
+        others.onChanged = { other ->
+            if (other != null) {
+                log("this TV's own AirPlay is on too: \"${other.name}\" on port ${other.port}" +
+                    (other.model?.let { " ($it)" } ?: ""))
+            }
+            update { it.copy(otherReceiver = other) }
+        }
         video.log = ::log
     }
 
@@ -87,6 +100,10 @@ class AirPlayReceiver(private val context: Context, private val settings: Settin
         val s = status
         appendLine("State: ${s.state}${s.message?.let { " ($it)" } ?: ""}")
         appendLine("TV name: ${s.tvName}")
+        s.otherReceiver?.let {
+            appendLine("Also on this TV: \"${it.name}\" on port ${it.port}${it.model?.let { m -> " ($m)" } ?: ""}, " +
+                "the TV's own AirPlay; it mirrors at 1080p")
+        }
         s.profile?.let { p ->
             appendLine("Offering: ${p.width}x${p.height} @ ${p.maxFps} fps, ${p.codecs} (refresh ${p.refreshRate} Hz)")
             appendLine("Panel: ${p.panel.width}x${p.panel.height}, modes ${p.panel.refreshRates.joinToString { "%.2f".format(it) }} Hz")
@@ -151,6 +168,7 @@ class AirPlayReceiver(private val context: Context, private val settings: Settin
     private fun startServer() {
         val name = settings.tvName
         update { Status(state = State.STARTING, tvName = name) }
+        others.ownNames = setOf(name)
         val profile = DisplayCapabilities.profile(context, settings.resolution, settings.frameRate)
         profile.note?.let { log(it) }
         val result = try {
@@ -166,6 +184,7 @@ class AirPlayReceiver(private val context: Context, private val settings: Settin
         if (result > 0) {
             log("server ready on port $result: ${profile.width}x${profile.height} @ ${profile.maxFps} fps, ${profile.codecs}")
             update { it.copy(state = State.READY, profile = profile, message = null) }
+            others.start()
         } else {
             log("server failed to start: $result")
             update { it.copy(state = State.FAILED, profile = profile, message = describeError(result)) }
@@ -173,6 +192,7 @@ class AirPlayReceiver(private val context: Context, private val settings: Settin
     }
 
     private fun stopServer() {
+        others.stop()
         try {
             AirPlayNative.nativeStop()
         } catch (_: Throwable) {

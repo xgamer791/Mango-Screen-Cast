@@ -87,8 +87,13 @@ class HomeActivity : Activity(), AirPlayReceiver.Listener, AppUpdater.Listener {
         val (title, detail, color) = when (status.state) {
             State.STOPPED, State.STARTING ->
                 Triple(getString(R.string.status_starting), "", R.color.status_waiting)
-            State.READY ->
-                Triple(getString(R.string.status_ready), getString(R.string.status_ready_detail, name), R.color.status_ready)
+            State.READY -> Triple(
+                getString(R.string.status_ready),
+                // Next to the TV's own AirPlay, say which of the two names is this one.
+                status.otherReceiver?.let { getString(R.string.status_ready_detail_other, name, it.name) }
+                    ?: getString(R.string.status_ready_detail, name),
+                R.color.status_ready,
+            )
             State.CONNECTED ->
                 Triple(getString(R.string.status_connected, status.clientName ?: getString(R.string.a_device)),
                     getString(R.string.status_connected_detail), R.color.status_ready)
