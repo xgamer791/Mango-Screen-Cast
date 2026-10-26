@@ -2,7 +2,6 @@ package com.mangoscreencast.tv.ui
 
 import android.accessibilityservice.AccessibilityService
 import android.app.Activity
-import android.content.Intent
 import android.view.KeyEvent
 import android.view.accessibility.AccessibilityEvent
 import java.lang.ref.WeakReference
@@ -18,8 +17,9 @@ import java.lang.ref.WeakReference
  * Mango's can be it; and with Mango as Home the launcher is off, so the gear
  * did nothing. An accessibility service that filters keys sees them before
  * the system does: this one takes the gear, and a remote's KEYCODE_SETTINGS,
- * and on letting go opens Mango Settings, or closes it when it's in front, as
- * the dashboard did. Every other key goes on as it was.
+ * and on letting go opens the menu (SettingsMenuActivity), or slides it closed
+ * when it's in front, as the dashboard did; Settings opened another way
+ * (by voice) it closes. Every other key goes on as it was.
  *
  * It's turned on once over adb, as the TV's own settings are off:
  * `adb shell settings put secure enabled_accessibility_services
@@ -29,9 +29,11 @@ class GearKeyService : AccessibilityService() {
     public override fun onKeyEvent(event: KeyEvent): Boolean {
         if (event.keyCode != KeyEvent.KEYCODE_NOTIFICATION && event.keyCode != KeyEvent.KEYCODE_SETTINGS) return false
         if (event.action == KeyEvent.ACTION_UP && !event.isCanceled) {
-            val shown = FrontSettings.current()
-            if (shown != null) shown.finish()
-            else startActivity(Intent(this, SettingsActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+            when (val shown = FrontSettings.current()) {
+                is SettingsMenuActivity -> shown.gear()
+                null -> SettingsMenuActivity.open(this)
+                else -> shown.finish()
+            }
         }
         return true
     }

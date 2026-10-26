@@ -25,14 +25,21 @@ import org.xmlpull.v1.XmlPullParser
  * The Hisense remote's gear sends KEYCODE_NOTIFICATION, which the system
  * takes before any app sees it and gives only to a system app's panel. The
  * gear service sees keys first, as an accessibility service filtering them,
- * and opens Mango Settings instead, or closes it when it's in front, as the
+ * and opens the menu instead, or closes it when it's in front, as the
  * dashboard did; every other key goes on as it was.
  */
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [34], application = Application::class)
+@org.robolectric.annotation.LooperMode(org.robolectric.annotation.LooperMode.Mode.PAUSED)
 class GearKeyServiceTest {
     private val context get() = RuntimeEnvironment.getApplication()
     private val service = Robolectric.setupService(GearKeyService::class.java)
+
+    @org.junit.Before
+    fun framesWithTheClock() {
+        org.robolectric.shadows.ShadowChoreographer.setPaused(true)
+        org.robolectric.shadows.ShadowChoreographer.setFrameDelay(java.time.Duration.ofMillis(16))
+    }
 
     @org.junit.After
     fun nothingInFront() = FrontSettings.clear()
@@ -51,8 +58,8 @@ class GearKeyServiceTest {
         assertNull("nothing until it's let go", started())
         assertTrue(service.onKeyEvent(key(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_NOTIFICATION)))
         val intent = started()
-        assertNotNull("Mango Settings opens", intent)
-        assertEquals(SettingsActivity::class.java.name, intent!!.component?.className)
+        assertNotNull("the menu opens", intent)
+        assertEquals(SettingsMenuActivity::class.java.name, intent!!.component?.className)
         assertTrue("from the service, a task of its own", intent.flags and Intent.FLAG_ACTIVITY_NEW_TASK != 0)
         assertNull(started())
     }
@@ -76,7 +83,7 @@ class GearKeyServiceTest {
         assertTrue(shown.isFinishing)
         FrontSettings.hidden(shown) // its onPause
         press(KeyEvent.KEYCODE_NOTIFICATION)
-        assertEquals(SettingsActivity::class.java.name, started()?.component?.className)
+        assertEquals(SettingsMenuActivity::class.java.name, started()?.component?.className)
     }
 
     @Test
@@ -85,7 +92,7 @@ class GearKeyServiceTest {
         FrontSettings.hidden(behind) // paused: another app came in front of it
         press(KeyEvent.KEYCODE_NOTIFICATION)
         assertFalse(behind.isFinishing)
-        assertEquals(SettingsActivity::class.java.name, started()?.component?.className)
+        assertEquals(SettingsMenuActivity::class.java.name, started()?.component?.className)
     }
 
     @Test
@@ -99,9 +106,20 @@ class GearKeyServiceTest {
     }
 
     @Test
+    fun theGearSlidesTheMenuClosedWhenItsOpen() {
+        val menu = Robolectric.buildActivity(SettingsMenuActivity::class.java).setup().get()
+        frames(SettingsMenuActivity.SLIDE_MS + 100)
+        assertEquals(true to true, press(KeyEvent.KEYCODE_NOTIFICATION))
+        assertFalse("it slides out first", menu.isFinishing)
+        assertNull("nothing new opens", started())
+        frames(SettingsMenuActivity.SLIDE_MS + 100)
+        assertTrue("then it closes", menu.isFinishing)
+    }
+
+    @Test
     fun aRemotesSettingsKeyOpensMangoSettingsToo() {
         assertEquals(true to true, press(KeyEvent.KEYCODE_SETTINGS))
-        assertEquals(SettingsActivity::class.java.name, started()?.component?.className)
+        assertEquals(SettingsMenuActivity::class.java.name, started()?.component?.className)
     }
 
     @Test
