@@ -8,6 +8,8 @@ import android.os.Bundle
 import android.provider.Settings as SystemSettings
 import android.util.Log
 import com.mangoscreencast.tv.airplay.AirPlayReceiver
+import com.mangoscreencast.tv.media.SoundWake
+import com.mangoscreencast.tv.ui.FocusSounds
 import com.mangoscreencast.tv.ui.MirrorActivity
 import com.mangoscreencast.tv.update.AppUpdater
 
@@ -20,6 +22,10 @@ class MangoApp : Application() {
         private set
 
     private var startedActivities = 0
+
+    /** Screens up that click as the remote moves, and what keeps their clicks prompt. */
+    private var clickingScreens = 0
+    private val soundWake = SoundWake()
 
     override fun onCreate() {
         super.onCreate()
@@ -38,13 +44,17 @@ class MangoApp : Application() {
         registerActivityLifecycleCallbacks(object : ActivityLifecycleCallbacks {
             override fun onActivityStarted(activity: Activity) {
                 startedActivities++
+                // The player plays the sender's own sound; every other screen clicks as the remote moves.
+                if (activity !is MirrorActivity && clickingScreens++ == 0) soundWake.start()
             }
 
             override fun onActivityStopped(activity: Activity) {
                 startedActivities--
+                if (activity !is MirrorActivity && --clickingScreens == 0) soundWake.stop()
             }
 
-            override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {}
+            override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) =
+                FocusSounds.install(activity.window)
             override fun onActivityResumed(activity: Activity) {}
             override fun onActivityPaused(activity: Activity) {}
             override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) {}
