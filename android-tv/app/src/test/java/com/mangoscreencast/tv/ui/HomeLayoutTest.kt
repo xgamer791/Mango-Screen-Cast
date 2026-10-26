@@ -5,6 +5,7 @@ import android.app.Application
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.view.ContextThemeWrapper
+import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -105,6 +106,37 @@ class HomeLayoutTest {
         }
         val right = IntArray(2).also { grid!!.getLocationInWindow(it) }[0] + grid!!.width
         assertTrue("the wall runs past the screen", right <= grid!!.rootView.width)
+    }
+
+    /**
+     * Down through the wall: it scrolls a whole row at a time, only once the next row would be
+     * under the fade, and not at all past the last row.
+     */
+    @Test
+    fun theWallScrollsByWholeRows() {
+        var root: View? = null
+        check("wall-scrolled") { home ->
+            ready(home)
+            root = home
+        }
+        val wall = root!!.findViewById<TileWall>(R.id.tile_wall)
+        val grid = root!!.findViewById<TileGrid>(R.id.tile_grid)
+        val pitch = 122.5f * wall.resources.displayMetrics.density
+        // The test runs in touch mode, which the TV doesn't have.
+        grid.tiles.forEach { it.isFocusableInTouchMode = true }
+        grid.getChildAt(0).requestFocus()
+        fun down() {
+            wall.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DPAD_DOWN))
+            wall.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_DPAD_DOWN))
+        }
+        val scrolls = mutableListOf<Int>()
+        repeat(grid.rows + 1) {
+            down()
+            scrolls += Math.round(wall.scrollY / pitch)
+        }
+        // Rows 2 and 3 are in view; row 4 brings the wall up one row; row 4 is the last, so no more.
+        assertEquals(listOf(0, 0, 1, 1, 1), scrolls)
+        assertEquals(grid.childCount - 3, grid.indexOfChild(grid.findFocus()))
     }
 
     @Test

@@ -9,6 +9,7 @@ import android.graphics.PorterDuffXfermode
 import android.graphics.Rect
 import android.graphics.Shader
 import android.util.AttributeSet
+import android.view.FocusFinder
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ScrollView
@@ -86,12 +87,18 @@ class TileWall @JvmOverloads constructor(context: Context, attrs: AttributeSet? 
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-        super.onMeasure(widthMeasureSpec, heightMeasureSpec)
         // Room under the last row, so it can scroll up clear of the fade.
         getChildAt(0)?.let { grid ->
-            val room = (measuredHeight - fadeTop).roundToInt().coerceAtLeast(0)
+            val room = (MeasureSpec.getSize(heightMeasureSpec) - fadeTop).roundToInt().coerceAtLeast(0)
             if (grid.paddingBottom != room) grid.setPadding(grid.paddingLeft, grid.paddingTop, grid.paddingRight, room)
         }
+        super.onMeasure(widthMeasureSpec, heightMeasureSpec)
+    }
+
+    /** Up or Down with no tile that way (the first or last row): no scrolling into empty space. */
+    override fun arrowScroll(direction: Int): Boolean {
+        if (FocusFinder.getInstance().findNextFocus(this, findFocus(), direction) == null) return false
+        return super.arrowScroll(direction)
     }
 
     /** Whole rows: the focused tile's row moves just clear of the fade, or to the top. */
