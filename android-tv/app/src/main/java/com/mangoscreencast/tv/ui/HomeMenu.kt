@@ -12,9 +12,10 @@ import kotlin.math.roundToInt
 /**
  * Home's menu, as on the Roku: only its icons beside the wall until Left from
  * the wall's first column opens it. Open, its words show and the wall, with
- * the focused tile's name over it, moves right to make room, running on past
- * the right edge of the screen; the arrow beside the wall's first row hides
- * under it.
+ * the focused tile's name over it, glides right to make room, running on past
+ * the right edge of the screen, and glides back when it closes, on the same
+ * curve as its glide from row to row; the arrow beside the wall's first row
+ * hides under it.
  */
 object HomeMenu {
     /** Where the wall starts, in dp from the page's left: beside the icons, and beside the open menu's bars. */
@@ -42,8 +43,14 @@ object HomeMenu {
             val view = page.findViewById<View>(id)
             val params = view.layoutParams as ViewGroup.MarginLayoutParams
             if (params.marginStart != start) {
+                // It takes its new place at once, so the remote finds it there, but is drawn gliding over
+                // from where it is now (mid-glide too, if the menu turns back).
+                view.animate().cancel()
+                val drawnAt = params.marginStart + view.translationX
                 params.marginStart = start
                 view.layoutParams = params
+                view.translationX = drawnAt - start
+                view.animate().translationX(0f).setDuration(TileWall.GLIDE_MS).setInterpolator(TileWall.GLIDE).start()
             }
         }
         page.findViewById<View>(R.id.home_chevron).visibility = if (open) View.INVISIBLE else View.VISIBLE
