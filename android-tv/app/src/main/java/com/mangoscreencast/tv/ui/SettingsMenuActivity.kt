@@ -74,9 +74,15 @@ class SettingsMenuActivity : Activity() {
         /** Ease in and out, the same curve each way: f(t) + f(1 - t) = 1. */
         val EASE: Interpolator = PathInterpolator(0.45f, 0f, 0.55f, 1f)
 
-        /** Opens the menu, over whatever is on screen. */
+        /**
+         * Opens the menu, over whatever is on screen. NO_ANIMATION, or Android fades
+         * the menu's window in as the panel slides: the panel only slides.
+         */
         fun open(context: Context) {
-            context.startActivity(Intent(context, SettingsMenuActivity::class.java).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK))
+            context.startActivity(
+                Intent(context, SettingsMenuActivity::class.java)
+                    .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_NO_ANIMATION),
+            )
         }
     }
 }
