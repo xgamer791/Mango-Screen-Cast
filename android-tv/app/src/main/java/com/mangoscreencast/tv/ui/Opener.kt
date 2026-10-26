@@ -6,6 +6,7 @@ import android.net.Uri
 import android.widget.Toast
 import com.mangoscreencast.tv.R
 import com.mangoscreencast.tv.apps.AppLauncher
+import com.mangoscreencast.tv.apps.KsatNews
 import com.mangoscreencast.tv.apps.StreamingApp
 import com.mangoscreencast.tv.apps.StreamingApps
 import com.mangoscreencast.tv.browse.Show
@@ -28,15 +29,36 @@ class Opener(private val activity: Activity) {
     /** The show in its app (straight to its page where the app takes links), or on the TV's Live TV. */
     fun show(show: Show) {
         if (show.opens == Show.LIVE_TV) return liveTv()
-        val app = StreamingApps.ALL.first { it.name == show.opens }
+        link(StreamingApps.ALL.first { it.name == show.opens }, show.link)
+    }
+
+    /** `link` in `app`, or the app itself if it doesn't take it. */
+    private fun link(app: StreamingApp, link: String?) {
         val entry = launcher.entry(app)
-        val link = show.link
         if (entry is AppLauncher.Entry.Installed && link != null) {
             val page = Intent(Intent.ACTION_VIEW, Uri.parse(link)).setPackage(entry.packageName)
                 .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             if (launcher.start(activity, page)) return
         }
         app(app)
+    }
+
+    @Volatile
+    private var findingNews = false
+
+    /** For the News tile: KSAT 12's newest video over 20 minutes, playing in YouTube, looked up as it's asked for. */
+    fun news() {
+        if (findingNews) return
+        findingNews = true
+        Thread({
+            val video = KsatNews.latest()
+            activity.runOnUiThread {
+                findingNews = false
+                if (activity.isDestroyed) return@runOnUiThread
+                if (video == null) Toast.makeText(activity, R.string.news_missing, Toast.LENGTH_LONG).show()
+                else link(StreamingApps.ALL.first { it.name == "YouTube" }, KsatNews.watch(video))
+            }
+        }, "News").start()
     }
 
     fun liveTv() = start(launcher.liveTv(), R.string.live_tv_missing)
