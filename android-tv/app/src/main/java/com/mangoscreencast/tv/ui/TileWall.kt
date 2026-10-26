@@ -1,8 +1,12 @@
 package com.mangoscreencast.tv.ui
 
+import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
+import android.animation.ValueAnimator
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.LinearGradient
+import android.graphics.Matrix
 import android.graphics.Paint
 import android.graphics.PorterDuff
 import android.graphics.PorterDuffXfermode
@@ -12,6 +16,8 @@ import android.util.AttributeSet
 import android.view.FocusFinder
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.Interpolator
+import android.view.animation.PathInterpolator
 import android.widget.ScrollView
 import kotlin.math.ceil
 import kotlin.math.floor
@@ -76,13 +82,20 @@ class TileWall @JvmOverloads constructor(context: Context, attrs: AttributeSet? 
     private val fadeTop = FADE_TOP_DP * density
     private val gap = TileGrid.GAP_DP * density
     private val mask = Paint().apply { xfermode = PorterDuffXfermode(PorterDuff.Mode.DST_IN) }
-    private var maskFor = -1
+    private val maskShift = Matrix()
+    private var maskHeight = -1
+
+    /** The wall's glide to a row, while it's moving. */
+    private var glide: ValueAnimator? = null
+
+    /** Where the wall is headed: the end of the glide, else where it is. */
+    private var destination = 0
 
     init {
         isVerticalScrollBarEnabled = false
         overScrollMode = OVER_SCROLL_NEVER
         isVerticalFadingEdgeEnabled = false
-        // Each move redraws the glass tiles' backdrops: jump, don't glide.
+        // The wall glides on its own curve (glideTo), not ScrollView's.
         isSmoothScrollingEnabled = false
         clipToPadding = false
     }
@@ -105,17 +118,49 @@ class TileWall @JvmOverloads constructor(context: Context, attrs: AttributeSet? 
         return super.arrowScroll(direction)
     }
 
-    /** Whole rows: the focused tile's row moves just clear of the fade, or to the top. */
+    /**
+     * Whole rows: the focused tile's row moves just clear of the fade, or to the top. The wall
+     * glides there rather than jumping, so this asks ScrollView to move it by nothing.
+     */
     override fun computeScrollDeltaToGetChildRectOnScreen(rect: Rect): Int {
         if (childCount == 0) return 0
-        var target = scrollY
-        if (rect.bottom > scrollY + fadeTop) {
+        // Judged from where the wall is headed: another press mid-glide goes a row further.
+        val from = if (glide != null) destination else scrollY
+        var target = from
+        if (rect.bottom > from + fadeTop) {
             target = (ceil((rect.bottom - fadeTop) / rowPitch) * rowPitch).roundToInt()
-        } else if (rect.top < scrollY) {
+        } else if (rect.top < from) {
             target = (floor(rect.top / rowPitch) * rowPitch).roundToInt()
         }
         val max = (getChildAt(0).height - height).coerceAtLeast(0)
-        return target.coerceIn(0, max) - scrollY
+        glideTo(target.coerceIn(0, max))
+        return 0
+    }
+
+    /**
+     * Glides the wall to `target` in [GLIDE_MS], quick at first and settling gently. A glide
+     * already on its way turns there from where it is. With the TV's animations off it lands at once.
+     */
+    private fun glideTo(target: Int) {
+        if (target == (if (glide != null) destination else scrollY)) return
+        destination = target
+        glide?.cancel()
+        glide = ValueAnimator.ofInt(scrollY, target).apply {
+            duration = GLIDE_MS
+            interpolator = GLIDE
+            addUpdateListener { scrollTo(scrollX, it.animatedValue as Int) }
+            addListener(object : AnimatorListenerAdapter() {
+                override fun onAnimationEnd(animation: Animator) {
+                    if (glide === animation) glide = null
+                }
+            })
+            start()
+        }
+    }
+
+    override fun onDetachedFromWindow() {
+        glide?.cancel()
+        super.onDetachedFromWindow()
     }
 
     override fun draw(canvas: Canvas) {
@@ -128,11 +173,14 @@ class TileWall @JvmOverloads constructor(context: Context, attrs: AttributeSet? 
         super.draw(canvas)
         canvas.restoreToCount(save)
         if (bottom <= top) return
-        // Below it, dimmed to 45% and fading to nothing at the bottom.
-        if (maskFor != scrollY) {
-            mask.shader = LinearGradient(0f, top, 0f, bottom, FADE_START, 0, Shader.TileMode.CLAMP)
-            maskFor = scrollY
+        // Below it, dimmed to 45% and fading to nothing at the bottom: one gradient, moved
+        // with the wall, so a glide doesn't make a new one every frame.
+        if (maskHeight != height) {
+            mask.shader = LinearGradient(0f, fadeTop, 0f, height.toFloat(), FADE_START, 0, Shader.TileMode.CLAMP)
+            maskHeight = height
         }
+        maskShift.setTranslate(0f, scrollY.toFloat())
+        mask.shader.setLocalMatrix(maskShift)
         save = canvas.saveLayer(0f, top, w, bottom, null)
         super.draw(canvas)
         canvas.drawRect(0f, top, w, bottom, mask)
@@ -145,6 +193,12 @@ class TileWall @JvmOverloads constructor(context: Context, attrs: AttributeSet? 
 
         /** 45% opaque. */
         private const val FADE_START = 0x73000000
+
+        /** How long the wall takes to glide a row (or more) up or down. */
+        const val GLIDE_MS = 280L
+
+        /** Off quickly, then a long, gentle settle onto the row. */
+        val GLIDE: Interpolator = PathInterpolator(0.2f, 0f, 0f, 1f)
     }
 }
 

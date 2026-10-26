@@ -126,9 +126,11 @@ class HomeLayoutTest {
         // The test runs in touch mode, which the TV doesn't have.
         grid.tiles.forEach { it.isFocusableInTouchMode = true }
         grid.getChildAt(0).requestFocus()
+        // Each press, then the wall's glide to its row.
         fun down() {
             wall.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DPAD_DOWN))
             wall.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_DPAD_DOWN))
+            frames(TileWall.GLIDE_MS + 32)
         }
         val scrolls = mutableListOf<Float>()
         repeat(grid.rows + 1) {
@@ -143,6 +145,7 @@ class HomeLayoutTest {
         repeat(grid.rows + 1) {
             wall.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DPAD_UP))
             wall.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_DPAD_UP))
+            frames(TileWall.GLIDE_MS + 32)
         }
         assertEquals(0, grid.indexOfChild(grid.findFocus()))
         assertEquals(0, wall.scrollY)
@@ -156,6 +159,40 @@ class HomeLayoutTest {
         assertEquals("1 of 14", HomeTiles.count(resources, 14, 0))
         assertEquals("14 of 14", HomeTiles.count(resources, 14, 13))
         assertEquals("1 Item", HomeTiles.count(resources, 1, -1))
+    }
+
+    @Test
+    fun theWallGlidesToItsRowRatherThanJumping() {
+        var root: View? = null
+        check("wall-glide") { home ->
+            ready(home)
+            root = home
+        }
+        // From here, frames every 16 ms as the clock moves on, as on the TV.
+        org.robolectric.shadows.ShadowChoreographer.setPaused(true)
+        org.robolectric.shadows.ShadowChoreographer.setFrameDelay(java.time.Duration.ofMillis(16))
+        val wall = root!!.findViewById<TileWall>(R.id.tile_wall)
+        val grid = root!!.findViewById<TileGrid>(R.id.tile_grid)
+        val pitch = 122.5f * wall.resources.displayMetrics.density
+        grid.tiles.forEach { it.isFocusableInTouchMode = true }
+        // The third row's first tile, so Down brings the wall up a row.
+        grid.getChildAt(2 * TileGrid.COLUMNS).requestFocus()
+        frames(TileWall.GLIDE_MS + 32)
+        assertEquals(0, wall.scrollY)
+        wall.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DPAD_DOWN))
+        wall.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_DPAD_DOWN))
+        assertEquals("the focus moves at once", 3 * TileGrid.COLUMNS, grid.indexOfChild(grid.findFocus()))
+        assertEquals("the wall hasn't jumped", 0, wall.scrollY)
+        frames(TileWall.GLIDE_MS / 4)
+        val early = wall.scrollY
+        frames(TileWall.GLIDE_MS / 4)
+        val half = wall.scrollY
+        assertTrue("on its way at a quarter: $early", early > 0 && early < pitch)
+        assertTrue("further on at a half: $half", half > early && half < pitch)
+        // Quick at first, settling gently: more than half the way at half the time.
+        assertTrue("past halfway at half the time: $half of $pitch", half > pitch / 2)
+        frames(TileWall.GLIDE_MS)
+        assertEquals("on the row", pitch.toDouble(), wall.scrollY.toDouble(), 1.0)
     }
 
     @Test
