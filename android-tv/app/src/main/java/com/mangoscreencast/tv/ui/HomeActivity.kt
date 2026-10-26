@@ -130,9 +130,11 @@ class HomeActivity : Activity(), AirPlayReceiver.Listener, AppUpdater.Listener {
         }
 
         fillWall()
-        // As on the Roku, Home opens on the wall's first tile with the menu closed.
-        HomeMenu.show(page, open = false)
-        (grid.getChildAt(0) ?: findViewById(R.id.menu_home)).requestFocus()
+        // As on the Roku, Home opens on the wall's first tile with the menu closed. The page isn't in its
+        // window yet, so Android doesn't tell the focus listener: set what follows the focus here.
+        val first = grid.getChildAt(0) ?: findViewById(R.id.menu_home)
+        first.requestFocus()
+        focusMoved(first)
         ReceiverService.sync(this)
     }
 
