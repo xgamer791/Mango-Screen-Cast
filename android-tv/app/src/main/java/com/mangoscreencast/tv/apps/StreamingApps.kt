@@ -6,7 +6,11 @@ import com.mangoscreencast.tv.R
 /** A streaming app the home screen has a tile for. */
 data class StreamingApp(
     val name: String,
-    /** Its logo, drawn from the service's own vector artwork in its tile's colours, so it stays sharp at any size (res/drawable/app_*.xml). */
+    /**
+     * Its logo in its tile's colours, at exactly the pixels it covers on Home's 1440p page: drawn from the
+     * service's own vector artwork at 4x, brought down with Lanczos and sharpened, so its edges stay crisp
+     * after the TV scales the page up to its 4K panel (res/drawable-nodpi/app_*.png).
+     */
     @DrawableRes val logo: Int,
     /** Its tile, as Roku draws the service's: its own colours (res/drawable/tile_bg_*.xml). */
     @DrawableRes val tile: Int,
