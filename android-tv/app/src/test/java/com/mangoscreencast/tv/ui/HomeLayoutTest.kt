@@ -129,13 +129,14 @@ class HomeLayoutTest {
             wall.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DPAD_DOWN))
             wall.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_DPAD_DOWN))
         }
-        val scrolls = mutableListOf<Int>()
+        val scrolls = mutableListOf<Float>()
         repeat(grid.rows + 1) {
             down()
-            scrolls += Math.round(wall.scrollY / pitch)
+            scrolls += wall.scrollY / pitch
         }
-        // Rows 2 and 3 are in view; row 4 brings the wall up one row; row 4 is the last, so no more.
-        assertEquals(listOf(0, 0, 1, 1, 1), scrolls)
+        // Rows 2 and 3 are in view; row 4 brings the wall up exactly one row; row 4 is the last, so no more.
+        val rows = listOf(0f, 0f, 1f, 1f, 1f)
+        for (i in rows.indices) assertEquals("$scrolls", rows[i].toDouble(), scrolls[i].toDouble(), 0.01)
         assertEquals(grid.childCount - 3, grid.indexOfChild(grid.findFocus()))
     }
 

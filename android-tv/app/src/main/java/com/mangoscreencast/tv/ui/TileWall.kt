@@ -74,6 +74,7 @@ class TileWall @JvmOverloads constructor(context: Context, attrs: AttributeSet? 
     private val density = resources.displayMetrics.density
     private val rowPitch = TileGrid.ROW_PITCH_DP * density
     private val fadeTop = FADE_TOP_DP * density
+    private val gap = TileGrid.GAP_DP * density
     private val mask = Paint().apply { xfermode = PorterDuffXfermode(PorterDuff.Mode.DST_IN) }
     private var maskFor = -1
 
@@ -87,9 +88,9 @@ class TileWall @JvmOverloads constructor(context: Context, attrs: AttributeSet? 
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-        // Room under the last row, so it can scroll up clear of the fade.
+        // Room under the last row, so it can scroll a whole row up, clear of the fade.
         getChildAt(0)?.let { grid ->
-            val room = (MeasureSpec.getSize(heightMeasureSpec) - fadeTop).roundToInt().coerceAtLeast(0)
+            val room = (MeasureSpec.getSize(heightMeasureSpec) - fadeTop + gap).roundToInt().coerceAtLeast(0)
             if (grid.paddingBottom != room) grid.setPadding(grid.paddingLeft, grid.paddingTop, grid.paddingRight, room)
         }
         super.onMeasure(widthMeasureSpec, heightMeasureSpec)

@@ -51,6 +51,16 @@ class HomeActivity : Activity(), AirPlayReceiver.Listener, AppUpdater.Listener {
     private val regular by lazy { ResourcesCompat.getFont(this, R.font.montserrat_regular) }
     private val medium by lazy { ResourcesCompat.getFont(this, R.font.montserrat_medium) }
 
+    /** The menu item focused last: Left from the wall's first column goes back to it. */
+    private var cameFrom = R.id.menu_home
+        set(value) {
+            field = value
+            leadLeftTo(value)
+        }
+
+    private fun leadLeftTo(item: Int) =
+        grid.tiles.forEachIndexed { i, tile -> if (i % TileGrid.COLUMNS == 0) tile.nextFocusLeftId = item }
+
     /** The TV's other apps on the wall now, so it's filled again only when they change. */
     private var othersShown: List<String>? = null
 
@@ -84,11 +94,13 @@ class HomeActivity : Activity(), AirPlayReceiver.Listener, AppUpdater.Listener {
             }
         }
 
-        // The focused item's words are a weight heavier on its white bar, as on the Roku.
+        // The focused item's words are a weight heavier on its white bar, as on the Roku; Left from
+        // the wall comes back to the item it was entered from.
         val menu = findViewById<ViewGroup>(R.id.menu)
         for (i in 0 until menu.childCount) {
             menu.getChildAt(i).setOnFocusChangeListener { item, focused ->
                 (item as TextView).typeface = if (focused) medium else regular
+                if (focused) cameFrom = item.id
             }
         }
         findViewById<View>(R.id.menu_live_tv).setOnClickListener { openLiveTv() }
@@ -124,6 +136,7 @@ class HomeActivity : Activity(), AirPlayReceiver.Listener, AppUpdater.Listener {
             app = ::openApp,
             other = { launcher.start(this, it.launch) },
         ))
+        leadLeftTo(cameFrom)
         focused?.let { grid.getChildAt(it.coerceAtMost(grid.childCount - 1))?.requestFocus() }
         itemCount.text = resources.getQuantityString(R.plurals.home_item_count, grid.childCount, grid.childCount)
     }
