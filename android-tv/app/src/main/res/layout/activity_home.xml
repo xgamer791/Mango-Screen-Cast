@@ -146,7 +146,7 @@
         android:id="@+id/tile_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="95.8dp"
+        android:layout_marginStart="101.8dp"
         android:layout_marginTop="85.8dp"
         android:ellipsize="end"
         android:fontFamily="@font/geist_medium"
@@ -157,13 +157,13 @@
         android:textColor="#E6FFFFFF"
         android:textSize="19sp" />
 
-    <!-- The wall: 4 tiles across, 726 dp wide from 95.8 dp, 24 dp right of the menu's icons (402.3 dp while the menu is open), the rest
+    <!-- The wall: 4 tiles across, 726 dp wide from 101.8 dp, 30 dp right of the menu's icons (402.3 dp while the menu is open), the rest
          of the screen's width free on the right, from the bar's top to past the bottom of the screen. See TileGrid. -->
     <com.mangoscreencast.tv.ui.TileWall
         android:id="@+id/tile_wall"
         android:layout_width="726dp"
         android:layout_height="match_parent"
-        android:layout_marginStart="95.8dp"
+        android:layout_marginStart="101.8dp"
         android:layout_marginTop="116.9dp">
 
         <com.mangoscreencast.tv.ui.TileGrid

@@ -52,10 +52,10 @@ class Canvas1440LayoutTest {
         val page = frame.page!!
         assertEquals(1920, page.width)
         assertEquals(1080, page.height)
-        // The wall where the layout puts it: 95.8 dp in, 726 dp wide (xhdpi: × 2, to whole pixels).
+        // The wall where the layout puts it: 101.8 dp in, 726 dp wide (xhdpi: × 2, to whole pixels).
         val wall = activity.findViewById<View>(R.id.tile_wall)
-        assertEquals(192, wall.left)
-        assertEquals(192 + 1452, wall.right)
+        assertEquals(204, wall.left)
+        assertEquals(204 + 1452, wall.right)
         assertEquals(Size(2560, 1440), frame.requestedSize)
         assertNotNull(frame.findSurfaceView())
     }

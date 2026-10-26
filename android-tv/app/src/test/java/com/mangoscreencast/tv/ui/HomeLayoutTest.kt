@@ -110,10 +110,10 @@ class HomeLayoutTest {
             val shape = logo.drawable.intrinsicWidth.toFloat() / logo.drawable.intrinsicHeight
             assertEquals("$name's logo is squeezed", shape.toDouble(), drawn.toDouble(), 0.05)
         }
-        // From 24 dp right of the menu's icons, 726 dp across, the rest of the screen free on the right.
+        // From 30 dp right of the menu's icons, 726 dp across, the rest of the screen free on the right.
         val left = IntArray(2).also { grid!!.getLocationInWindow(it) }[0]
-        assertEquals(95.8 * dp, left.toDouble(), 1.0)
-        assertEquals(821.8 * dp, (left + grid!!.width).toDouble(), 1.0)
+        assertEquals(101.8 * dp, left.toDouble(), 1.0)
+        assertEquals(827.8 * dp, (left + grid!!.width).toDouble(), 1.0)
     }
 
     /**
@@ -230,7 +230,7 @@ class HomeLayoutTest {
         val wall = root.findViewById<View>(R.id.tile_wall)
         val name = root.findViewById<TextView>(R.id.tile_name)
         val count = root.findViewById<TextView>(R.id.item_count)
-        assertEquals(95.8 * dp, wall.left.toDouble(), 1.0)
+        assertEquals(101.8 * dp, wall.left.toDouble(), 1.0)
         assertTrue("the closed menu (to ${menu.right}) reaches over the wall (from ${wall.left})", menu.right <= wall.left)
         assertEquals(wall.left, name.left)
         assertEquals((count.top + count.baseline).toDouble(), (name.top + name.baseline).toDouble(), 1.0)
@@ -273,7 +273,7 @@ class HomeLayoutTest {
         // Closed again, all back.
         HomeMenu.show(root, open = false)
         root.relayout()
-        assertEquals(95.8 * dp, root.findViewById<View>(R.id.tile_wall).left.toDouble(), 1.0)
+        assertEquals(101.8 * dp, root.findViewById<View>(R.id.tile_wall).left.toDouble(), 1.0)
     }
 
     @Test
