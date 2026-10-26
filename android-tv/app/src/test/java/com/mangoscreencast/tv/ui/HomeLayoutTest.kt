@@ -138,6 +138,13 @@ class HomeLayoutTest {
         val rows = listOf(0f, 0f, 1f, 1f, 1f)
         for (i in rows.indices) assertEquals("$scrolls", rows[i].toDouble(), scrolls[i].toDouble(), 0.01)
         assertEquals(grid.childCount - 3, grid.indexOfChild(grid.findFocus()))
+        // Back up to the first row, and once more: the focus stays on it, not the menu beside it.
+        repeat(grid.rows + 1) {
+            wall.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DPAD_UP))
+            wall.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_DPAD_UP))
+        }
+        assertEquals(0, grid.indexOfChild(grid.findFocus()))
+        assertEquals(0, wall.scrollY)
     }
 
     @Test

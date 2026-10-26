@@ -96,9 +96,12 @@ class TileWall @JvmOverloads constructor(context: Context, attrs: AttributeSet? 
         super.onMeasure(widthMeasureSpec, heightMeasureSpec)
     }
 
-    /** Up or Down with no tile that way (the first or last row): no scrolling into empty space. */
+    /**
+     * Up or Down with no tile that way (the first or last row) does nothing, as on the Roku: no
+     * scrolling into empty space, and no jumping out of the wall to the menu.
+     */
     override fun arrowScroll(direction: Int): Boolean {
-        if (FocusFinder.getInstance().findNextFocus(this, findFocus(), direction) == null) return false
+        if (FocusFinder.getInstance().findNextFocus(this, findFocus(), direction) == null) return true
         return super.arrowScroll(direction)
     }
 
