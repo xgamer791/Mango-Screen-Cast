@@ -142,4 +142,16 @@
 
     <!-- Background service -->
     <string name="background_notice">“%1$s” is visible to Macs, iPhones and iPads</string>
+    <!-- The Games page (games/GamesActivity.kt). -->
+    <string name="games_page">Games</string>
+    <string name="games_row">Games</string>
+    <plurals name="games_count">
+        <item quantity="one">%1$d game</item>
+        <item quantity="other">%1$d games</item>
+    </plurals>
+    <string name="games_one_player">1 player</string>
+    <string name="games_players">%1$s players</string>
+    <string name="games_action">Press OK to play</string>
+    <string name="games_no_access">Mango can\u2019t read the TV\u2019s games yet. Allow it all files access in the TV\u2019s settings for apps.</string>
+    <string name="games_none">There are no games in RetroArch\u2019s playlists yet.</string>
 </resources>

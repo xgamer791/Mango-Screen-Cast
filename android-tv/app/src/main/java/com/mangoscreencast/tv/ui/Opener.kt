@@ -63,8 +63,11 @@ class Opener(private val activity: Activity) {
 
     fun liveTv() = start(launcher.liveTv(), R.string.live_tv_missing)
 
-    /** RetroArch, for the Emulation tile. */
-    fun emulation() = start(launcher.emulation(), R.string.emulation_missing)
+    /** The Games page, for the Emulation tile (it plays the games in RetroArch); RetroArch must be on the TV. */
+    fun emulation() {
+        if (launcher.emulation() == null) return Toast.makeText(activity, R.string.emulation_missing, Toast.LENGTH_LONG).show()
+        activity.startActivity(Intent(activity, com.mangoscreencast.tv.games.GamesActivity::class.java))
+    }
 
     fun store() = start(launcher.store(), R.string.store_missing)
 
