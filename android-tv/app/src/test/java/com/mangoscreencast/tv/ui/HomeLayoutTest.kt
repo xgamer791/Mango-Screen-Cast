@@ -92,10 +92,13 @@ class HomeLayoutTest {
         val dp = grid!!.resources.displayMetrics.density
         for ((i, tile) in tiles.withIndex()) {
             val name = tile.contentDescription
-            assertEquals("$name's width", (180.62 * dp), tile.width.toDouble(), 1.0)
-            assertEquals("$name's height", (134.56 * dp), tile.height.toDouble(), 1.0)
-            assertEquals("$name's column", ((i % 4) * 194.56 * dp), tile.left.toDouble(), 1.0)
-            assertEquals("$name's row", ((i / 4) * 148.5 * dp), tile.top.toDouble(), 1.0)
+            // 157.13 x 116.7 dp, 45.25 dp apart across and down.
+            assertEquals("$name's width", (157.13 * dp), tile.width.toDouble(), 1.0)
+            assertEquals("$name's height", (116.7 * dp), tile.height.toDouble(), 1.0)
+            assertEquals("$name's column", ((i % 4) * 202.38 * dp), tile.left.toDouble(), 1.0)
+            assertEquals("$name's row", ((i / 4) * 161.95 * dp), tile.top.toDouble(), 1.0)
+            // The fourth column still ends under the clock: the wall's full 764.3 dp.
+            if (i % 4 == 3) assertEquals("$name's right edge", 764.3 * dp, tile.right.toDouble(), 1.0)
             if (i < 3) continue
             val logo = tile.findViewById<ImageView>(R.id.app_logo)
             assertTrue("$name has no logo", logo.drawable != null)
@@ -124,7 +127,7 @@ class HomeLayoutTest {
         }
         val wall = root!!.findViewById<TileWall>(R.id.tile_wall)
         val grid = root!!.findViewById<TileGrid>(R.id.tile_grid)
-        val pitch = 148.5f * wall.resources.displayMetrics.density
+        val pitch = TileGrid.ROW_PITCH_DP * wall.resources.displayMetrics.density
         // The test runs in touch mode, which the TV doesn't have.
         grid.tiles.forEach { it.isFocusableInTouchMode = true }
         grid.getChildAt(0).requestFocus()
@@ -177,7 +180,7 @@ class HomeLayoutTest {
         org.robolectric.shadows.ShadowChoreographer.setFrameDelay(java.time.Duration.ofMillis(16))
         val wall = root!!.findViewById<TileWall>(R.id.tile_wall)
         val grid = root!!.findViewById<TileGrid>(R.id.tile_grid)
-        val pitch = 148.5f * wall.resources.displayMetrics.density
+        val pitch = TileGrid.ROW_PITCH_DP * wall.resources.displayMetrics.density
         grid.tiles.forEach { it.isFocusableInTouchMode = true }
         // The second row's first tile, so Down (to the third, which runs past the bottom) brings the wall up a row.
         grid.getChildAt(1 * TileGrid.COLUMNS).requestFocus()
