@@ -21,8 +21,8 @@ import kotlin.math.roundToInt
  * wall's first row hides under it.
  */
 object HomeMenu {
-    /** Where the wall starts, in dp from the page's left: where the closed menu ends, and beside the open menu's bars. */
-    const val WALL_CLOSED_DP = 84f
+    /** Where the wall starts, in dp from the page's left: 36 dp right of the icons, as on the Roku, and beside the open menu's bars. */
+    const val WALL_CLOSED_DP = 108f
     const val WALL_OPEN_DP = 402.3f
 
     /**
