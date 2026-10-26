@@ -9,7 +9,9 @@ import android.os.Looper
 import android.util.Log
 import com.mangoscreencast.tv.Settings
 import com.mangoscreencast.tv.display.DisplayCapabilities
+import com.mangoscreencast.tv.display.FrameRateSetting
 import com.mangoscreencast.tv.display.MirrorProfile
+import com.mangoscreencast.tv.display.ResolutionSetting
 import com.mangoscreencast.tv.media.AudioPlayer
 import com.mangoscreencast.tv.media.VideoDecoder
 import com.mangoscreencast.tv.media.DecoderSelection
@@ -171,7 +173,8 @@ class AirPlayReceiver(private val context: Context, private val settings: Settin
         val name = settings.tvName
         update { Status(state = State.STARTING, tvName = name) }
         others.ownNames = setOf(name)
-        val profile = DisplayCapabilities.profile(context, settings.resolution, settings.frameRate)
+        // Forced to 4K at 60 fps, whatever Resolution and Frame rate say, until the gear's menu has them.
+        val profile = DisplayCapabilities.profile(context, ResolutionSetting.UHD_2160, FrameRateSetting.FPS_60)
         profile.note?.let { log(it) }
         val result = try {
             AirPlayNative.nativeStart(
