@@ -19,6 +19,8 @@
     <string name="menu_settings">Settings</string>
     <string name="shortcut_news">News</string>
     <string name="shortcut_emulation">Emulation</string>
+    <!-- On the Emulation tile, under RetroArch's invader: the app it opens, in Geist like the other tiles' names. -->
+    <string name="shortcut_retroarch">RetroArch</string>
     <string name="shortcut_live_tv">Live TV</string>
     <!-- Top right while a tile has the focus: which one of how many, as on the Roku. -->
     <string name="home_item_position">%1$d of %2$d</string>

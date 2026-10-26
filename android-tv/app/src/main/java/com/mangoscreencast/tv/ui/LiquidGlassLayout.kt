@@ -26,7 +26,7 @@ import kotlin.math.sqrt
 /**
  * Mango Liquid Glass, as Chromium draws it on the web: what lies behind this
  * view, bent at the edges by the #lg-refract filter (red, green and blue by
- * different amounts), then blurred by 4 px and darkened to 70% (saturation
+ * different amounts), then blurred by 24 px and darkened to 70% (saturation
  * left at 100%), under the tint, with the app tiles' rounded corners and no
  * rim, sheen, depth or shadow. The tint and the colour without a backdrop
  * come from R.color.glass_tint and glass_fallback, which have night-mode
@@ -55,7 +55,7 @@ class LiquidGlassLayout @JvmOverloads constructor(
             invalidate()
         }
 
-    /** How far it frosts, in px of the 1440p page: Mango Liquid Glass's 4 by default. */
+    /** How far it frosts, in px of the 1440p page: Mango Liquid Glass's 24 by default. */
     var blur1440 = BLUR_1440
 
     /** A shade over the tint, for glass that text sits on over bright art (transparent by default). */
@@ -107,7 +107,8 @@ class LiquidGlassLayout @JvmOverloads constructor(
             if (page == null || at == null) {
                 backdrop = null
                 backdropFor = at
-            } else if (!live) {
+            } else if (!live || backdrop == null) {
+                // The first frost is made at once, even on live glass: no frame of the bare fallback.
                 backdrop?.recycle()
                 backdrop = snapshot(page, at)?.also { frost(it) }
                 backdropFor = at
@@ -226,14 +227,19 @@ class LiquidGlassLayout @JvmOverloads constructor(
         return bitmap
     }
 
-    /** Bends and frosts `bitmap` in place: the ::before layer bends the sharp backdrop; the ::after layer frosts it. */
+    /**
+     * Frosts `bitmap` in place, then bends its rim. Frosted first, the bend curves light and colour
+     * at the edges like a lens; bent first (the web version's order), a sharp scene behind showed a
+     * shifted copy of itself, colours split, along every edge: the haunted house twice over at a
+     * tile's side.
+     */
     private fun frost(bitmap: Bitmap) {
         val w = bitmap.width
         val h = bitmap.height
         val pixels = IntArray(w * h)
         bitmap.getPixels(pixels, 0, w, 0, 0, w, h)
-        refract(pixels, w, h, density * scale * PX_1440_IN_DP)
         gaussianBlur(pixels, w, h, blur1440 * PX_1440_IN_DP * density * scale)
+        refract(pixels, w, h, density * scale * PX_1440_IN_DP)
         bitmap.setPixels(pixels, 0, w, 0, 0, w, h)
     }
 
@@ -241,8 +247,13 @@ class LiquidGlassLayout @JvmOverloads constructor(
         /** One px of the 2560 × 1440 page, in dp of the 960 × 540 dp window. */
         const val PX_1440_IN_DP = 960f / 2560f
 
-        /** Mango Liquid Glass's frost: 4 px on the 2560 × 1440 page. */
-        const val BLUR_1440 = 4f
+        /**
+         * Mango Liquid Glass's frost: 24 px on the 2560 × 1440 page. The web's 4 px left the
+         * TV's illustrated wallpapers sharp enough to read through the glass, and the bent rim
+         * then showed a shifted copy of the scene beside the real one; at 24 what's behind
+         * reads as colour and light.
+         */
+        const val BLUR_1440 = 24f
         const val BLUR_DP = BLUR_1440 * PX_1440_IN_DP
         const val SATURATE = 1.0f
         const val BRIGHTNESS = 0.70f

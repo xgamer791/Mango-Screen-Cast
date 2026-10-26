@@ -123,6 +123,30 @@ class LiquidGlassTest {
         assertEquals(expected(Color.BLACK, tint)[0].toDouble(), Color.red(screen.getPixel(660, 200)).toDouble(), 3.0)
     }
 
+    /**
+     * A detailed scene behind reads as colour and light, not things: black and white stripes 8 px
+     * apart come through the glass with under a tenth of their contrast, and its rim shows no copy
+     * of them. (The web's 4 px frost let a scene through sharp, and the bent rim doubled it.)
+     */
+    @Test
+    fun aDetailedSceneBehindComesThroughAsColourNotShapes() {
+        val behind = object : View(activity) {
+            override fun onDraw(canvas: Canvas) {
+                canvas.drawColor(Color.BLACK)
+                val white = android.graphics.Paint().apply { color = Color.WHITE }
+                var x = 0f
+                while (x < width) { canvas.drawRect(x, 0f, x + 8f, height.toFloat(), white); x += 16f }
+            }
+        }.apply { setWillNotDraw(false) }
+        val screen = render(behind)
+        // Outside the glass the stripes are full contrast; inside, across its middle and along its rim.
+        fun swing(xs: IntRange, y: Int) = xs.map { Color.red(screen.getPixel(it, y)) }.let { it.max() - it.min() }
+        assertEquals(255, swing(10..60, 50))
+        for ((xs, y) in listOf(300..400 to 200, 101..140 to 200, 300..400 to 102, 660..699 to 200)) {
+            assertTrue("stripes show through at x $xs, y $y: swing ${swing(xs, y)}", swing(xs, y) < 26)
+        }
+    }
+
     /** A 200 x 100 image whose red, green and blue all say where they are: 2 * x + y. */
     private fun ramp(w: Int = 200, h: Int = 100) = IntArray(w * h) { i ->
         val v = (2 * (i % w) + (i / w)).coerceAtMost(255); Color.rgb(v, v, v)
