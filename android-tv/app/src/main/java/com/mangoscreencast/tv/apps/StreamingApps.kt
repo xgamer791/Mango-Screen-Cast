@@ -6,7 +6,7 @@ import com.mangoscreencast.tv.R
 /** A streaming app the home screen has a tile for. */
 data class StreamingApp(
     val name: String,
-    /** Its logo, from the service's own artwork, on a clear ground (see res/drawable-xxxhdpi/app_*.png). */
+    /** Its logo, drawn from the service's own vector artwork in its tile's colours, so it stays sharp at any size (res/drawable/app_*.xml). */
     @DrawableRes val logo: Int,
     /** Its tile, as Roku draws the service's: its own colours (res/drawable/tile_bg_*.xml). */
     @DrawableRes val tile: Int,
