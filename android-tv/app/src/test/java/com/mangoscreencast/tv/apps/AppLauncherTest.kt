@@ -134,7 +134,19 @@ class AppLauncherTest {
             .filter { it.nodeName == "package" }
             .map { it.attributes.getNamedItem("android:name").nodeValue }
             .toSet()
-        val needed = StreamingApps.ALL.flatMap { it.packages + it.fireTvPackage }.toSet()
+        val needed = StreamingApps.ALL.flatMap { it.packages + it.fireTvPackage }.toSet() + AppLauncher.EMULATION_PACKAGES
         assertEquals(emptySet<String>(), needed - declared)
+    }
+
+    @Test
+    fun theEmulationTileStartsRetroArch() {
+        assertEquals(null, launcher().emulation())
+        install("com.retroarch.aarch64")
+        assertEquals("com.retroarch.aarch64", launcher().emulation()?.component?.packageName)
+        // The 32-bit build, the one this TV can run, comes first.
+        install("com.retroarch.ra32")
+        val intent = launcher().emulation()!!
+        assertEquals("com.retroarch.ra32", intent.component?.packageName)
+        assertTrue(intent.hasCategory(Intent.CATEGORY_LEANBACK_LAUNCHER))
     }
 }

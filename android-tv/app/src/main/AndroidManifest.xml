@@ -54,6 +54,10 @@
         <package android:name="com.android.tv" />
         <package android:name="com.android.vending" />
         <package android:name="com.amazon.venezia" />
+        <!-- The home screen's Emulation tile (AppLauncher.EMULATION_PACKAGES). -->
+        <package android:name="com.retroarch.ra32" />
+        <package android:name="com.retroarch" />
+        <package android:name="com.retroarch.aarch64" />
         <!-- The TV's other apps, which take their places on the home screen's wall after the streaming apps. -->
         <intent>
             <action android:name="android.intent.action.MAIN" />

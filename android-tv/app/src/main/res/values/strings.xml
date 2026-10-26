@@ -50,6 +50,7 @@
     <string name="store_about_play">Every app for this TV, from Google.</string>
     <string name="store_action_play">Press OK to open Google Play</string>
     <string name="live_tv_missing">This TV has no Live TV app</string>
+    <string name="emulation_missing">RetroArch isn\u2019t on this TV</string>
     <string name="store_missing">Couldn’t open an app store on this TV</string>
     <string name="search_missing">Couldn’t open search on this TV</string>
     <string name="app_not_installed">%1$s isn’t on this TV yet: here it is in the app store</string>

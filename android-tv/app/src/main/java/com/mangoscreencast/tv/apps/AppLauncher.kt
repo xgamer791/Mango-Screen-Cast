@@ -63,6 +63,9 @@ class AppLauncher(private val packageManager: PackageManager, private val onFire
     /** The TV's own Live TV app (its tuner and guide), if it has one. */
     fun liveTv(): Intent? = LIVE_TV_PACKAGES.firstNotNullOfOrNull { launchIntent(it) }
 
+    /** RetroArch, for the Emulation tile, if the TV has it. */
+    fun emulation(): Intent? = EMULATION_PACKAGES.firstNotNullOfOrNull { launchIntent(it) }
+
     /** The TV's app store: Google Play, or the Amazon Appstore on a Fire TV. */
     fun store(): Intent? =
         (if (onFireTv) listOf(AMAZON_APPSTORE, PLAY_STORE) else listOf(PLAY_STORE, AMAZON_APPSTORE))
@@ -101,6 +104,9 @@ class AppLauncher(private val packageManager: PackageManager, private val onFire
 
     companion object {
         /** Live TV apps, the TV maker's first: Hisense's, MediaTek's, Google's, Android's own. */
+        /** RetroArch: the 32-bit build (all this TV's apps can be), then the others. */
+        val EMULATION_PACKAGES = listOf("com.retroarch.ra32", "com.retroarch", "com.retroarch.aarch64")
+
         val LIVE_TV_PACKAGES = listOf(
             "com.vt.tv.tvcenter", "com.mediatek.wwtv.tvcenter", "com.google.android.tv", "com.android.tv",
         )

@@ -149,9 +149,13 @@ class HomeActivity : Activity(), AirPlayReceiver.Listener, AppUpdater.Listener {
         itemCount.text = HomeTiles.count(resources, total, at)
     }
 
-    /** News and Emulation don't open anything yet; Live TV opens the TV's own. */
+    /** News doesn't open anything yet; Emulation opens RetroArch, and Live TV the TV's own. */
     private fun openShortcut(shortcut: HomeTiles.Shortcut) {
-        if (shortcut == HomeTiles.Shortcut.LIVE_TV) opener.liveTv()
+        when (shortcut) {
+            HomeTiles.Shortcut.EMULATION -> opener.emulation()
+            HomeTiles.Shortcut.LIVE_TV -> opener.liveTv()
+            HomeTiles.Shortcut.NEWS -> {}
+        }
     }
 
     /**

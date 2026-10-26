@@ -41,6 +41,9 @@ class Opener(private val activity: Activity) {
 
     fun liveTv() = start(launcher.liveTv(), R.string.live_tv_missing)
 
+    /** RetroArch, for the Emulation tile. */
+    fun emulation() = start(launcher.emulation(), R.string.emulation_missing)
+
     fun store() = start(launcher.store(), R.string.store_missing)
 
     /** The TV's own search, with `query` already typed when there is one. */
