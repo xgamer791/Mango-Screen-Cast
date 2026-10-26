@@ -46,7 +46,7 @@ class Opener(private val activity: Activity) {
     @Volatile
     private var findingNews = false
 
-    /** For the News tile: KSAT 12's newest video over 20 minutes, playing in YouTube, looked up as it's asked for. */
+    /** For the News tile: KSAT 12's latest newscast over 20 minutes, playing in YouTube, looked up as it's asked for. */
     fun news() {
         if (findingNews) return
         findingNews = true
