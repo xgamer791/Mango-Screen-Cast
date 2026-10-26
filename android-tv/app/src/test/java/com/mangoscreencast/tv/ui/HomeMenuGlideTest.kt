@@ -6,6 +6,8 @@ import android.os.Looper
 import android.view.ContextThemeWrapper
 import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
+import android.widget.TextView
 import com.mangoscreencast.tv.R
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -18,7 +20,7 @@ import org.robolectric.annotation.Config
 import org.robolectric.shadows.ShadowChoreographer
 import java.time.Duration
 
-/** The wall glides right as the menu opens and back as it closes, as it glides from row to row. */
+/** The wall glides aside as the menu opens and back as it closes, the menu's bar growing and shrinking behind it. */
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [34], qualifiers = "w960dp-h540dp-land-television-xhdpi", application = Application::class)
 class HomeMenuGlideTest {
@@ -36,8 +38,25 @@ class HomeMenuGlideTest {
     /** Where `view` is drawn, in px from the page's left. */
     private fun drawn(view: View) = view.left + view.translationX
 
+    /** Where the menu's bar is drawn to, in px from the page's left: as far as it's shown. */
+    private fun barEnd(menu: View) = menu.left + (menu.clipBounds?.right ?: menu.width)
+
+    /** How far the open menu's bars stop short of the open wall: the room it keeps from them all the way. */
+    private fun clearance(dp: Float) = (HomeMenu.WALL_OPEN_DP - 351f) * dp
+
+    /**
+     * Whether the bar, where it's grown past the icons (always there, beside the closed wall), keeps
+     * the open menu's room from the wall.
+     */
+    private fun clear(menu: View, wall: View, dp: Float) =
+        barEnd(menu) <= menu.left + HomeMenu.MENU_CLOSED_DP * dp + 1 || barEnd(menu) + clearance(dp) <= drawn(wall) + 1
+
+    /**
+     * Opening, the wall glides aside and the menu's bar grows into the room it leaves, never nearer
+     * the wall than when it's open: they never meet. It starts gently and takes its time.
+     */
     @Test
-    fun theWallGlidesRightAsTheMenuOpensClearOfItsBar() {
+    fun opening_theBarGrowsBehindTheWallWithoutTouchingIt() {
         val root = home()
         val dp = root.resources.displayMetrics.density
         val wall = root.findViewById<View>(R.id.tile_wall)
@@ -51,52 +70,67 @@ class HomeMenuGlideTest {
         // Its place is the open one at once (the remote finds it there), but it's still drawn where it was.
         assertEquals(HomeMenu.WALL_OPEN_DP * dp, wall.left.toFloat(), 1f)
         assertEquals("the wall hasn't jumped", closed, drawn(wall), 1f)
+        assertTrue("the bar grew before the wall moved (to ${barEnd(menu)} px)", barEnd(menu) <= menu.left + HomeMenu.MENU_CLOSED_DP * dp + 1)
 
-        // Off fast: past the end of the menu's white bar within half its glide.
-        val barEnd = menu.left + HomeMenu.MENU_OPEN_DP * dp
-        frames(HomeMenu.OPEN_MS / 2)
-        assertTrue("clear of the bar (${drawn(wall)} px, bar ends at $barEnd px)", drawn(wall) > barEnd)
-        assertTrue("still settling", drawn(wall) < HomeMenu.WALL_OPEN_DP * dp)
-        assertEquals("the name goes with it", drawn(wall), drawn(name), 1f)
+        // Unhurried: it eases off, a small step in the first frame, and takes over a quarter second.
+        assertTrue(HomeMenu.MOVE_MS >= 300)
+        frames(16)
+        val way = (HomeMenu.WALL_OPEN_DP - HomeMenu.WALL_CLOSED_DP) * dp
+        assertTrue("snapped off: ${drawn(wall) - closed} of $way px in a frame", drawn(wall) - closed < way / 10)
 
-        // Faster than its glide from row to row: there well before that would be.
-        frames(HomeMenu.OPEN_MS)
-        assertTrue(HomeMenu.OPEN_MS + 2 * 16 < TileWall.GLIDE_MS)
+        var frames = 0
+        while (drawn(wall) < HomeMenu.WALL_OPEN_DP * dp - 0.5f && frames++ < 60) {
+            assertTrue("the bar (to ${barEnd(menu)} px) ran into the wall (at ${drawn(wall)} px)", clear(menu, wall, dp))
+            assertEquals("the name goes with it", drawn(wall), drawn(name), 1f)
+            frames(16)
+        }
+        frames(32)
         assertEquals(HomeMenu.WALL_OPEN_DP * dp, drawn(wall), 1f)
         assertEquals(0f, wall.translationX)
+        assertEquals("the bar's all shown", null, menu.clipBounds)
+        assertEquals(351f * dp, menu.right.toFloat(), 1f)
     }
 
-    /** Closing, it glides back on the row-to-row curve. */
+    /** Closing, the bar shrinks ahead of the wall coming back, and the menu ends as it was: icons only. */
     @Test
-    fun theWallGlidesBackAsTheMenuCloses() {
+    fun closing_theBarShrinksAheadOfTheWall() {
         val root = home()
         val dp = root.resources.displayMetrics.density
         val wall = root.findViewById<View>(R.id.tile_wall)
+        val menu = root.findViewById<ViewGroup>(R.id.menu)
         HomeMenu.show(root, open = true)
-        frames(HomeMenu.OPEN_MS + 32)
+        frames(HomeMenu.MOVE_MS + 32)
         HomeMenu.show(root, open = false)
         relayout(root)
         assertEquals("the wall hasn't jumped", HomeMenu.WALL_OPEN_DP * dp, drawn(wall), 1f)
-        frames(TileWall.GLIDE_MS / 2)
-        val way = (HomeMenu.WALL_OPEN_DP - HomeMenu.WALL_CLOSED_DP) * dp
-        val gone = HomeMenu.WALL_OPEN_DP * dp - drawn(wall)
-        assertTrue("past halfway at half the time: $gone of $way", gone > way / 2 && gone < way)
-        frames(TileWall.GLIDE_MS)
+        var frames = 0
+        while (drawn(wall) > HomeMenu.WALL_CLOSED_DP * dp + 0.5f && frames++ < 60) {
+            assertTrue("the wall (at ${drawn(wall)} px) ran into the bar (to ${barEnd(menu)} px)", clear(menu, wall, dp))
+            frames(16)
+        }
+        frames(32)
+        relayout(root)
         assertEquals(HomeMenu.WALL_CLOSED_DP * dp, drawn(wall), 1f)
+        assertEquals("icons only", HomeMenu.MENU_CLOSED_DP * dp, menu.width.toFloat(), 1f)
+        assertTrue("the closed menu reaches over the wall", menu.right <= wall.left)
+        for (i in 0 until menu.childCount) assertEquals("words still showing", 0, (menu.getChildAt(i) as TextView).currentTextColor)
     }
 
     @Test
     fun closingMidGlideTurnsBackFromWhereItIs() {
         val root = home()
+        val dp = root.resources.displayMetrics.density
         val wall = root.findViewById<View>(R.id.tile_wall)
+        val menu = root.findViewById<View>(R.id.menu)
         HomeMenu.show(root, open = true)
-        frames(HomeMenu.OPEN_MS / 3)
+        frames(HomeMenu.MOVE_MS / 3)
         val midway = drawn(wall)
         HomeMenu.show(root, open = false)
         frames(16)
         assertEquals("no jump as it turns back", midway.toDouble(), drawn(wall).toDouble(), 30.0)
-        frames(TileWall.GLIDE_MS + 32)
-        assertEquals(HomeMenu.WALL_CLOSED_DP * root.resources.displayMetrics.density, drawn(wall), 1f)
+        assertTrue("the bar ran into the wall turning back", clear(menu, wall, dp))
+        frames(HomeMenu.MOVE_MS + 32)
+        assertEquals(HomeMenu.WALL_CLOSED_DP * dp, drawn(wall), 1f)
     }
 
     /** The page laid out again now, as the next frame would. */
