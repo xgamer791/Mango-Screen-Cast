@@ -18,11 +18,13 @@ import org.robolectric.annotation.LooperMode
 import java.time.Duration
 
 /**
- * The gear's menu: a panel 580 px of a 1920 px wide screen on the right, that
+ * The gear's menu: a panel 540 px of a 1920 px wide screen on the right, in
+ * Liquid Glass over what was on screen as the gear was pressed, that
  * slides in from the right edge as it opens and back out the same way as it
  * closes, with the gear or Back: the same time and the same curve each way.
  */
 @RunWith(RobolectricTestRunner::class)
+@org.robolectric.annotation.GraphicsMode(org.robolectric.annotation.GraphicsMode.Mode.NATIVE)
 @Config(sdk = [34], application = Application::class, qualifiers = "w960dp-h540dp-xhdpi")
 @LooperMode(LooperMode.Mode.PAUSED)
 class SettingsMenuTest {
@@ -39,7 +41,10 @@ class SettingsMenuTest {
     }
 
     @After
-    fun nothingInFront() = FrontSettings.clear()
+    fun nothingInFront() {
+        FrontSettings.clear()
+        ScreenBehind.image = null
+    }
 
     /** The clock moves on `ms`, a frame (16 ms) at a time: the test runner draws one frame per step. */
     private fun pass(ms: Long) = frames(ms)
@@ -51,11 +56,11 @@ class SettingsMenuTest {
     }
 
     @Test
-    fun its580PixelsOfThe1920WideScreenOnTheRight() {
+    fun its540PixelsOfThe1920WideScreenOnTheRight() {
         open()
         val screen = menu.resources.displayMetrics.widthPixels
         assertEquals(1920, screen)
-        assertEquals(580, panel.width)
+        assertEquals(540, panel.width)
         assertEquals("flush with the right edge", screen, panel.right)
         assertEquals(0f, panel.translationX)
     }
@@ -125,6 +130,25 @@ class SettingsMenuTest {
             val t = i / 20f
             assertEquals("t=$t", 1f, ease.getInterpolation(t) + ease.getInterpolation(1 - t), 0.01f)
         }
+    }
+
+    @Test
+    fun itsGlassIsOverThePartOfTheScreenBehindIt() {
+        // The screen as the gear was pressed: red on the left, blue where the panel goes.
+        val screen = android.graphics.Bitmap.createBitmap(1920, 1080, android.graphics.Bitmap.Config.ARGB_8888)
+        android.graphics.Canvas(screen).apply {
+            drawColor(android.graphics.Color.RED)
+            clipRect(1920 - 540, 0, 1920, 1080)
+            drawColor(android.graphics.Color.BLUE)
+        }
+        ScreenBehind.image = screen
+        open()
+        val glass = panel as LiquidGlassPanel
+        val behind = glass.behind!!
+        assertEquals(540, behind.width)
+        assertEquals(1080, behind.height)
+        assertEquals(android.graphics.Color.BLUE, behind.getPixel(270, 540))
+        assertEquals("taken, for this menu only", null, ScreenBehind.image)
     }
 
     @Test

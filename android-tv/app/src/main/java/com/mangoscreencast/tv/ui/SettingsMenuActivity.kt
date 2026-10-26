@@ -4,7 +4,6 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
-import android.view.View
 import android.view.animation.Interpolator
 import android.view.animation.PathInterpolator
 import com.mangoscreencast.tv.R
@@ -12,23 +11,29 @@ import kotlin.math.abs
 import kotlin.math.roundToLong
 
 /**
- * The gear's menu: a panel on the right, 580 px of a 1920 px wide screen, over
- * whatever is on screen. It slides in from the right edge as the gear opens
+ * The gear's menu: a panel on the right, 540 px of a 1920 px wide screen, over
+ * whatever is on screen, in Mango Liquid Glass (LiquidGlassPanel) made from
+ * what was on screen as the gear was pressed. It slides in from the right edge as the gear opens
  * it, and back out to it, in the same time and on the same curve, as the gear
  * or Back closes it; the gear while it's sliding turns it around at the same
  * speed. Closed, the app behind it is as it was. Empty for now.
  */
 class SettingsMenuActivity : Activity() {
-    private lateinit var panel: View
+    private lateinit var panel: LiquidGlassPanel
     private var closing = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_settings_menu)
         panel = findViewById(R.id.menu_panel)
-        val width = resources.displayMetrics.widthPixels * WIDTH / SCREEN
+        val metrics = resources.displayMetrics
+        val width = metrics.widthPixels * WIDTH / SCREEN
         panel.layoutParams.width = width
         panel.translationX = width.toFloat()
+        // Liquid Glass over what was on screen as the gear was pressed.
+        ScreenBehind.take()?.let {
+            panel.showBehind(ScreenBehind.region(it, WIDTH.toFloat() / SCREEN, width, metrics.heightPixels))
+        }
         slide(open = true)
     }
 
@@ -64,8 +69,8 @@ class SettingsMenuActivity : Activity() {
     }
 
     companion object {
-        /** The panel's width: 580 px of a 1920 px wide screen, the same share on any TV. */
-        const val WIDTH = 580
+        /** The panel's width: 540 px of a 1920 px wide screen, the same share on any TV. */
+        const val WIDTH = 540
         const val SCREEN = 1920
 
         /** How long the panel takes to slide all the way in, and all the way out. */
