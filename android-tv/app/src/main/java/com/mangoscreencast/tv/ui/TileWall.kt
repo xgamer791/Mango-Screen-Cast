@@ -58,9 +58,9 @@ class TileGrid @JvmOverloads constructor(context: Context, attrs: AttributeSet? 
         /** A tile: 168 x 125 dp (157.13 x 116.7 made 7% bigger, to whole pixels: 336 x 250 px at 1080p). */
         const val TILE_WIDTH_DP = 168f
         const val TILE_HEIGHT_DP = 125f
-        /** The gap between tiles, the same across and down: 6 dp, 12 px at 1080p. */
-        const val GAP_DP = 6f
-        /** The wall's width, four tiles and their gaps (690 dp), leaving room on the right of the screen. */
+        /** The gap between tiles, the same across and down: 12 dp, 24 px at 1080p. */
+        const val GAP_DP = 12f
+        /** The wall's width, four tiles and their gaps (708 dp), leaving room on the right of the screen. */
         const val WIDTH_DP = COLUMNS * TILE_WIDTH_DP + (COLUMNS - 1) * GAP_DP
         const val ROW_PITCH_DP = TILE_HEIGHT_DP + GAP_DP
     }

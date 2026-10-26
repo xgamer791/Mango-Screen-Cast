@@ -157,11 +157,11 @@
         android:textColor="#E6FFFFFF"
         android:textSize="19sp" />
 
-    <!-- The wall: 4 tiles across, 690 dp wide from 84 dp (402.3 dp while the menu is open), the rest
+    <!-- The wall: 4 tiles across, 708 dp wide from 84 dp (402.3 dp while the menu is open), the rest
          of the screen's width free on the right, from the bar's top to past the bottom of the screen. See TileGrid. -->
     <com.mangoscreencast.tv.ui.TileWall
         android:id="@+id/tile_wall"
-        android:layout_width="690dp"
+        android:layout_width="708dp"
         android:layout_height="match_parent"
         android:layout_marginStart="84dp"
         android:layout_marginTop="116.9dp">

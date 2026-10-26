@@ -4,6 +4,8 @@ import android.content.res.ColorStateList
 import android.graphics.Color
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.Interpolator
+import android.view.animation.PathInterpolator
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import com.mangoscreencast.tv.R
@@ -14,8 +16,9 @@ import kotlin.math.roundToInt
  * the wall's first column opens it. Open, its words show and the wall, with
  * the focused tile's name over it, glides right to make room, running on past
  * the right edge of the screen, and glides back when it closes, on the same
- * curve as its glide from row to row; the arrow beside the wall's first row
- * hides under it.
+ * curve as its glide from row to row. Opening, it leaves faster ([OPEN_MS]),
+ * clear of the menu's white bar within three frames. The arrow beside the
+ * wall's first row hides under it.
  */
 object HomeMenu {
     /** Where the wall starts, in dp from the page's left: where the closed menu ends, and beside the open menu's bars. */
@@ -30,6 +33,10 @@ object HomeMenu {
      */
     const val MENU_OPEN_DP = 311.2f
     const val MENU_CLOSED_DP = 44f
+
+    /** The wall's glide right as the menu opens: off at once, settling gently, past the white bar's end in a quarter of it. */
+    const val OPEN_MS = 180L
+    val OPEN: Interpolator = PathInterpolator(0.05f, 0.7f, 0.1f, 1f)
 
     fun show(page: View, open: Boolean) {
         val menu = page.findViewById<ViewGroup>(R.id.menu)
@@ -50,7 +57,10 @@ object HomeMenu {
                 params.marginStart = start
                 view.layoutParams = params
                 view.translationX = drawnAt - start
-                view.animate().translationX(0f).setDuration(TileWall.GLIDE_MS).setInterpolator(TileWall.GLIDE).start()
+                view.animate().translationX(0f)
+                    .setDuration(if (open) OPEN_MS else TileWall.GLIDE_MS)
+                    .setInterpolator(if (open) OPEN else TileWall.GLIDE)
+                    .start()
             }
         }
         page.findViewById<View>(R.id.home_chevron).visibility = if (open) View.INVISIBLE else View.VISIBLE

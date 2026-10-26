@@ -37,30 +37,52 @@ class HomeMenuGlideTest {
     private fun drawn(view: View) = view.left + view.translationX
 
     @Test
-    fun theWallGlidesRightAsTheMenuOpens() {
+    fun theWallGlidesRightAsTheMenuOpensClearOfItsBar() {
         val root = home()
         val dp = root.resources.displayMetrics.density
         val wall = root.findViewById<View>(R.id.tile_wall)
         val name = root.findViewById<View>(R.id.tile_name)
+        val menu = root.findViewById<View>(R.id.menu)
         val closed = drawn(wall)
         assertEquals(HomeMenu.WALL_CLOSED_DP * dp, closed, 1f)
 
         HomeMenu.show(root, open = true)
-        frames(16)
+        relayout(root)
         // Its place is the open one at once (the remote finds it there), but it's still drawn where it was.
         assertEquals(HomeMenu.WALL_OPEN_DP * dp, wall.left.toFloat(), 1f)
-        assertEquals("the wall hasn't jumped", closed.toDouble(), drawn(wall).toDouble(), ((HomeMenu.WALL_OPEN_DP - HomeMenu.WALL_CLOSED_DP) * dp / 10).toDouble())
+        assertEquals("the wall hasn't jumped", closed, drawn(wall), 1f)
 
-        frames(TileWall.GLIDE_MS / 2)
-        val half = drawn(wall)
-        val way = HomeMenu.WALL_OPEN_DP * dp - closed
-        // Quick at first, settling gently: more than half the way at half the time.
-        assertTrue("past halfway at half the time: ${half - closed} of $way", half - closed > way / 2 && half < HomeMenu.WALL_OPEN_DP * dp)
+        // Off fast: past the end of the menu's white bar within half its glide.
+        val barEnd = menu.left + HomeMenu.MENU_OPEN_DP * dp
+        frames(HomeMenu.OPEN_MS / 2)
+        assertTrue("clear of the bar (${drawn(wall)} px, bar ends at $barEnd px)", drawn(wall) > barEnd)
+        assertTrue("still settling", drawn(wall) < HomeMenu.WALL_OPEN_DP * dp)
         assertEquals("the name goes with it", drawn(wall), drawn(name), 1f)
 
-        frames(TileWall.GLIDE_MS)
+        // Faster than its glide from row to row: there well before that would be.
+        frames(HomeMenu.OPEN_MS)
+        assertTrue(HomeMenu.OPEN_MS + 2 * 16 < TileWall.GLIDE_MS)
         assertEquals(HomeMenu.WALL_OPEN_DP * dp, drawn(wall), 1f)
         assertEquals(0f, wall.translationX)
+    }
+
+    /** Closing, it glides back on the row-to-row curve. */
+    @Test
+    fun theWallGlidesBackAsTheMenuCloses() {
+        val root = home()
+        val dp = root.resources.displayMetrics.density
+        val wall = root.findViewById<View>(R.id.tile_wall)
+        HomeMenu.show(root, open = true)
+        frames(HomeMenu.OPEN_MS + 32)
+        HomeMenu.show(root, open = false)
+        relayout(root)
+        assertEquals("the wall hasn't jumped", HomeMenu.WALL_OPEN_DP * dp, drawn(wall), 1f)
+        frames(TileWall.GLIDE_MS / 2)
+        val way = (HomeMenu.WALL_OPEN_DP - HomeMenu.WALL_CLOSED_DP) * dp
+        val gone = HomeMenu.WALL_OPEN_DP * dp - drawn(wall)
+        assertTrue("past halfway at half the time: $gone of $way", gone > way / 2 && gone < way)
+        frames(TileWall.GLIDE_MS)
+        assertEquals(HomeMenu.WALL_CLOSED_DP * dp, drawn(wall), 1f)
     }
 
     @Test
@@ -68,13 +90,19 @@ class HomeMenuGlideTest {
         val root = home()
         val wall = root.findViewById<View>(R.id.tile_wall)
         HomeMenu.show(root, open = true)
-        frames(TileWall.GLIDE_MS / 2)
+        frames(HomeMenu.OPEN_MS / 3)
         val midway = drawn(wall)
         HomeMenu.show(root, open = false)
         frames(16)
         assertEquals("no jump as it turns back", midway.toDouble(), drawn(wall).toDouble(), 30.0)
         frames(TileWall.GLIDE_MS + 32)
         assertEquals(HomeMenu.WALL_CLOSED_DP * root.resources.displayMetrics.density, drawn(wall), 1f)
+    }
+
+    /** The page laid out again now, as the next frame would. */
+    private fun relayout(root: View) {
+        root.measure(View.MeasureSpec.makeMeasureSpec(root.width, View.MeasureSpec.EXACTLY), View.MeasureSpec.makeMeasureSpec(root.height, View.MeasureSpec.EXACTLY))
+        root.layout(0, 0, root.width, root.height)
     }
 
     /** `ms` of frames, 16 ms apart. */

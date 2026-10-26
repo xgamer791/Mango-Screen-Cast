@@ -78,7 +78,7 @@ class HomeLayoutTest {
 
     /**
      * The wall: News, Emulation and Live TV on Liquid Glass, then every streaming app in order,
-     * four to a row, 168 x 125 dp, 6 dp apart, each logo whole inside its tile.
+     * four to a row, 168 x 125 dp, 12 dp apart, each logo whole inside its tile.
      */
     @Test
     fun theWall() {
@@ -94,13 +94,13 @@ class HomeLayoutTest {
         val dp = grid!!.resources.displayMetrics.density
         for ((i, tile) in tiles.withIndex()) {
             val name = tile.contentDescription
-            // 168 x 125 dp, 6 dp apart across and down.
+            // 168 x 125 dp, 12 dp apart across and down.
             assertEquals("$name's width", (168.0 * dp), tile.width.toDouble(), 1.0)
             assertEquals("$name's height", (125.0 * dp), tile.height.toDouble(), 1.0)
-            assertEquals("$name's column", ((i % 4) * 174.0 * dp), tile.left.toDouble(), 1.0)
-            assertEquals("$name's row", ((i / 4) * 131.0 * dp), tile.top.toDouble(), 1.0)
-            // The fourth column ends the wall's 690 dp.
-            if (i % 4 == 3) assertEquals("$name's right edge", 690.0 * dp, tile.right.toDouble(), 1.0)
+            assertEquals("$name's column", ((i % 4) * 180.0 * dp), tile.left.toDouble(), 1.0)
+            assertEquals("$name's row", ((i / 4) * 137.0 * dp), tile.top.toDouble(), 1.0)
+            // The fourth column ends the wall's 708 dp.
+            if (i % 4 == 3) assertEquals("$name's right edge", 708.0 * dp, tile.right.toDouble(), 1.0)
             if (i < 3) continue
             val logo = tile.findViewById<ImageView>(R.id.app_logo)
             assertTrue("$name has no logo", logo.drawable != null)
@@ -110,10 +110,10 @@ class HomeLayoutTest {
             val shape = logo.drawable.intrinsicWidth.toFloat() / logo.drawable.intrinsicHeight
             assertEquals("$name's logo is squeezed", shape.toDouble(), drawn.toDouble(), 0.05)
         }
-        // From where the closed menu ends, 690 dp across, the rest of the screen free on the right.
+        // From where the closed menu ends, 708 dp across, the rest of the screen free on the right.
         val left = IntArray(2).also { grid!!.getLocationInWindow(it) }[0]
         assertEquals(84.0 * dp, left.toDouble(), 1.0)
-        assertEquals(774.0 * dp, (left + grid!!.width).toDouble(), 1.0)
+        assertEquals(792.0 * dp, (left + grid!!.width).toDouble(), 1.0)
     }
 
     /**
