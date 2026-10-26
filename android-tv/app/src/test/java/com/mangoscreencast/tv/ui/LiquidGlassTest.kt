@@ -147,6 +147,71 @@ class LiquidGlassTest {
         }
     }
 
+    /** White left of x = 400, black right of it. */
+    private fun split(context: android.content.Context) = object : View(context) {
+        override fun onDraw(canvas: Canvas) {
+            canvas.drawColor(Color.BLACK)
+            canvas.clipRect(0, 0, 400, 400)
+            canvas.drawColor(Color.WHITE)
+        }
+    }.apply { setWillNotDraw(false) }
+
+    /**
+     * Home's tiles move with their wall. The frame a glass is drawn somewhere new, it shows what's
+     * behind it there: not the place it was frosted at before, faded over later.
+     */
+    @Test
+    fun aGlassThatMovesShowsWhatIsBehindItsNewPlaceAtOnce() {
+        val context = activity
+        val root = FrameLayout(context)
+        root.addView(split(context), FrameLayout.LayoutParams(800, 400))
+        val wall = FrameLayout(context)
+        root.addView(wall, FrameLayout.LayoutParams(800, 400))
+        val glass = LiquidGlassLayout(context).apply { live = true }
+        wall.addView(glass, FrameLayout.LayoutParams(200, 200).apply { leftMargin = 100; topMargin = 100 })
+        root.measure(View.MeasureSpec.makeMeasureSpec(800, View.MeasureSpec.EXACTLY),
+            View.MeasureSpec.makeMeasureSpec(400, View.MeasureSpec.EXACTLY))
+        root.layout(0, 0, 800, 400)
+        val screen = Bitmap.createBitmap(800, 400, Bitmap.Config.ARGB_8888)
+        root.draw(Canvas(screen))
+        val tint = context.getColor(R.color.glass_tint)
+        assertColour(expected(Color.WHITE, tint), screen.getPixel(200, 200))
+        // The wall moves the glass 400 px right, over the black.
+        wall.scrollTo(-400, 0)
+        screen.eraseColor(0)
+        root.draw(Canvas(screen))
+        assertColour(expected(Color.BLACK, tint), screen.getPixel(600, 200))
+    }
+
+    /** A wall that scrolls doesn't redraw its tiles; the glass sees it has moved, and redraws. */
+    @Test
+    fun aGlassRedrawsWhenItsWallScrolls() {
+        val context = activity
+        val root = FrameLayout(context)
+        root.addView(split(context), FrameLayout.LayoutParams(800, 400))
+        val wall = FrameLayout(context)
+        root.addView(wall, FrameLayout.LayoutParams(800, 400))
+        val glass = LiquidGlassLayout(context)
+        wall.addView(glass, FrameLayout.LayoutParams(200, 200).apply { leftMargin = 100; topMargin = 100 })
+        context.setContentView(root)
+        root.measure(View.MeasureSpec.makeMeasureSpec(800, View.MeasureSpec.EXACTLY),
+            View.MeasureSpec.makeMeasureSpec(400, View.MeasureSpec.EXACTLY))
+        root.layout(0, 0, 800, 400)
+        root.draw(Canvas(Bitmap.createBitmap(800, 400, Bitmap.Config.ARGB_8888)))
+        assertTrue(!glass.isDirty)
+        wall.scrollTo(0, 120)
+        glass.viewTreeObserver.dispatchOnPreDraw()
+        assertTrue("the moved glass wasn't asked to redraw", glass.isDirty)
+    }
+
+    /** Where there's nothing behind, the bent rim shows nothing too: not black (the frame round a scrolled tile). */
+    @Test
+    fun nothingBehindTheRimStaysClear() {
+        val pixels = IntArray(200 * 100)
+        LiquidGlassLayout.refract(pixels, 200, 100, 1f)
+        assertTrue("the rim turned opaque", pixels.all { Color.alpha(it) == 0 })
+    }
+
     /** A 200 x 100 image whose red, green and blue all say where they are: 2 * x + y. */
     private fun ramp(w: Int = 200, h: Int = 100) = IntArray(w * h) { i ->
         val v = (2 * (i % w) + (i / w)).coerceAtMost(255); Color.rgb(v, v, v)

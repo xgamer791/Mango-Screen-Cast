@@ -12,11 +12,16 @@ import android.graphics.Paint
 import android.graphics.Rect
 import android.graphics.RectF
 import android.graphics.Shader
+import android.os.Handler
+import android.os.Looper
 import android.util.AttributeSet
 import android.view.View
 import android.view.ViewGroup
+import android.view.ViewTreeObserver
 import android.widget.LinearLayout
 import com.mangoscreencast.tv.R
+import java.util.Collections
+import java.util.WeakHashMap
 import kotlin.math.abs
 import kotlin.math.exp
 import kotlin.math.floor
@@ -37,11 +42,18 @@ import kotlin.math.sqrt
  * Android's own blur (RenderEffect) doesn't reach the 1440p surface the
  * home screen is drawn into (Canvas1440Layout), and it needs Android 12. So
  * what lies behind the glass on its page (the page's background and the
- * views drawn before the one holding the glass: the wallpaper) is drawn once
- * into a bitmap and blurred here, inside the glass's own bounds with the
- * edges clamped, as a backdrop filter does. It doesn't change; the backdrop
- * is made again when the glass moves on the page (its tile wall scrolls) or
- * changes size.
+ * views drawn before the one holding the glass: the wallpaper) is drawn into
+ * a bitmap over all of that holder's place, and frosted once: the page's
+ * frost, shared by every glass of the same kind on the page (Home's three
+ * tiles share one; frosting each tile on its own, where it happened to be
+ * when it was last drawn, left tiles mid-glide or scrolled off the page with
+ * a stale piece, or a black frame round nothing). Each time a glass is drawn
+ * somewhere new on the page it cuts its own piece from the frost there and
+ * bends its rim, which is quick, so glass on a moving wall shows what's behind
+ * it on every frame of the glide. A wall that scrolls doesn't redraw its
+ * tiles, so the glass checks its place before each frame and redraws itself
+ * when it has moved. The frost is made again only when what's behind changes
+ * ([refresh]).
  */
 class LiquidGlassLayout @JvmOverloads constructor(
     context: Context,
@@ -66,22 +78,29 @@ class LiquidGlassLayout @JvmOverloads constructor(
             invalidate()
         }
 
-    /** The backdrop's pixels per view pixel: 1, or less for a big pane over a heavy frost. */
+    /** The frost's pixels per page pixel: 1, or less for a heavy frost (it's smooth anyway). */
     var scale = 1f
 
     /**
-     * Whether what's behind changes (a browse page's art). A live glass makes its
-     * backdrop off the main thread after [refresh] and fades over to it, keeping the
-     * old one meanwhile; otherwise the backdrop is made in place, once.
+     * Whether what's behind changes (a browse page's art, Home's wallpaper). After [refresh], a live
+     * glass's page frosts it again off the main thread and the glass fades over to it, keeping the
+     * old frost meanwhile; otherwise the frost is made again in place.
      */
     var live = false
 
+    /** This glass's piece of its page's frost, rim bent; where it was cut; and from which frost. */
     private var backdrop: Bitmap? = null
+    private var backdropAt: Rect? = null
+    private var cutFrom: Frost? = null
+
+    /** The piece it's fading over from, after the page's frost was made again. */
     private var previous: Bitmap? = null
     private var fade = 1f
     private var fader: ValueAnimator? = null
-    private var backdropFor: Rect? = null
-    private var making: Rect? = null
+
+    /** Where it was last drawn on its page. */
+    private var placed: Rect? = null
+
     private val backdropPaint = Paint(Paint.FILTER_BITMAP_FLAG or Paint.ANTI_ALIAS_FLAG).apply {
         colorFilter = ColorMatrixColorFilter(filterMatrix())
     }
@@ -90,31 +109,49 @@ class LiquidGlassLayout @JvmOverloads constructor(
     private val fallbackPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = context.getColor(R.color.glass_fallback) }
     private val bounds = RectF()
 
+    /** Before each frame: moved by a scrolling or gliding ancestor, without being redrawn? Redraw. */
+    private val moved = ViewTreeObserver.OnPreDrawListener {
+        val page = page()
+        if (page != null && placeOn(page) != placed) invalidate()
+        true
+    }
+
     init {
         setWillNotDraw(false)
     }
 
     /** What's behind has changed: frost it again. */
     fun refresh() {
-        backdropFor = null
+        val page = page() ?: return invalidate()
+        frostsOf(page).stale += kind(page)
         invalidate()
+    }
+
+    override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
+        viewTreeObserver.addOnPreDrawListener(moved)
+    }
+
+    override fun onDetachedFromWindow() {
+        viewTreeObserver.removeOnPreDrawListener(moved)
+        fader?.cancel()
+        super.onDetachedFromWindow()
     }
 
     override fun draw(canvas: Canvas) {
         val page = page()
         val at = page?.let { placeOn(it) }
-        if (at != backdropFor && at != making) {
-            if (page == null || at == null) {
-                backdrop = null
-                backdropFor = at
-            } else if (!live || backdrop == null) {
-                // The first frost is made at once, even on live glass: no frame of the bare fallback.
-                backdrop?.recycle()
-                backdrop = snapshot(page, at)?.also { frost(it) }
-                backdropFor = at
-            } else {
-                makeLater(page, at)
-            }
+        placed = at
+        val frost = if (page != null && at != null) frostFor(page) else null
+        if (frost == null) {
+            backdrop = null
+            cutFrom = null
+        } else if (frost !== cutFrom || at != backdropAt) {
+            val piece = cut(frost, at!!)
+            if (cutFrom != null && frost !== cutFrom && backdrop != null) fadeFrom(backdrop!!)
+            backdrop = piece
+            backdropAt = at
+            cutFrom = frost
         }
         val radius = cornerRadius
         bounds.set(0f, 0f, width.toFloat(), height.toFloat())
@@ -139,38 +176,20 @@ class LiquidGlassLayout @JvmOverloads constructor(
         canvas.drawRoundRect(bounds, radius, radius, backdropPaint)
     }
 
-    /** Snapshots what's behind now, frosts it on [worker], then fades over to it. */
-    private fun makeLater(page: ViewGroup, at: Rect) {
-        val shot = snapshot(page, at) ?: return
-        making = at
-        worker.execute {
-            frost(shot)
-            post {
-                making = null
-                if (!isAttachedToWindow && !RUNS_DETACHED) return@post shot.recycle()
-                previous?.takeIf { it !== backdrop }?.recycle()
-                previous = backdrop
-                backdrop = shot
-                backdropFor = at
-                if (previous == null) {
-                    fade = 1f
-                    invalidate()
-                    return@post
-                }
-                fader?.cancel()
-                fade = 0f
-                fader = ValueAnimator.ofFloat(0f, 1f).apply {
-                    duration = FADE_MS
-                    addUpdateListener { fade = it.animatedValue as Float; invalidate() }
-                    start()
-                }
-            }
-        }
-    }
-
-    override fun onDetachedFromWindow() {
+    /** Fades from `old` over to the newly cut piece. */
+    private fun fadeFrom(old: Bitmap) {
+        previous = old
         fader?.cancel()
-        super.onDetachedFromWindow()
+        fade = 0f
+        fader = ValueAnimator.ofFloat(0f, 1f).apply {
+            duration = FADE_MS
+            addUpdateListener {
+                fade = it.animatedValue as Float
+                if (fade >= 1f) previous = null
+                invalidate()
+            }
+            start()
+        }
     }
 
     /** The page the glass is on: its topmost ancestor below the window's content (or Canvas1440Layout). */
@@ -185,6 +204,15 @@ class LiquidGlassLayout @JvmOverloads constructor(
         }
         return page
     }
+
+    /** The page's child that holds this glass: what's drawn before it is what's behind. */
+    private fun holder(page: ViewGroup): View {
+        var holder: View = this
+        while (holder.parent !== page) holder = holder.parent as View
+        return holder
+    }
+
+    private fun kind(page: ViewGroup) = Kind(page.indexOfChild(holder(page)), blur1440, scale)
 
     /** Where the glass is on `page`, scrolling and all. */
     private fun placeOn(page: ViewGroup): Rect {
@@ -202,20 +230,63 @@ class LiquidGlassLayout @JvmOverloads constructor(
         return Rect(x.roundToInt(), y.roundToInt(), x.roundToInt() + width, y.roundToInt() + height)
     }
 
-    /** What's behind this view on `page`, inside its bounds `at`, sharp; null if there's nothing to draw. */
-    private fun snapshot(page: ViewGroup, at: Rect): Bitmap? {
-        if (width <= 0 || height <= 0) return null
-        val w = (width * scale).roundToInt().coerceAtLeast(1)
-        val h = (height * scale).roundToInt().coerceAtLeast(1)
+    /**
+     * The page's frost for glass like this one: made at once the first time; made again after
+     * [refresh], in place, or on [worker] for live glass (which keeps the old one meanwhile).
+     */
+    private fun frostFor(page: ViewGroup): Frost? {
+        val frosts = frostsOf(page)
+        frosts.glasses += this
+        val kind = kind(page)
+        val current = frosts.made[kind]
+        if (current == null || (kind in frosts.stale && !live) || current.over != over(page, kind)) {
+            frosts.stale -= kind
+            val made = snapshot(page, kind)?.let { frost(it, kind) } ?: return current
+            frosts.made[kind] = made
+            return made
+        }
+        if (kind in frosts.stale && kind !in frosts.making) {
+            frosts.stale -= kind
+            val shot = snapshot(page, kind) ?: return current
+            frosts.making += kind
+            worker.execute {
+                val made = frost(shot, kind)
+                main.post {
+                    frosts.making -= kind
+                    frosts.made[kind] = made
+                    frosts.glasses.forEach { it.invalidate() }
+                }
+            }
+        }
+        return current
+    }
+
+    /**
+     * What the frost covers: the holder's place on the page (the glass is only ever seen inside it:
+     * Home's wall clips its tiles), kept to the page.
+     */
+    private fun over(page: ViewGroup, kind: Kind): Rect {
+        val holder = page.getChildAt(kind.holder)
+        val left = (holder.left + holder.translationX).roundToInt()
+        val top = (holder.top + holder.translationY).roundToInt()
+        return Rect(left, top, left + holder.width, top + holder.height).apply {
+            if (!intersect(0, 0, page.width, page.height)) setEmpty()
+        }
+    }
+
+    /** What's behind the glass on `page`, over its holder's place, sharp: ARGB pixels at the frost's scale. */
+    private fun snapshot(page: ViewGroup, kind: Kind): Snapshot? {
+        val over = over(page, kind)
+        if (over.isEmpty) return null
+        val w = (over.width() * kind.scale).roundToInt().coerceAtLeast(1)
+        val h = (over.height() * kind.scale).roundToInt().coerceAtLeast(1)
         val bitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
-        canvas.scale(w.toFloat() / width, h.toFloat() / height)
-        canvas.translate(-at.left.toFloat(), -at.top.toFloat())
+        canvas.scale(w.toFloat() / over.width(), h.toFloat() / over.height())
+        canvas.translate(-over.left.toFloat(), -over.top.toFloat())
         page.background?.draw(canvas)
         // The page's views up to (not including) the one that holds the glass.
-        var holder: View = this
-        while (holder.parent !== page) holder = holder.parent as View
-        for (i in 0 until page.indexOfChild(holder)) {
+        for (i in 0 until kind.holder) {
             val child = page.getChildAt(i)
             if (child.visibility != View.VISIBLE || child.alpha <= 0f) continue
             canvas.save()
@@ -224,23 +295,52 @@ class LiquidGlassLayout @JvmOverloads constructor(
             child.draw(canvas)
             canvas.restore()
         }
-        return bitmap
+        val pixels = IntArray(w * h)
+        bitmap.getPixels(pixels, 0, w, 0, 0, w, h)
+        bitmap.recycle()
+        return Snapshot(over, w, h, pixels)
+    }
+
+    /** Frosts the page's snapshot, the slow part, done once for every glass on the page. */
+    private fun frost(shot: Snapshot, kind: Kind): Frost {
+        gaussianBlur(shot.pixels, shot.w, shot.h, kind.blur * PX_1440_IN_DP * density * kind.scale)
+        return Frost(shot.over, shot.w, shot.h, kind.scale, shot.pixels)
     }
 
     /**
-     * Frosts `bitmap` in place, then bends its rim. Frosted first, the bend curves light and colour
-     * at the edges like a lens; bent first (the web version's order), a sharp scene behind showed a
-     * shifted copy of itself, colours split, along every edge: the haunted house twice over at a
-     * tile's side.
+     * This glass's piece of `frost` where it is now (`at`), its rim bent. Frosted first, the bend
+     * curves light and colour at the edges like a lens; bent first (the web version's order), a sharp
+     * scene behind showed a shifted copy of itself, colours split, along every edge. Past the frost's
+     * edges it carries on as its edge, so a tile half scrolled away is never cut from nothing.
      */
-    private fun frost(bitmap: Bitmap) {
-        val w = bitmap.width
-        val h = bitmap.height
+    private fun cut(frost: Frost, at: Rect): Bitmap {
+        val w = (width * frost.scale).roundToInt().coerceAtLeast(1)
+        val h = (height * frost.scale).roundToInt().coerceAtLeast(1)
+        val left = floor((at.left - frost.over.left) * frost.scale).toInt()
+        val top = floor((at.top - frost.over.top) * frost.scale).toInt()
         val pixels = IntArray(w * h)
-        bitmap.getPixels(pixels, 0, w, 0, 0, w, h)
-        gaussianBlur(pixels, w, h, blur1440 * PX_1440_IN_DP * density * scale)
-        refract(pixels, w, h, density * scale * PX_1440_IN_DP)
-        bitmap.setPixels(pixels, 0, w, 0, 0, w, h)
+        for (y in 0 until h) {
+            val row = (top + y).coerceIn(0, frost.h - 1) * frost.w
+            for (x in 0 until w) pixels[y * w + x] = frost.pixels[row + (left + x).coerceIn(0, frost.w - 1)]
+        }
+        refract(pixels, w, h, density * frost.scale * PX_1440_IN_DP)
+        return Bitmap.createBitmap(pixels, w, h, Bitmap.Config.ARGB_8888)
+    }
+
+    /** Which glass shares a frost: the same holder on the page, frosted as far, at the same scale. */
+    private data class Kind(val holder: Int, val blur: Float, val scale: Float)
+
+    private class Snapshot(val over: Rect, val w: Int, val h: Int, val pixels: IntArray)
+
+    /** A page's frost: what's behind its glass over `over` (page px), frosted, `w` x `h` pixels at `scale`. */
+    private class Frost(val over: Rect, val w: Int, val h: Int, val scale: Float, val pixels: IntArray)
+
+    /** A page's frosts, one per kind of glass on it, and the glass drawn from them. */
+    private class PageFrosts {
+        val made = HashMap<Kind, Frost>()
+        val stale = HashSet<Kind>()
+        val making = HashSet<Kind>()
+        val glasses: MutableSet<LiquidGlassLayout> = Collections.newSetFromMap(WeakHashMap())
     }
 
     companion object {
@@ -265,14 +365,18 @@ class LiquidGlassLayout @JvmOverloads constructor(
         const val REFRACT_GAIN = 3.3f
         val REFRACT_SCALES = floatArrayOf(18f, 21f, 24f)
 
-        /** How long a live glass takes to fade over to a new backdrop. */
+        /** How long a live glass takes to fade over to a new frost. */
         const val FADE_MS = 180L
 
-        /** Where live glass frosts its backdrops: one thread, so the newest lands last. Tests run it in place. */
+        /** Where live glass's pages frost again: one thread, so the newest lands last. Tests run it in place. */
         internal var worker: java.util.concurrent.Executor = java.util.concurrent.Executors.newSingleThreadExecutor()
 
-        /** Tests draw pages that aren't in a window. */
-        internal var RUNS_DETACHED = false
+        private val main = Handler(Looper.getMainLooper())
+
+        /** Each page's frosts, for as long as the page is about. */
+        private val pages = WeakHashMap<View, PageFrosts>()
+
+        private fun frostsOf(page: View) = pages.getOrPut(page) { PageFrosts() }
 
         /** CSS saturate() then brightness(), as one colour matrix. */
         fun filterMatrix(): ColorMatrix {
@@ -287,13 +391,14 @@ class LiquidGlassLayout @JvmOverloads constructor(
         }
 
         /**
-         * The #lg-refract filter on `pixels` (opaque ARGB, w x h), where one px of the 1440p
+         * The #lg-refract filter on `pixels` (ARGB, w x h), where one px of the 1440p
          * page is `px` of them. The filter floods the glass white, blurs it, and takes the
          * blur's slope across 2 px each way (times 3.3, around 0.5) as a displacement map:
          * 0.5 inside, rising to about 1 at the left and top edges and falling to about 0 at
          * the right and bottom ones. Each colour is then drawn from (x, y) + scale * (map - 0.5),
          * red with scale 18, green 21, blue 24: near the rim the backdrop comes from further in,
-         * so it bends, and splits into colours.
+         * so it bends, and splits into colours. Its opacity comes along with green's, so where
+         * there's nothing behind, the rim shows nothing (not black).
          */
         internal fun refract(pixels: IntArray, w: Int, h: Int, px: Float) {
             if (w < 2 || h < 2) return
@@ -313,7 +418,7 @@ class LiquidGlassLayout @JvmOverloads constructor(
                     val mapX = (REFRACT_GAIN * boxY[y] * slopeX[x] + 0.5f).coerceIn(0f, 1f) - 0.5f
                     val mapY = (REFRACT_GAIN * boxX[x] * slopeY[y] + 0.5f).coerceIn(0f, 1f) - 0.5f
                     if (abs(mapX) < 1e-3f && abs(mapY) < 1e-3f) continue
-                    var argb = 0xFF shl 24
+                    var argb = sample(source, w, h, x + scales[1] * mapX, y + scales[1] * mapY, 24) shl 24
                     for (c in 0..2) {
                         val shift = 16 - 8 * c
                         val v = sample(source, w, h, x + scales[c] * mapX, y + scales[c] * mapY, shift)
@@ -324,12 +429,12 @@ class LiquidGlassLayout @JvmOverloads constructor(
             }
         }
 
-        /** One colour channel of `src` at (x, y) in pixel units, bilinear, edges clamped. */
+        /** One channel of `src` at (x, y) in pixel units, bilinear, edges clamped. */
         private fun sample(src: IntArray, w: Int, h: Int, x: Float, y: Float, shift: Int): Int {
             val fx = x.coerceIn(0f, w - 1f); val fy = y.coerceIn(0f, h - 1f)
             val x0 = fx.toInt().coerceAtMost(w - 2); val y0 = fy.toInt().coerceAtMost(h - 2)
             val tx = fx - x0; val ty = fy - y0
-            fun at(xx: Int, yy: Int) = (src[yy * w + xx] shr shift) and 0xFF
+            fun at(xx: Int, yy: Int) = (src[yy * w + xx] ushr shift) and 0xFF
             val top = at(x0, y0) + (at(x0 + 1, y0) - at(x0, y0)) * tx
             val bottom = at(x0, y0 + 1) + (at(x0 + 1, y0 + 1) - at(x0, y0 + 1)) * tx
             return (top + (bottom - top) * ty).roundToInt().coerceIn(0, 255)

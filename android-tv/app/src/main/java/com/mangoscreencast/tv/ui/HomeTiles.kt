@@ -57,8 +57,8 @@ object HomeTiles {
         for (shortcut in Shortcut.entries) {
             val tile = inflater.inflate(R.layout.item_shortcut_tile, grid, false) as LiquidGlassLayout
             tile.cornerRadius = 0f
-            // The wall glides, so the glass frosts off the main thread and fades over; at Mango Liquid
-            // Glass's 24 px frost, half the pixels do.
+            // The wallpaper turns, so the glass frosts it again off the main thread and fades over; at
+            // Mango Liquid Glass's 24 px frost, half the pixels do.
             tile.live = true
             tile.scale = 0.5f
             tile.findViewById<ImageView>(R.id.shortcut_icon).setImageResource(shortcut.icon)
