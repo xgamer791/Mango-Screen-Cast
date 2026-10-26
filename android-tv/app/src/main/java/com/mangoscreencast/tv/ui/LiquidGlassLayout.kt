@@ -43,8 +43,9 @@ import kotlin.math.sqrt
  * home screen is drawn into (Canvas1440Layout), and it needs Android 12. So
  * what lies behind the glass on its page (the page's background and the
  * views drawn before the one holding the glass: the wallpaper) is drawn into
- * a bitmap over all of that holder's place, and frosted once: the page's
- * frost, shared by every glass of the same kind on the page (Home's three
+ * a bitmap the whole page over, and frosted once: the page's frost, so a
+ * holder that moves (Home's wall slides aside for the menu) never needs it
+ * made again, shared by every glass of the same kind on the page (Home's three
  * tiles share one; frosting each tile on its own, where it happened to be
  * when it was last drawn, left tiles mid-glide or scrolled off the page with
  * a stale piece, or a black frame round nothing). Each time a glass is drawn
@@ -239,7 +240,7 @@ class LiquidGlassLayout @JvmOverloads constructor(
         frosts.glasses += this
         val kind = kind(page)
         val current = frosts.made[kind]
-        if (current == null || (kind in frosts.stale && !live) || current.over != over(page, kind)) {
+        if (current == null || (kind in frosts.stale && !live) || current.over != over(page)) {
             frosts.stale -= kind
             val made = snapshot(page, kind)?.let { frost(it, kind) } ?: return current
             frosts.made[kind] = made
@@ -262,21 +263,14 @@ class LiquidGlassLayout @JvmOverloads constructor(
     }
 
     /**
-     * What the frost covers: the holder's place on the page (the glass is only ever seen inside it:
-     * Home's wall clips its tiles), kept to the page.
+     * What the frost covers: the whole page, so it stays right however the glass's holder moves
+     * (a frost of the holder's place alone was made again on every frame of the wall's slide).
      */
-    private fun over(page: ViewGroup, kind: Kind): Rect {
-        val holder = page.getChildAt(kind.holder)
-        val left = (holder.left + holder.translationX).roundToInt()
-        val top = (holder.top + holder.translationY).roundToInt()
-        return Rect(left, top, left + holder.width, top + holder.height).apply {
-            if (!intersect(0, 0, page.width, page.height)) setEmpty()
-        }
-    }
+    private fun over(page: ViewGroup) = Rect(0, 0, page.width, page.height)
 
     /** What's behind the glass on `page`, over its holder's place, sharp: ARGB pixels at the frost's scale. */
     private fun snapshot(page: ViewGroup, kind: Kind): Snapshot? {
-        val over = over(page, kind)
+        val over = over(page)
         if (over.isEmpty) return null
         val w = (over.width() * kind.scale).roundToInt().coerceAtLeast(1)
         val h = (over.height() * kind.scale).roundToInt().coerceAtLeast(1)
@@ -304,6 +298,7 @@ class LiquidGlassLayout @JvmOverloads constructor(
     /** Frosts the page's snapshot, the slow part, done once for every glass on the page. */
     private fun frost(shot: Snapshot, kind: Kind): Frost {
         gaussianBlur(shot.pixels, shot.w, shot.h, kind.blur * PX_1440_IN_DP * density * kind.scale)
+        frostsMade++
         return Frost(shot.over, shot.w, shot.h, kind.scale, shot.pixels)
     }
 
@@ -372,6 +367,9 @@ class LiquidGlassLayout @JvmOverloads constructor(
         internal var worker: java.util.concurrent.Executor = java.util.concurrent.Executors.newSingleThreadExecutor()
 
         private val main = Handler(Looper.getMainLooper())
+
+        /** Frosts made so far (they're the slow part): tests check a moving glass makes none. */
+        @Volatile internal var frostsMade = 0
 
         /** Each page's frosts, for as long as the page is about. */
         private val pages = WeakHashMap<View, PageFrosts>()

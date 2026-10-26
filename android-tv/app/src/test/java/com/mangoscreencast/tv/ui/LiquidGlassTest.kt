@@ -183,6 +183,35 @@ class LiquidGlassTest {
         assertColour(expected(Color.BLACK, tint), screen.getPixel(600, 200))
     }
 
+    /**
+     * Home's wall slides aside as the menu opens. Its glass shows what's behind at every step, cut
+     * from the frost made once, not a frost made again each frame (the slow part: a stutter).
+     */
+    @Test
+    fun aSlidingWallsGlassMakesNoNewFrost() {
+        val context = activity
+        val root = FrameLayout(context)
+        root.addView(split(context), FrameLayout.LayoutParams(800, 400))
+        val wall = FrameLayout(context)
+        root.addView(wall, FrameLayout.LayoutParams(400, 400))
+        val glass = LiquidGlassLayout(context).apply { live = true }
+        wall.addView(glass, FrameLayout.LayoutParams(200, 200).apply { leftMargin = 100; topMargin = 100 })
+        root.measure(View.MeasureSpec.makeMeasureSpec(800, View.MeasureSpec.EXACTLY),
+            View.MeasureSpec.makeMeasureSpec(400, View.MeasureSpec.EXACTLY))
+        root.layout(0, 0, 800, 400)
+        val screen = Bitmap.createBitmap(800, 400, Bitmap.Config.ARGB_8888)
+        root.draw(Canvas(screen))
+        val made = LiquidGlassLayout.frostsMade
+        for (step in 1..8) {
+            wall.translationX = step * 50f
+            screen.eraseColor(0)
+            root.draw(Canvas(screen))
+        }
+        assertEquals("frosts made while the wall slid", made, LiquidGlassLayout.frostsMade)
+        // Slid 400 px right, the glass is over the black.
+        assertColour(expected(Color.BLACK, context.getColor(R.color.glass_tint)), screen.getPixel(600, 200))
+    }
+
     /** A wall that scrolls doesn't redraw its tiles; the glass sees it has moved, and redraws. */
     @Test
     fun aGlassRedrawsWhenItsWallScrolls() {
