@@ -51,7 +51,7 @@
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">34.2dp</item>
         <item name="android:background">@drawable/home_menu_item</item>
-        <item name="android:fontFamily">@font/geist_regular</item>
+        <item name="android:fontFamily">@font/geist_medium</item>
         <item name="android:gravity">top|start</item>
         <item name="android:includeFontPadding">false</item>
         <item name="android:letterSpacing">0.02</item>

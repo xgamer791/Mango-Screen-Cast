@@ -4,7 +4,6 @@ import android.app.Activity
 import android.app.AlertDialog
 import android.content.ActivityNotFoundException
 import android.content.Intent
-import android.graphics.Typeface
 import android.net.Uri
 import android.os.Bundle
 import android.provider.Settings as SystemSettings
@@ -16,6 +15,7 @@ import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
 import android.widget.Toast
+import androidx.core.content.res.ResourcesCompat
 import com.mangoscreencast.tv.BuildConfig
 import com.mangoscreencast.tv.LatencyMode
 import com.mangoscreencast.tv.MangoApp
@@ -139,7 +139,7 @@ class SettingsActivity : Activity(), AppUpdater.Listener {
         val text = TextView(this).apply {
             text = receiver.diagnostics()
             setTextIsSelectable(true)
-            typeface = Typeface.MONOSPACE
+            typeface = ResourcesCompat.getFont(this@SettingsActivity, R.font.geist_mono_medium)
             textSize = 11.2f
             val pad = (16 * resources.displayMetrics.density).toInt()
             setPadding(pad, pad, pad, pad)

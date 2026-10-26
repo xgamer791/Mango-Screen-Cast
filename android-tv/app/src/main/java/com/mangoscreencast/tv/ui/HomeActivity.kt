@@ -44,8 +44,8 @@ class HomeActivity : Activity(), AirPlayReceiver.Listener, AppUpdater.Listener {
     private val opener by lazy { Opener(this) }
     private val launcher get() = opener.launcher
     private val handler = Handler(Looper.getMainLooper())
-    private val regular by lazy { ResourcesCompat.getFont(this, R.font.geist_regular) }
     private val medium by lazy { ResourcesCompat.getFont(this, R.font.geist_medium) }
+    private val medium550 by lazy { ResourcesCompat.getFont(this, R.font.geist_550) }
 
     /** The menu item focused last: Left from the wall's first column goes back to it. */
     private var cameFrom = R.id.menu_home
@@ -89,12 +89,12 @@ class HomeActivity : Activity(), AirPlayReceiver.Listener, AppUpdater.Listener {
             }
         }
 
-        // The focused item's words are a weight heavier on its white bar, as on the Roku; Left from
-        // the wall comes back to the item it was entered from.
+        // The focused item's words go from 500 to 550 on its white bar; Left from the wall comes back
+        // to the item it was entered from.
         val menu = findViewById<ViewGroup>(R.id.menu)
         for (i in 0 until menu.childCount) {
             menu.getChildAt(i).setOnFocusChangeListener { item, focused ->
-                (item as TextView).typeface = if (focused) medium else regular
+                (item as TextView).typeface = if (focused) medium550 else medium
                 if (focused) cameFrom = item.id
             }
         }

@@ -22,7 +22,7 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="#0FFFFFFF"
-        android:fontFamily="@font/geist_regular"
+        android:fontFamily="@font/geist_medium"
         android:gravity="top|center_horizontal"
         android:includeFontPadding="false"
         android:letterSpacing="0.02"
