@@ -23,6 +23,7 @@ import com.mangoscreencast.tv.apps.AppLauncher
 import com.mangoscreencast.tv.apps.StreamingApp
 import com.mangoscreencast.tv.apps.StreamingApps
 import com.mangoscreencast.tv.ui.Canvas1440Layout
+import com.mangoscreencast.tv.ui.HomeWallpaper
 import com.mangoscreencast.tv.ui.LiquidGlassLayout
 import com.mangoscreencast.tv.ui.Opener
 import com.mangoscreencast.tv.ui.SettingsMenuActivity
@@ -197,7 +198,7 @@ class BrowseActivity : Activity() {
         }, focused = {
             info(getString(R.string.store_all_apps), getString(R.string.store_play), "", getString(R.string.store_about_play),
                 getString(R.string.store_action_play), R.drawable.ic_lucide_play)
-            art(R.drawable.home_wallpaper)
+            art(HomeWallpaper.at(System.currentTimeMillis()))
         }, clicked = { opener.store() })
         rows.show(listOf(RowsView.Row(getString(R.string.store_your_apps), apps), RowsView.Row(getString(R.string.store_more), listOf(play))))
     }
@@ -210,7 +211,7 @@ class BrowseActivity : Activity() {
             action = getString(if (installed) R.string.store_action_open else R.string.browse_action_get, app.name),
             icon = if (installed) R.drawable.ic_lucide_play else R.drawable.ic_lucide_download,
         )
-        art(StoreApps.flagship[app.name]?.let { Catalog.show(it).art } ?: R.drawable.home_wallpaper)
+        art(StoreApps.flagship[app.name]?.let { Catalog.show(it).art } ?: HomeWallpaper.at(System.currentTimeMillis()))
     }
 
     /** An app's brand tile, as on the home screen's wall, at the browse tiles' size. */

@@ -39,6 +39,7 @@ class HomeActivity : Activity(), AirPlayReceiver.Listener, AppUpdater.Listener {
     private lateinit var updateButton: Button
     private lateinit var itemCount: TextView
     private lateinit var tileName: TextView
+    private lateinit var wallpaper: HomeWallpaper
     private lateinit var page: View
     private lateinit var grid: TileGrid
 
@@ -91,6 +92,10 @@ class HomeActivity : Activity(), AirPlayReceiver.Listener, AppUpdater.Listener {
         updateButton = findViewById(R.id.update_button)
         itemCount = findViewById(R.id.item_count)
         tileName = findViewById(R.id.tile_name)
+        // A new wallpaper fades in; the glass tiles then frost it in turn.
+        wallpaper = HomeWallpaper(findViewById(R.id.wallpaper), findViewById(R.id.wallpaper_next), changed = {
+            grid.tiles.forEach { (it as? LiquidGlassLayout)?.refresh() }
+        })
         page = window.decorView
         grid = findViewById(R.id.tile_grid)
         updateButton.setOnClickListener {
@@ -228,11 +233,13 @@ class HomeActivity : Activity(), AirPlayReceiver.Listener, AppUpdater.Listener {
         updater.addListener(this)
         updater.checkIfDue()
         handler.postDelayed(recheckUpdates, AppUpdater.RECHECK_INTERVAL_MS)
+        wallpaper.start()
     }
 
     override fun onStop() {
         unregisterReceiver(packages)
         handler.removeCallbacks(recheckUpdates)
+        wallpaper.stop()
         updater.removeListener(this)
         receiver.removeListener(this)
         receiver.release(this)

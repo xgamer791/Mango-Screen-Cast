@@ -13,14 +13,24 @@
     android:layout_height="match_parent"
     android:background="@drawable/home_background">
 
-    <!-- Wallpaper: Halloween night on the bay, 2560 x 1440: pixel for pixel on the 1440p surface the page is drawn into. -->
+    <!-- Wallpaper, 2560 x 1440: pixel for pixel on the 1440p surface the page is drawn into. Halloween night
+         through October, then the three tropical sunsets in turn, each fading in over the last on the
+         one above (HomeWallpaper). -->
     <ImageView
         android:id="@+id/wallpaper"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:contentDescription="@null"
         android:scaleType="centerCrop"
-        android:src="@drawable/home_wallpaper" />
+        android:src="@drawable/home_wallpaper_halloween" />
+
+    <ImageView
+        android:id="@+id/wallpaper_next"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:alpha="0"
+        android:contentDescription="@null"
+        android:scaleType="centerCrop" />
 
     <!-- Mango TV, where the Roku home screen says Roku TV: Geist Bold at the Roku wordmark's cap height. -->
     <TextView
