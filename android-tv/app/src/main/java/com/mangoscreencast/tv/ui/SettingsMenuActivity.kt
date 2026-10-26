@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
 import android.view.animation.Interpolator
 import android.view.animation.PathInterpolator
 import com.mangoscreencast.tv.R
@@ -12,28 +13,22 @@ import kotlin.math.roundToLong
 
 /**
  * The gear's menu: a panel on the right, 540 px of a 1920 px wide screen, over
- * whatever is on screen, in Mango Liquid Glass (LiquidGlassPanel) made from
- * what was on screen as the gear was pressed. It slides in from the right edge as the gear opens
+ * whatever is on screen. It slides in from the right edge as the gear opens
  * it, and back out to it, in the same time and on the same curve, as the gear
  * or Back closes it; the gear while it's sliding turns it around at the same
  * speed. Closed, the app behind it is as it was. Empty for now.
  */
 class SettingsMenuActivity : Activity() {
-    private lateinit var panel: LiquidGlassPanel
+    private lateinit var panel: View
     private var closing = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_settings_menu)
         panel = findViewById(R.id.menu_panel)
-        val metrics = resources.displayMetrics
-        val width = metrics.widthPixels * WIDTH / SCREEN
+        val width = resources.displayMetrics.widthPixels * WIDTH / SCREEN
         panel.layoutParams.width = width
         panel.translationX = width.toFloat()
-        // Liquid Glass over what was on screen as the gear was pressed.
-        ScreenBehind.take()?.let {
-            panel.showBehind(ScreenBehind.region(it, WIDTH.toFloat() / SCREEN, width, metrics.heightPixels))
-        }
         slide(open = true)
     }
 

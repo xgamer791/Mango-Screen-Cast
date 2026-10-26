@@ -39,15 +39,10 @@ class GearKeyServiceTest {
     fun framesWithTheClock() {
         org.robolectric.shadows.ShadowChoreographer.setPaused(true)
         org.robolectric.shadows.ShadowChoreographer.setFrameDelay(java.time.Duration.ofMillis(16))
-        // No screenshot in the test runner: the menu opens without one, at once.
-        service.screenshot = { done -> done(null) }
     }
 
     @org.junit.After
-    fun nothingInFront() {
-        FrontSettings.clear()
-        ScreenBehind.image = null
-    }
+    fun nothingInFront() = FrontSettings.clear()
 
     private fun key(action: Int, code: Int, repeat: Int = 0, flags: Int = 0) =
         KeyEvent(0, 0, action, code, repeat, 0, 9, 0, flags)
@@ -119,39 +114,6 @@ class GearKeyServiceTest {
         assertNull("nothing new opens", started())
         frames(SettingsMenuActivity.SLIDE_MS + 100)
         assertTrue("then it closes", menu.isFinishing)
-    }
-
-    @Test
-    fun theGearTakesAScreenshotForTheGlassThenOpensTheMenu() {
-        val shot = android.graphics.Bitmap.createBitmap(1920, 1080, android.graphics.Bitmap.Config.ARGB_8888)
-        var asked: ((android.graphics.Bitmap?) -> Unit)? = null
-        service.screenshot = { done -> asked = done }
-        press(KeyEvent.KEYCODE_NOTIFICATION)
-        assertNull("the menu waits for the screenshot", started())
-        asked!!(shot)
-        assertTrue("the screenshot is what's behind the menu", ScreenBehind.image === shot)
-        assertEquals(SettingsMenuActivity::class.java.name, started()?.component?.className)
-    }
-
-    @Test
-    fun withoutAScreenshotTheMenuStillOpens() {
-        service.screenshot = { done -> done(null) }
-        press(KeyEvent.KEYCODE_NOTIFICATION)
-        assertNull(ScreenBehind.image)
-        assertEquals(SettingsMenuActivity::class.java.name, started()?.component?.className)
-    }
-
-    @Test
-    fun itMayTakeScreenshots() {
-        val attrs = mutableMapOf<String, String>()
-        context.resources.getXml(R.xml.gear_key_service).use { xml ->
-            while (xml.next() != XmlPullParser.END_DOCUMENT) {
-                if (xml.eventType == XmlPullParser.START_TAG && xml.name == "accessibility-service") {
-                    for (i in 0 until xml.attributeCount) attrs[xml.getAttributeName(i)] = xml.getAttributeValue(i)
-                }
-            }
-        }
-        assertEquals(attrs.toString(), "true", attrs["canTakeScreenshot"])
     }
 
     @Test
