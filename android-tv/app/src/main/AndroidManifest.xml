@@ -47,6 +47,22 @@
         <package android:name="com.hulu.plus" />
         <package android:name="com.disney.disneyplus" />
         <package android:name="com.tubitv" />
+        <!-- The home screen's Live TV (AppLauncher.LIVE_TV_PACKAGES) and Streaming Store. -->
+        <package android:name="com.vt.tv.tvcenter" />
+        <package android:name="com.mediatek.wwtv.tvcenter" />
+        <package android:name="com.google.android.tv" />
+        <package android:name="com.android.tv" />
+        <package android:name="com.android.vending" />
+        <package android:name="com.amazon.venezia" />
+        <!-- The TV's other apps, which take their places on the home screen's wall after the streaming apps. -->
+        <intent>
+            <action android:name="android.intent.action.MAIN" />
+            <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
+        </intent>
+        <!-- The menu's Search. -->
+        <intent>
+            <action android:name="android.search.action.GLOBAL_SEARCH" />
+        </intent>
     </queries>
 
     <uses-feature android:name="android.software.leanback" android:required="false" />

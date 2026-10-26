@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A black app tile, lighter at the top, as Roku's Apple TV tile. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <gradient
+        android:angle="270"
+        android:startColor="#303032"
+        android:endColor="#111113" />
+</shape>

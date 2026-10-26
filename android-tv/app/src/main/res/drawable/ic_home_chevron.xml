@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The thin arrow right of the wall's first row, as on the Roku home screen. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="14.4dp"
+    android:height="28.6dp"
+    android:viewportWidth="14.4"
+    android:viewportHeight="28.6">
+    <path
+        android:pathData="M1.6,1.6 L12.8,14.3 L1.6,27"
+        android:strokeWidth="3.2"
+        android:strokeColor="#59FFFFFF"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+</vector>

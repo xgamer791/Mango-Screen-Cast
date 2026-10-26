@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A white app tile, a touch grey at its edges, as Roku's Netflix tile. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <gradient
+        android:type="radial"
+        android:gradientRadius="95%"
+        android:startColor="#FFFFFF"
+        android:centerColor="#F7F8F8"
+        android:endColor="#DFE2E1" />
+</shape>

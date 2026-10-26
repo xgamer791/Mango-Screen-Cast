@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- One streaming app on the home screen: its logo on a white tile. See AppTiles. -->
+<!-- One app on the home screen's wall: its logo on its own colours, as Roku's tiles are. See HomeTiles. -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    style="@style/Mango.AppTile">
+    style="@style/Mango.HomeTile">
 
     <ImageView
         android:id="@+id/app_logo"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center"
-        android:contentDescription="@null" />
+        android:contentDescription="@null"
+        android:scaleType="fitCenter" />
 </FrameLayout>

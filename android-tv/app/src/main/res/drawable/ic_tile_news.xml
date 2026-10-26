@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- News: a folded newspaper, in the same line as the Emulation and Live TV icons (70 x 57 dp, 4.6 dp strokes). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="70dp"
+    android:height="57dp"
+    android:viewportWidth="70"
+    android:viewportHeight="57">
+    <path
+        android:pathData="M9.7,54.7 H61.7 A6,6 0 0 0 67.7,48.7 V8.3 A6,6 0 0 0 61.7,2.3 H22 A6,6 0 0 0 16,8.3 V48.4 A6.3,6.3 0 0 1 9.7,54.7 A7.4,7.4 0 0 1 2.3,47.3 V26 A6,6 0 0 1 8.3,20 H16"
+        android:strokeWidth="4.6"
+        android:strokeColor="#EBFFFFFF"
+        android:strokeLineJoin="round" />
+    <path
+        android:pathData="M26.5,12.5 H39.5 V24.5 H26.5 Z"
+        android:strokeWidth="4.6"
+        android:strokeColor="#EBFFFFFF"
+        android:strokeLineJoin="round" />
+    <path
+        android:pathData="M48,13.5 H58 M48,23.5 H58 M26.5,35 H58 M26.5,45 H49"
+        android:strokeWidth="4.6"
+        android:strokeColor="#EBFFFFFF"
+        android:strokeLineCap="round" />
+</vector>

@@ -7,7 +7,26 @@
     <string name="a_device">a device</string>
 
     <!-- Home -->
-    <string name="apps_label">Apps</string>
+    <!-- The home screen's wordmark, top left, where the Roku home screen says "Roku TV". -->
+    <string name="home_wordmark">Mango</string>
+    <string name="menu_home">Home</string>
+    <string name="menu_what_to_watch">What to Watch</string>
+    <string name="menu_featured_free">Featured Free</string>
+    <string name="menu_live_tv">Live TV</string>
+    <string name="menu_sports">Sports</string>
+    <string name="menu_search">Search</string>
+    <string name="menu_store">Streaming Store</string>
+    <string name="menu_settings">Settings</string>
+    <string name="shortcut_news">News</string>
+    <string name="shortcut_emulation">Emulation</string>
+    <string name="shortcut_live_tv">Live TV</string>
+    <plurals name="home_item_count">
+        <item quantity="one">%1$d Item</item>
+        <item quantity="other">%1$d Items</item>
+    </plurals>
+    <string name="live_tv_missing">This TV has no Live TV app</string>
+    <string name="store_missing">Couldn’t open an app store on this TV</string>
+    <string name="search_missing">Couldn’t open search on this TV</string>
     <string name="app_not_installed">%1$s isn’t on this TV yet: here it is in the app store</string>
     <string name="app_open_failed">Couldn’t open %1$s or an app store on this TV</string>
     <string name="settings">Settings</string>
@@ -69,7 +88,7 @@
     <string name="overlay_message">To start mirroring while another app is open, Android needs Mango Screen Cast For macOS/iOS to have “Display over other apps” permission. If this TV has no settings screen for it, run this once from your Mac:\n\n%1$s</string>
     <string name="overlay_open">Open settings</string>
     <string name="overlay_later">Not now</string>
-    <string name="about">Mango Screen Cast For macOS/iOS %1$s. Built on UxPlay (GPL-3.0), libplist (LGPL-2.1) and OpenSSL; set in Geist (SIL OFL). AirPlay is a trademark of Apple Inc.; the streaming apps’ names and logos are trademarks of their owners.</string>
+    <string name="about">Mango Screen Cast For macOS/iOS %1$s. Built on UxPlay (GPL-3.0), libplist (LGPL-2.1) and OpenSSL; set in Geist and Montserrat (SIL OFL). AirPlay is a trademark of Apple Inc.; the streaming apps’ names and logos are trademarks of their owners.</string>
 
     <!-- Updates -->
     <string name="version_label">Version %1$s</string>

@@ -35,12 +35,31 @@
 
 
 
-    <!-- Home screen: a streaming app's tile. Focusable, so the remote can walk the row. -->
-    <style name="Mango.AppTile" parent="">
-        <item name="android:layout_width">0dp</item>
-        <item name="android:layout_height">56dp</item>
-        <item name="android:layout_weight">1</item>
-        <item name="android:background">@drawable/app_tile</item>
+    <!-- Home screen: a tile on the wall (TileGrid sizes it), square as Roku's. Focusable, so the remote can walk the wall;
+         the focused one gets a mango ring. -->
+    <style name="Mango.HomeTile" parent="">
+        <item name="android:layout_width">149dp</item>
+        <item name="android:layout_height">111dp</item>
+        <item name="android:foreground">@drawable/tile_focus</item>
+        <item name="android:focusable">true</item>
+        <item name="android:clickable">true</item>
+    </style>
+
+    <!-- Home screen: an item of the menu, Montserrat (the nearest free face to Roku's Gotham) at Roku's size,
+         its capitals 10 dp below the top of its bar. -->
+    <style name="Mango.HomeMenuItem" parent="">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">34.2dp</item>
+        <item name="android:background">@drawable/home_menu_item</item>
+        <item name="android:fontFamily">@font/montserrat_regular</item>
+        <item name="android:gravity">top|start</item>
+        <item name="android:includeFontPadding">false</item>
+        <item name="android:letterSpacing">-0.02</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:paddingStart">15.2dp</item>
+        <item name="android:paddingTop">5.2dp</item>
+        <item name="android:textColor">@color/home_menu_text</item>
+        <item name="android:textSize">19sp</item>
         <item name="android:focusable">true</item>
         <item name="android:clickable">true</item>
     </style>

@@ -1,15 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-  The home screen, on Android TV's 960 x 540 dp canvas (the same on 1080p
-  and 4K panels): the wallpaper, and the apps along the bottom in a 60 dp
-  margin on both sides. No headline or glass strip over it.
+  The home screen, a clone of the Roku TV home screen on Android TV's 960 x 540 dp
+  canvas (the same on 1080p and 4K panels). Every place and size is the Roku
+  screen's, measured on a 4450 x 2546 capture: x px × 0.2157, y px × 0.2121.
+  The wordmark, clock and item count across the top; the menu on the left with
+  a white bar on the focused item; the wall of tiles on the right, three
+  across, the three Liquid Glass shortcuts first.
 -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/home_background">
 
-    <!-- Wallpaper: Manhattan in fog at dusk, 2560 x 1440: pixel for pixel on the 1440p surface the page is drawn into. -->
+    <!-- Wallpaper: a tropical bay at sunset, 2560 x 1440: pixel for pixel on the 1440p surface the page is drawn into. -->
     <ImageView
         android:id="@+id/wallpaper"
         android:layout_width="match_parent"
@@ -18,72 +21,154 @@
         android:scaleType="centerCrop"
         android:src="@drawable/home_wallpaper" />
 
-    <!-- 30% black over the wallpaper, so the apps and their label stand off it. -->
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="#4D000000" />
-
-    <!-- Soft light behind the cast badge. -->
-    <View
-        android:layout_width="760dp"
-        android:layout_height="760dp"
-        android:layout_marginStart="353.5dp"
-        android:layout_marginTop="-248dp"
-        android:background="@drawable/home_glow" />
-
     <TextView
-        android:id="@+id/apps_label"
+        android:id="@+id/wordmark"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="60dp"
-        android:layout_marginTop="380dp"
-        android:fontFamily="@font/geist_semibold"
+        android:layout_marginStart="51.1dp"
+        android:layout_marginTop="29.9dp"
+        android:fontFamily="@font/montserrat_bold"
         android:includeFontPadding="false"
-        android:text="@string/apps_label"
+        android:letterSpacing="-0.02"
+        android:maxLines="1"
+        android:text="@string/home_wordmark"
         android:textColor="#FFFFFF"
-        android:textSize="16sp" />
+        android:textSize="27.9sp" />
 
-    <!-- A tile per streaming app across the content width, 12 dp apart, filled in
-         by AppTiles. The remote walks them; OK opens the app. -->
-    <LinearLayout
-        android:id="@+id/apps_row"
-        android:layout_width="840dp"
-        android:layout_height="56dp"
-        android:layout_marginStart="60dp"
-        android:layout_marginTop="416dp"
-        android:baselineAligned="false"
-        android:orientation="horizontal" />
-
-    <!-- Under the tiles: the app version, or an update's progress. -->
     <TextView
-        android:id="@+id/update_status"
+        android:id="@+id/clock"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="top|end"
-        android:layout_marginTop="490dp"
-        android:layout_marginEnd="60dp"
-        android:ellipsize="end"
-        android:fontFamily="@font/geist_regular"
+        android:layout_marginTop="38.95dp"
+        android:layout_marginEnd="89.3dp"
+        android:fontFamily="@font/montserrat_regular"
         android:includeFontPadding="false"
         android:maxLines="1"
-        android:maxWidth="300dp"
-        android:textColor="#B3FFFFFF"
-        android:textSize="11.2sp" />
+        android:textColor="#FFFFFF"
+        android:textSize="16.5sp" />
 
-    <!-- Top-right corner, clear of the badge's rings: the update, when there is one.
-         The remote's gear opens the menu, so there's no Settings button. -->
-    <LinearLayout
+    <TextView
+        android:id="@+id/item_count"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="top|end"
-        android:layout_marginTop="24dp"
-        android:layout_marginEnd="60dp"
-        android:orientation="horizontal">
+        android:layout_marginTop="91.5dp"
+        android:layout_marginEnd="90dp"
+        android:fontFamily="@font/montserrat_regular"
+        android:includeFontPadding="false"
+        android:maxLines="1"
+        android:textColor="#E6FFFFFF"
+        android:textSize="13.9sp" />
+
+    <!-- The menu: bars 34.2 dp tall every 35.85 dp, each placed on its own so no rounding adds up;
+         the focused one is white. -->
+    <FrameLayout
+        android:id="@+id/menu"
+        android:layout_width="268.8dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="82.2dp"
+        android:layout_marginTop="116.65dp">
+
+        <TextView
+            android:id="@+id/menu_home"
+            style="@style/Mango.HomeMenuItem"
+            android:layout_marginTop="0dp"
+            android:text="@string/menu_home" />
+
+        <TextView
+            android:id="@+id/menu_what_to_watch"
+            style="@style/Mango.HomeMenuItem"
+            android:layout_marginTop="35.85dp"
+            android:text="@string/menu_what_to_watch" />
+
+        <TextView
+            android:id="@+id/menu_featured_free"
+            style="@style/Mango.HomeMenuItem"
+            android:layout_marginTop="71.7dp"
+            android:text="@string/menu_featured_free" />
+
+        <TextView
+            android:id="@+id/menu_live_tv"
+            style="@style/Mango.HomeMenuItem"
+            android:layout_marginTop="107.55dp"
+            android:text="@string/menu_live_tv" />
+
+        <TextView
+            android:id="@+id/menu_sports"
+            style="@style/Mango.HomeMenuItem"
+            android:layout_marginTop="143.4dp"
+            android:text="@string/menu_sports" />
+
+        <TextView
+            android:id="@+id/menu_search"
+            style="@style/Mango.HomeMenuItem"
+            android:layout_marginTop="179.25dp"
+            android:text="@string/menu_search" />
+
+        <TextView
+            android:id="@+id/menu_store"
+            style="@style/Mango.HomeMenuItem"
+            android:layout_marginTop="215.1dp"
+            android:text="@string/menu_store" />
+
+        <TextView
+            android:id="@+id/menu_settings"
+            style="@style/Mango.HomeMenuItem"
+            android:layout_marginTop="250.95dp"
+            android:text="@string/menu_settings" />
+    </FrameLayout>
+
+    <!-- The wall: 3 × 149 dp tiles with 11.5 dp between, from the bar's top to the bottom of the screen. -->
+    <com.mangoscreencast.tv.ui.TileWall
+        android:id="@+id/tile_wall"
+        android:layout_width="470dp"
+        android:layout_height="match_parent"
+        android:layout_marginStart="402.3dp"
+        android:layout_marginTop="116.9dp">
+
+        <com.mangoscreencast.tv.ui.TileGrid
+            android:id="@+id/tile_grid"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+    </com.mangoscreencast.tv.ui.TileWall>
+
+    <!-- The arrow right of the wall's first row, level with the menu's bar. -->
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="896.9dp"
+        android:layout_marginTop="119.3dp"
+        android:contentDescription="@null"
+        android:src="@drawable/ic_home_chevron" />
+
+    <!-- Under the menu, only while there's an update to tell about. -->
+    <LinearLayout
+        android:id="@+id/update_area"
+        android:layout_width="268.8dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="82.2dp"
+        android:layout_marginTop="440dp"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/update_status"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:ellipsize="end"
+            android:fontFamily="@font/montserrat_regular"
+            android:includeFontPadding="false"
+            android:maxLines="2"
+            android:textColor="#E6FFFFFF"
+            android:textSize="11.2sp" />
 
         <Button
             android:id="@+id/update_button"
             style="@style/Mango.HomeButton"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="8dp"
             android:visibility="gone" />
     </LinearLayout>
 </FrameLayout>

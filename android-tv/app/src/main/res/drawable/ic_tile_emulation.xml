@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Emulation: a game controller in outline, a cross on the left and two buttons on the right,
+     drawn as Roku's Game Console tile is (107 x 55 dp, 4.6 dp strokes). -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="107dp"
+    android:height="55dp"
+    android:viewportWidth="107"
+    android:viewportHeight="55">
+    <path
+        android:pathData="M27.5,2.5 H79.5 A25,25 0 0 1 79.5,52.5 C70,52.5 64,40.5 53.5,40.5 C43,40.5 37,52.5 27.5,52.5 A25,25 0 0 1 27.5,2.5 Z"
+        android:strokeWidth="4.6"
+        android:strokeColor="#EBFFFFFF"
+        android:strokeLineJoin="round" />
+    <path
+        android:pathData="M18.5,26 H36.5 M27.5,17 V35"
+        android:strokeWidth="4.6"
+        android:strokeColor="#EBFFFFFF"
+        android:strokeLineCap="round" />
+    <path
+        android:fillColor="#EBFFFFFF"
+        android:pathData="M73.5,21 m-4.4,0 a4.4,4.4 0 1 0 8.8,0 a4.4,4.4 0 1 0 -8.8,0 M85,31.5 m-4.4,0 a4.4,4.4 0 1 0 8.8,0 a4.4,4.4 0 1 0 -8.8,0" />
+</vector>

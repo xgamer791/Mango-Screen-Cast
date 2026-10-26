@@ -33,17 +33,15 @@ import java.io.File
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
 @Config(sdk = [34], qualifiers = "w960dp-h540dp-land-television-xhdpi", application = Application::class)
 class HomeLayoutTest {
-    private val name = "Mango Screen Cast For macOS/iOS"
-
     @Test
     fun ready() = check("ready") { root ->
         ready(root)
-        root.text(R.id.update_status, root.context.getString(R.string.version_label, "1.2.0"))
     }
 
     @Test
     fun readyWithUpdateButton() = check("update-available") { root ->
         ready(root)
+        root.findViewById<View>(R.id.update_area).visibility = View.VISIBLE
         root.text(R.id.update_status, root.context.getString(R.string.update_available, "1.2.10"))
         root.findViewById<Button>(R.id.update_button).apply {
             text = context.getString(R.string.update_now)
@@ -51,36 +49,10 @@ class HomeLayoutTest {
         }
     }
 
-    /** Every app has a tile on the screen, in order, with its whole logo inside it. */
-    @Test
-    fun appTiles() {
-        var row: ViewGroup? = null
-        check("apps") { root ->
-            ready(root)
-            row = root.findViewById(R.id.apps_row)
-        }
-        val tiles = (0 until row!!.childCount).map { row!!.getChildAt(it) }
-        assertEquals(StreamingApps.ALL.map { it.name }, tiles.map { it.contentDescription })
-        val screen = row!!.rootView.width
-        var left = 0
-        for (tile in tiles) {
-            val name = tile.contentDescription
-            assertTrue("$name overlaps the tile before it", tile.left >= left)
-            left = tile.right
-            val logo = tile.findViewById<ImageView>(R.id.app_logo)
-            assertTrue("$name has no logo", logo.drawable != null)
-            assertTrue("$name's logo is ${logo.width}x${logo.height} in a ${tile.width}x${tile.height} tile",
-                logo.left >= 0 && logo.top >= 0 && logo.right <= tile.width && logo.bottom <= tile.height)
-            assertTrue("$name's logo is squeezed", logo.width == logo.drawable.intrinsicWidth &&
-                logo.height == logo.drawable.intrinsicHeight)
-        }
-        val rowRight = IntArray(2).also { row!!.getLocationInWindow(it) }[0] + row!!.width
-        assertTrue("the row runs past the screen", rowRight <= screen)
-    }
-
     @Test
     fun failedUpdateCheck() = check("errors") { root ->
         ready(root)
+        root.findViewById<View>(R.id.update_area).visibility = View.VISIBLE
         root.text(R.id.update_status,
             "Couldn't check for updates (Unable to resolve host \"github.com\": No address associated with hostname)")
         root.findViewById<Button>(R.id.update_button).apply {
@@ -89,19 +61,50 @@ class HomeLayoutTest {
         }
     }
 
-    /** Under the wallpaper, only the apps, the version and an update's button: no headline,
-     * no lines under it, no glass strip of steps. */
+    /** Roku's menu, in Roku's order. */
     @Test
-    fun noTextOnTopAndNoGlassStrip() {
+    fun theMenu() {
         val root = home()
-        val ids = mutableListOf<String>()
-        val kinds = mutableListOf<String>()
-        visit(root) { view ->
-            if (view.id != View.NO_ID) ids += view.resources.getResourceEntryName(view.id)
-            kinds += view.javaClass.simpleName
+        val menu = root.findViewById<ViewGroup>(R.id.menu)
+        assertEquals(
+            listOf("Home", "What to Watch", "Featured Free", "Live TV", "Sports", "Search", "Streaming Store", "Settings"),
+            (0 until menu.childCount).map { (menu.getChildAt(it) as TextView).text.toString() },
+        )
+    }
+
+    /**
+     * The wall: News, Emulation and Live TV on Liquid Glass, then every streaming app in order,
+     * three to a row, 149 x 111 dp, 11.5 dp apart, each logo whole inside its tile.
+     */
+    @Test
+    fun theWall() {
+        var grid: TileGrid? = null
+        check("wall") { root ->
+            ready(root)
+            grid = root.findViewById(R.id.tile_grid)
         }
-        for (gone in listOf("status", "subtitle", "status_detail", "steps")) assertTrue("$gone: $ids", gone !in ids)
-        assertTrue(kinds.toString(), "LiquidGlassLayout" !in kinds)
+        val tiles = grid!!.tiles
+        assertEquals(listOf("News", "Emulation", "Live TV") + StreamingApps.ALL.map { it.name },
+            tiles.map { it.contentDescription })
+        assertTrue(tiles.take(3).all { it is LiquidGlassLayout })
+        val dp = grid!!.resources.displayMetrics.density
+        for ((i, tile) in tiles.withIndex()) {
+            val name = tile.contentDescription
+            assertEquals("$name's width", (149 * dp).toDouble(), tile.width.toDouble(), 1.0)
+            assertEquals("$name's height", (111 * dp).toDouble(), tile.height.toDouble(), 1.0)
+            assertEquals("$name's column", ((i % 3) * 160.5 * dp).toDouble(), tile.left.toDouble(), 1.0)
+            assertEquals("$name's row", ((i / 3) * 122.5 * dp).toDouble(), tile.top.toDouble(), 1.0)
+            if (i < 3) continue
+            val logo = tile.findViewById<ImageView>(R.id.app_logo)
+            assertTrue("$name has no logo", logo.drawable != null)
+            assertTrue("$name's logo is ${logo.width}x${logo.height} in a ${tile.width}x${tile.height} tile",
+                logo.left >= 0 && logo.top >= 0 && logo.right <= tile.width && logo.bottom <= tile.height)
+            val drawn = logo.width.toFloat() / logo.height
+            val shape = logo.drawable.intrinsicWidth.toFloat() / logo.drawable.intrinsicHeight
+            assertEquals("$name's logo is squeezed", shape.toDouble(), drawn.toDouble(), 0.05)
+        }
+        val right = IntArray(2).also { grid!!.getLocationInWindow(it) }[0] + grid!!.width
+        assertTrue("the wall runs past the screen", right <= grid!!.rootView.width)
     }
 
     @Test
@@ -117,15 +120,22 @@ class HomeLayoutTest {
         return LayoutInflater.from(ContextThemeWrapper(activity, R.style.Theme_Mango)).inflate(R.layout.activity_home, null)
     }
 
+    /** The wall filled, the clock at 3:24 pm as in the Roku capture, and Home focused. */
     private fun ready(root: View) {
-        AppTiles.fill(root.findViewById(R.id.apps_row)) {}
+        val grid = root.findViewById<TileGrid>(R.id.tile_grid)
+        HomeTiles.fill(grid, emptyList(), HomeTiles.Actions())
+        root.text(R.id.clock, "3:24 pm")
+        root.text(R.id.item_count, root.resources.getQuantityString(R.plurals.home_item_count, grid.childCount, grid.childCount))
     }
 
     private fun check(label: String, fill: (View) -> Unit) {
         val activity = Robolectric.buildActivity(Activity::class.java).setup().get()
         val context = ContextThemeWrapper(activity, R.style.Theme_Mango)
         val root = LayoutInflater.from(context).inflate(R.layout.activity_home, null)
+        activity.setContentView(root)
         fill(root)
+        // As on the TV, which has no touch mode: Home has the focus.
+        root.findViewById<View>(R.id.menu_home).apply { isFocusableInTouchMode = true }.requestFocus()
 
         val metrics = context.resources.displayMetrics
         val width = metrics.widthPixels

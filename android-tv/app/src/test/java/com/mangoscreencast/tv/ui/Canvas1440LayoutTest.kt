@@ -52,10 +52,10 @@ class Canvas1440LayoutTest {
         val page = frame.page!!
         assertEquals(1920, page.width)
         assertEquals(1080, page.height)
-        // The app row where the layout puts it: 60 dp in on both sides (xhdpi: × 2).
-        val apps = activity.findViewById<View>(R.id.apps_row)
-        assertEquals(120, apps.left)
-        assertEquals(1920 - 120, apps.right)
+        // The wall where the layout puts it: 402.3 dp in, 470 dp wide (xhdpi: × 2).
+        val wall = activity.findViewById<View>(R.id.tile_wall)
+        assertEquals(805, wall.left)
+        assertEquals(805 + 940, wall.right)
         assertEquals(Size(2560, 1440), frame.requestedSize)
         assertNotNull(frame.findSurfaceView())
     }
@@ -72,12 +72,12 @@ class Canvas1440LayoutTest {
         assertTrue(frame.showing)
 
         // The surface holds the page 4/3 larger: each of its points is the page's point at 3/4.
-        val row = page.findViewById<View>(R.id.apps_row)
+        val row = page.findViewById<View>(R.id.tile_wall)
         val y = row.top + row.height / 2
         for ((x, wy) in listOf(30 to 30, 60 to y, row.left + 40 to y, 900 to 400)) {
             assertClose("at $x, $wy", reference.getPixel(x, wy), surfaceFrame.getPixel(x * 4 / 3, wy * 4 / 3))
         }
-        // The app row's left edge, 120 px in on the window, is 160 px in on the surface.
+        // The wall's left edge, 805 px in on the window, is 1073 px in on the surface.
         assertClose("left of the apps", reference.getPixel(row.left - 10, y), surfaceFrame.getPixel((row.left - 10) * 4 / 3, y * 4 / 3))
         assertClose("in the first app", reference.getPixel(row.left + 10, y), surfaceFrame.getPixel((row.left + 10) * 4 / 3, y * 4 / 3))
 
