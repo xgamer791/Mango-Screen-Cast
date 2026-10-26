@@ -78,15 +78,21 @@
             android:theme="@style/Theme.Mango.Fullscreen"
             android:configChanges="keyboard|keyboardHidden|navigation|screenSize|screenLayout|smallestScreenSize|orientation|uiMode|density" />
 
-        <!-- The gear on the Hisense remote sends android.settings.SETTINGS, which
-             stock TvSettings claims at priority 1. Same priority so Android can
-             offer Mango once; DEFAULT is required for that implicit intent.
-             LEANBACK_SETTINGS marks this as the TV settings screen and does not
-             add a second launcher tile (that needs MAIN + LEANBACK_LAUNCHER). -->
+        <!-- Hisense: com.hisense.KEY_EVENT, then Katniss queries MAIN +
+             android.intent.category.LEANBACK_SETTINGS. All four have to be on
+             this one filter. 1.2.70 had SETTINGS + LEANBACK_SETTINGS and no
+             MAIN, so Katniss did not list us. 1.2.71 had MAIN + SETTINGS and
+             no LEANBACK_SETTINGS, so that list was empty once stock TvSettings
+             was disabled and the gear did nothing. Priority 999 is above
+             stock's Leanback Settings filter (3). A non-privileged app is
+             capped to 0 on AOSP, so stock can still win until it is disabled;
+             with stock gone, this is the only match. Not a launcher tile:
+             that would also need LEANBACK_LAUNCHER. -->
         <activity
             android:name=".ui.SettingsActivity"
             android:exported="true">
-            <intent-filter android:priority="1">
+            <intent-filter android:priority="999">
+                <action android:name="android.intent.action.MAIN" />
                 <action android:name="android.settings.SETTINGS" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.LEANBACK_SETTINGS" />
