@@ -8,13 +8,11 @@ import android.content.IntentFilter
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
-import android.text.format.DateFormat
 import android.view.KeyEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
-import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
 import com.mangoscreencast.tv.MangoApp
@@ -23,12 +21,10 @@ import com.mangoscreencast.tv.ReceiverService
 import com.mangoscreencast.tv.airplay.AirPlayReceiver
 import com.mangoscreencast.tv.airplay.AirPlayReceiver.State
 import com.mangoscreencast.tv.apps.AppLauncher
-import com.mangoscreencast.tv.apps.StreamingApp
 import com.mangoscreencast.tv.apps.StreamingApps
+import com.mangoscreencast.tv.browse.BrowseActivity
+import com.mangoscreencast.tv.browse.Page
 import com.mangoscreencast.tv.update.AppUpdater
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 
 /**
  * The home screen, laid out as the Roku TV home screen: the menu on the
@@ -40,16 +36,16 @@ class HomeActivity : Activity(), AirPlayReceiver.Listener, AppUpdater.Listener {
     private lateinit var updateArea: View
     private lateinit var updateStatus: TextView
     private lateinit var updateButton: Button
-    private lateinit var clock: TextView
     private lateinit var itemCount: TextView
     private lateinit var grid: TileGrid
 
     private val receiver get() = MangoApp.receiver
     private val updater get() = MangoApp.instance.updater
-    private val launcher by lazy { AppLauncher(packageManager, AppLauncher.isFireTv(this)) }
+    private val opener by lazy { Opener(this) }
+    private val launcher get() = opener.launcher
     private val handler = Handler(Looper.getMainLooper())
-    private val regular by lazy { ResourcesCompat.getFont(this, R.font.montserrat_regular) }
-    private val medium by lazy { ResourcesCompat.getFont(this, R.font.montserrat_medium) }
+    private val regular by lazy { ResourcesCompat.getFont(this, R.font.geist_regular) }
+    private val medium by lazy { ResourcesCompat.getFont(this, R.font.geist_medium) }
 
     /** The menu item focused last: Left from the wall's first column goes back to it. */
     private var cameFrom = R.id.menu_home
@@ -72,9 +68,9 @@ class HomeActivity : Activity(), AirPlayReceiver.Listener, AppUpdater.Listener {
         }
     }
 
-    /** The clock moves on every minute, and when the TV's time or time zone changes. */
-    private val ticks = object : BroadcastReceiver() {
-        override fun onReceive(context: Context, intent: Intent) = showTime()
+    /** Apps installed or removed while the home screen is up take or leave their place on the wall. */
+    private val packages = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) = fillWall()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -84,7 +80,6 @@ class HomeActivity : Activity(), AirPlayReceiver.Listener, AppUpdater.Listener {
         updateArea = findViewById(R.id.update_area)
         updateStatus = findViewById(R.id.update_status)
         updateButton = findViewById(R.id.update_button)
-        clock = findViewById(R.id.clock)
         itemCount = findViewById(R.id.item_count)
         grid = findViewById(R.id.tile_grid)
         updateButton.setOnClickListener {
@@ -103,10 +98,16 @@ class HomeActivity : Activity(), AirPlayReceiver.Listener, AppUpdater.Listener {
                 if (focused) cameFrom = item.id
             }
         }
-        findViewById<View>(R.id.menu_live_tv).setOnClickListener { openLiveTv() }
-        findViewById<View>(R.id.menu_search).setOnClickListener { start(launcher.search(), R.string.search_missing) }
-        findViewById<View>(R.id.menu_store).setOnClickListener { start(launcher.store(), R.string.store_missing) }
+        // Each item but Home and Settings opens its page.
+        for ((item, page) in listOf(
+            R.id.menu_what_to_watch to Page.WHAT_TO_WATCH, R.id.menu_featured_free to Page.FEATURED_FREE,
+            R.id.menu_live_tv to Page.LIVE_TV, R.id.menu_sports to Page.SPORTS, R.id.menu_search to Page.SEARCH,
+            R.id.menu_store to Page.STORE,
+        )) findViewById<View>(item).setOnClickListener { BrowseActivity.open(this, page) }
         findViewById<View>(R.id.menu_settings).setOnClickListener { SettingsMenuActivity.open(this) }
+
+        // Top right: how many tiles there are, or which of them has the focus.
+        findViewById<View>(android.R.id.content).viewTreeObserver.addOnGlobalFocusChangeListener { _, _ -> count() }
 
         fillWall()
         findViewById<View>(R.id.menu_home).requestFocus()
@@ -133,28 +134,24 @@ class HomeActivity : Activity(), AirPlayReceiver.Listener, AppUpdater.Listener {
         val focused = grid.findFocus()?.let { grid.indexOfChild(it) }?.takeIf { it >= 0 }
         HomeTiles.fill(grid, tiles, HomeTiles.Actions(
             shortcut = ::openShortcut,
-            app = ::openApp,
+            app = opener::app,
             other = { launcher.start(this, it.launch) },
         ))
         leadLeftTo(cameFrom)
         focused?.let { grid.getChildAt(it.coerceAtMost(grid.childCount - 1))?.requestFocus() }
-        itemCount.text = resources.getQuantityString(R.plurals.home_item_count, grid.childCount, grid.childCount)
+        count()
+    }
+
+    /** "14 Items", or "5 of 14" while the fifth tile has the focus, as on the Roku. */
+    private fun count() {
+        val total = grid.childCount
+        val at = grid.findFocus()?.let { focused -> grid.tiles.indexOfFirst { it === focused } } ?: -1
+        itemCount.text = HomeTiles.count(resources, total, at)
     }
 
     /** News and Emulation don't open anything yet; Live TV opens the TV's own. */
     private fun openShortcut(shortcut: HomeTiles.Shortcut) {
-        if (shortcut == HomeTiles.Shortcut.LIVE_TV) openLiveTv()
-    }
-
-    private fun openLiveTv() = start(launcher.liveTv(), R.string.live_tv_missing)
-
-    private fun start(intent: Intent?, missing: Int) {
-        if (intent == null || !launcher.start(this, intent)) Toast.makeText(this, missing, Toast.LENGTH_LONG).show()
-    }
-
-    private fun showTime() {
-        val pattern = if (DateFormat.is24HourFormat(this)) "H:mm" else "h:mm a"
-        clock.text = SimpleDateFormat(pattern, Locale.getDefault()).format(Date()).lowercase(Locale.getDefault())
+        if (shortcut == HomeTiles.Shortcut.LIVE_TV) opener.liveTv()
     }
 
     /**
@@ -172,25 +169,14 @@ class HomeActivity : Activity(), AirPlayReceiver.Listener, AppUpdater.Listener {
     // As the TV's Home app there is nowhere to go back to: Back must not close this screen.
     override fun onBackPressed() {}
 
-    /** Starts the app; one the TV doesn't have opens its app store page, and says so. */
-    private fun openApp(app: StreamingApp) {
-        val entry = launcher.entry(app)
-        val note = when {
-            !launcher.open(this, entry) -> getString(R.string.app_open_failed, app.name)
-            entry is AppLauncher.Entry.Missing -> getString(R.string.app_not_installed, app.name)
-            else -> return
-        }
-        Toast.makeText(this, note, Toast.LENGTH_LONG).show()
-    }
-
     override fun onStart() {
         super.onStart()
-        ContextCompat.registerReceiver(this, ticks, IntentFilter().apply {
-            addAction(Intent.ACTION_TIME_TICK)
-            addAction(Intent.ACTION_TIME_CHANGED)
-            addAction(Intent.ACTION_TIMEZONE_CHANGED)
+        ContextCompat.registerReceiver(this, packages, IntentFilter().apply {
+            addAction(Intent.ACTION_PACKAGE_ADDED)
+            addAction(Intent.ACTION_PACKAGE_REMOVED)
+            addAction(Intent.ACTION_PACKAGE_CHANGED)
+            addDataScheme("package")
         }, ContextCompat.RECEIVER_NOT_EXPORTED)
-        showTime()
         // An app installed while the home screen was away takes its place at the end of the wall.
         fillWall()
         receiver.acquire(this)
@@ -201,7 +187,7 @@ class HomeActivity : Activity(), AirPlayReceiver.Listener, AppUpdater.Listener {
     }
 
     override fun onStop() {
-        unregisterReceiver(ticks)
+        unregisterReceiver(packages)
         handler.removeCallbacks(recheckUpdates)
         updater.removeListener(this)
         receiver.removeListener(this)

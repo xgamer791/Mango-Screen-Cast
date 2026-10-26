@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A title on a browse page's row: its art, 16:9 and square-cornered, and its name under it. -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="192dp"
+    android:layout_height="wrap_content"
+    android:layout_marginEnd="16dp"
+    android:orientation="vertical">
+
+    <FrameLayout
+        android:id="@+id/tile_frame"
+        android:layout_width="192dp"
+        android:layout_height="108dp"
+        android:background="#1F1F1F"
+        android:clickable="true"
+        android:focusable="true"
+        android:foreground="@drawable/tile_focus">
+
+        <ImageView
+            android:id="@+id/tile_image"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:contentDescription="@null"
+            android:scaleType="centerCrop" />
+    </FrameLayout>
+
+    <TextView
+        android:id="@+id/tile_caption"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:ellipsize="end"
+        android:fontFamily="@font/geist_medium"
+        android:includeFontPadding="false"
+        android:maxLines="1"
+        android:textColor="#CCFFFFFF"
+        android:textSize="13.3sp" />
+</LinearLayout>

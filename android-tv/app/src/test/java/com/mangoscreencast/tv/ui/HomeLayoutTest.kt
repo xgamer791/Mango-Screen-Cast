@@ -66,6 +66,7 @@ class HomeLayoutTest {
     @Test
     fun theMenu() {
         val root = home()
+        assertEquals("Mango TV", root.findViewById<TextView>(R.id.wordmark).text.toString())
         val menu = root.findViewById<ViewGroup>(R.id.menu)
         assertEquals(
             listOf("Home", "What to Watch", "Featured Free", "Live TV", "Sports", "Search", "Streaming Store", "Settings"),
@@ -145,6 +146,16 @@ class HomeLayoutTest {
         }
         assertEquals(0, grid.indexOfChild(grid.findFocus()))
         assertEquals(0, wall.scrollY)
+    }
+
+    /** Top right: how many tiles, or which of them has the focus, as on the Roku. */
+    @Test
+    fun theCount() {
+        val resources = home().resources
+        assertEquals("14 Items", HomeTiles.count(resources, 14, -1))
+        assertEquals("1 of 14", HomeTiles.count(resources, 14, 0))
+        assertEquals("14 of 14", HomeTiles.count(resources, 14, 13))
+        assertEquals("1 Item", HomeTiles.count(resources, 1, -1))
     }
 
     @Test

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Near-black behind the words on the left, clearing across to the right, so a title printed on the art
+     stays behind the text instead of fighting it. The view is 800 dp wide; the art runs on past it. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <gradient
+        android:angle="0"
+        android:centerX="0.6"
+        android:startColor="#F2000000"
+        android:centerColor="#D1000000"
+        android:endColor="#00000000" />
+</shape>

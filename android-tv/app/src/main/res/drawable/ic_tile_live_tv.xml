@@ -1,17 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Live TV: a guide, a rounded box of three listings, as on Roku's Live TV tile (71 x 57 dp, 4.6 dp strokes). -->
+<!-- Lucide "tv" (ISC licence, third_party/lucide): the home screen's Live TV tile. -->
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:width="71dp"
-    android:height="57dp"
-    android:viewportWidth="71"
-    android:viewportHeight="57">
+    android:width="56dp"
+    android:height="56dp"
+    android:viewportWidth="24"
+    android:viewportHeight="24">
     <path
-        android:pathData="M12.3,2.3 H58.7 A10,10 0 0 1 68.7,12.3 V44.7 A10,10 0 0 1 58.7,54.7 H12.3 A10,10 0 0 1 2.3,44.7 V12.3 A10,10 0 0 1 12.3,2.3 Z"
-        android:strokeWidth="4.6"
-        android:strokeColor="#EBFFFFFF" />
-    <path
-        android:pathData="M15.5,17.5 H19 M26,17.5 H55.5 M15.5,28.5 H19 M26,28.5 H55.5 M15.5,39.5 H19 M26,39.5 H55.5"
-        android:strokeWidth="4.6"
+        android:pathData="m17 2-5 5-5-5"
+        android:strokeWidth="2"
         android:strokeColor="#EBFFFFFF"
-        android:strokeLineCap="round" />
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+    <path
+        android:pathData="M4.0,7.0 H20.0 A2.0,2.0 0 0 1 22.0,9.0 V20.0 A2.0,2.0 0 0 1 20.0,22.0 H4.0 A2.0,2.0 0 0 1 2.0,20.0 V9.0 A2.0,2.0 0 0 1 4.0,7.0 Z"
+        android:strokeWidth="2"
+        android:strokeColor="#EBFFFFFF"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
 </vector>

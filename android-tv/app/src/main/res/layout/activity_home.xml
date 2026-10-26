@@ -12,7 +12,7 @@
     android:layout_height="match_parent"
     android:background="@drawable/home_background">
 
-    <!-- Wallpaper: a tropical bay at sunset, 2560 x 1440: pixel for pixel on the 1440p surface the page is drawn into. -->
+    <!-- Wallpaper: a tropical coast at sunset, horizon high as on the Roku, 2560 x 1440: pixel for pixel on the 1440p surface the page is drawn into. -->
     <ImageView
         android:id="@+id/wallpaper"
         android:layout_width="match_parent"
@@ -21,45 +21,47 @@
         android:scaleType="centerCrop"
         android:src="@drawable/home_wallpaper" />
 
+    <!-- Mango TV, where the Roku home screen says Roku TV: Geist Bold at the Roku wordmark's cap height. -->
     <TextView
         android:id="@+id/wordmark"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="51.1dp"
-        android:layout_marginTop="29.9dp"
-        android:fontFamily="@font/montserrat_bold"
+        android:layout_marginStart="51.8dp"
+        android:layout_marginTop="28.6dp"
+        android:fontFamily="@font/geist_bold"
         android:includeFontPadding="false"
         android:letterSpacing="-0.02"
         android:maxLines="1"
         android:text="@string/home_wordmark"
         android:textColor="#FFFFFF"
-        android:textSize="27.9sp" />
+        android:textSize="27.5sp" />
 
-    <TextView
+    <!-- The clock and the count, right edges lined up with the wall's (872.3 dp); the clock sits on the wordmark's baseline. -->
+    <com.mangoscreencast.tv.ui.ClockView
         android:id="@+id/clock"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="top|end"
-        android:layout_marginTop="38.95dp"
-        android:layout_marginEnd="89.3dp"
-        android:fontFamily="@font/montserrat_regular"
+        android:layout_marginTop="40.2dp"
+        android:layout_marginEnd="85.9dp"
+        android:fontFamily="@font/geist_regular"
         android:includeFontPadding="false"
         android:maxLines="1"
         android:textColor="#FFFFFF"
-        android:textSize="16.5sp" />
+        android:textSize="15.7sp" />
 
     <TextView
         android:id="@+id/item_count"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="top|end"
-        android:layout_marginTop="91.5dp"
-        android:layout_marginEnd="90dp"
-        android:fontFamily="@font/montserrat_regular"
+        android:layout_marginTop="91.1dp"
+        android:layout_marginEnd="86.4dp"
+        android:fontFamily="@font/geist_regular"
         android:includeFontPadding="false"
         android:maxLines="1"
         android:textColor="#E6FFFFFF"
-        android:textSize="13.9sp" />
+        android:textSize="13.75sp" />
 
     <!-- The menu: bars 34.2 dp tall every 35.85 dp, each placed on its own so no rounding adds up;
          the focused one is white. -->
@@ -158,7 +160,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
             android:ellipsize="end"
-            android:fontFamily="@font/montserrat_regular"
+            android:fontFamily="@font/geist_regular"
             android:includeFontPadding="false"
             android:maxLines="2"
             android:textColor="#E6FFFFFF"

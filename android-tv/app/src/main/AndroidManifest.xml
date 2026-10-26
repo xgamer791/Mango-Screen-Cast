@@ -79,6 +79,13 @@
         android:theme="@style/Theme.Mango"
         android:usesCleartextTraffic="true">
 
+        <!-- The pages the home screen's menu opens (What to Watch, Featured Free, Live TV, Sports, Search, Streaming Store). -->
+        <activity
+            android:name=".browse.BrowseActivity"
+            android:exported="false"
+            android:configChanges="keyboard|keyboardHidden|navigation|screenSize|screenLayout|smallestScreenSize|orientation|uiMode"
+            android:windowSoftInputMode="adjustNothing|stateHidden" />
+
         <activity
             android:name=".ui.HomeActivity"
             android:exported="true"

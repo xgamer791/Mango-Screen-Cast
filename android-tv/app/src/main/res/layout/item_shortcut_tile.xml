@@ -22,12 +22,12 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:background="#0FFFFFFF"
-        android:fontFamily="@font/montserrat_regular"
+        android:fontFamily="@font/geist_regular"
         android:gravity="top|center_horizontal"
         android:includeFontPadding="false"
-        android:letterSpacing="-0.03"
+        android:letterSpacing="0.02"
         android:maxLines="1"
-        android:paddingTop="3.4dp"
+        android:paddingTop="3.1dp"
         android:textColor="#E6FFFFFF"
-        android:textSize="14.85sp" />
+        android:textSize="14.6sp" />
 </com.mangoscreencast.tv.ui.LiquidGlassLayout>

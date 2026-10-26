@@ -1,0 +1,229 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  A page from the home screen's menu, on the 960 x 540 dp canvas: the focused
+  title's art across the whole screen, its name and what it is at the top left
+  over a shade that keeps the words clear, and its rows on a pane of Mango
+  Liquid Glass along the bottom, the art frosted through it. Margins are 64 dp;
+  spacing keeps to 4 · 8 · 12 · 16 · 24 · 32 · 48 · 64.
+-->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#000000">
+
+    <!-- The art, two deep so a new one can fade in over the last. -->
+    <ImageView
+        android:id="@+id/art_back"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:contentDescription="@null"
+        android:scaleType="centerCrop" />
+
+    <ImageView
+        android:id="@+id/art_front"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:contentDescription="@null"
+        android:scaleType="centerCrop" />
+
+    <!-- Shade from the left and across the top, under the words. -->
+    <View
+        android:layout_width="800dp"
+        android:layout_height="match_parent"
+        android:background="@drawable/browse_shade_left" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="128dp"
+        android:background="@drawable/browse_shade_top" />
+
+    <!-- Mango TV, then the page's name. -->
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="64dp"
+        android:layout_marginTop="32dp"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/browse_wordmark"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/geist_bold"
+            android:includeFontPadding="false"
+            android:letterSpacing="-0.01"
+            android:text="@string/home_wordmark"
+            android:textColor="#FFFFFF"
+            android:textSize="19sp" />
+
+        <TextView
+            android:id="@+id/browse_page"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:fontFamily="@font/geist_medium"
+            android:includeFontPadding="false"
+            android:textColor="#B8FFFFFF"
+            android:textSize="19sp" />
+    </LinearLayout>
+
+    <com.mangoscreencast.tv.ui.ClockView
+        android:id="@+id/browse_clock"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|end"
+        android:layout_marginTop="32dp"
+        android:layout_marginEnd="64dp"
+        android:fontFamily="@font/geist_medium"
+        android:includeFontPadding="false"
+        android:maxLines="1"
+        android:textColor="#FFFFFF"
+        android:textSize="19sp" />
+
+    <!-- The focused title: where it plays, its name, what it is, two lines about it, and what OK does. -->
+    <LinearLayout
+        android:id="@+id/info"
+        android:layout_width="496dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="64dp"
+        android:layout_marginTop="88dp"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/info_on"
+            style="@style/Mango.BrowseSmall"
+            android:textColor="#B8FFFFFF" />
+
+        <TextView
+            android:id="@+id/info_title"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:ellipsize="end"
+            android:fontFamily="@font/geist_bold"
+            android:includeFontPadding="false"
+            android:letterSpacing="-0.02"
+            android:maxLines="1"
+            android:textColor="#FFFFFF"
+            android:textSize="38sp" />
+
+        <TextView
+            android:id="@+id/info_meta"
+            style="@style/Mango.BrowseSmall"
+            android:layout_marginTop="12dp"
+            android:fontFamily="@font/geist_medium"
+            android:textColor="#B8FFFFFF" />
+
+        <TextView
+            android:id="@+id/info_about"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:ellipsize="end"
+            android:fontFamily="@font/geist_medium"
+            android:includeFontPadding="false"
+            android:lineSpacingMultiplier="1.3"
+            android:maxWidth="440dp"
+            android:maxLines="2"
+            android:textColor="#E6FFFFFF"
+            android:textSize="16sp" />
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:id="@+id/info_action_icon"
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:contentDescription="@null"
+                android:src="@drawable/ic_lucide_play" />
+
+            <TextView
+                android:id="@+id/info_action"
+                style="@style/Mango.BrowseSmall"
+                android:layout_marginStart="8dp"
+                android:textColor="#FFFFFF" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- Search's own top: its field, labelled above, and the TV's own search. -->
+    <LinearLayout
+        android:id="@+id/search_area"
+        android:layout_width="496dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="64dp"
+        android:layout_marginTop="88dp"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+        <TextView
+            android:id="@+id/search_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/geist_medium"
+            android:includeFontPadding="false"
+            android:labelFor="@+id/search_field"
+            android:text="@string/search_label"
+            android:textColor="#FFFFFF"
+            android:textSize="16sp" />
+
+        <com.mangoscreencast.tv.ui.LiquidGlassLayout
+            android:id="@+id/search_box"
+            android:layout_width="440dp"
+            android:layout_height="48dp"
+            android:layout_marginTop="12dp"
+            android:addStatesFromChildren="true"
+            android:foreground="@drawable/search_box_focus"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:layout_marginStart="16dp"
+                android:contentDescription="@null"
+                android:src="@drawable/ic_lucide_search" />
+
+            <EditText
+                android:id="@+id/search_field"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_marginStart="12dp"
+                android:layout_weight="1"
+                android:background="@android:color/transparent"
+                android:fontFamily="@font/geist_medium"
+                android:imeOptions="actionSearch"
+                android:importantForAutofill="no"
+                android:inputType="text"
+                android:maxLines="1"
+                android:paddingEnd="16dp"
+                android:textColor="#FFFFFF"
+                android:textCursorDrawable="@null"
+                android:textSize="19sp" />
+        </com.mangoscreencast.tv.ui.LiquidGlassLayout>
+
+        <Button
+            android:id="@+id/search_everywhere"
+            style="@style/Mango.BrowseButton"
+            android:layout_marginTop="16dp"
+            android:text="@string/search_everywhere" />
+    </LinearLayout>
+
+    <!-- The rows, on Mango Liquid Glass across the bottom of the screen. -->
+    <com.mangoscreencast.tv.ui.LiquidGlassLayout
+        android:id="@+id/shelf"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="300dp"
+        android:orientation="vertical">
+
+        <com.mangoscreencast.tv.browse.RowsView
+            android:id="@+id/rows"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" />
+    </com.mangoscreencast.tv.ui.LiquidGlassLayout>
+</FrameLayout>

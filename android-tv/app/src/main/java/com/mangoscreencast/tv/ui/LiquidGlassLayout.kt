@@ -1,5 +1,6 @@
 package com.mangoscreencast.tv.ui
 
+import android.animation.ValueAnimator
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapShader
@@ -53,12 +54,39 @@ class LiquidGlassLayout @JvmOverloads constructor(
             field = value
             invalidate()
         }
+
+    /** How far it frosts, in px of the 1440p page: Mango Liquid Glass's 4 by default. */
+    var blur1440 = BLUR_1440
+
+    /** A shade over the tint, for glass that text sits on over bright art (transparent by default). */
+    var shade = 0
+        set(value) {
+            field = value
+            shadePaint.color = value
+            invalidate()
+        }
+
+    /** The backdrop's pixels per view pixel: 1, or less for a big pane over a heavy frost. */
+    var scale = 1f
+
+    /**
+     * Whether what's behind changes (a browse page's art). A live glass makes its
+     * backdrop off the main thread after [refresh] and fades over to it, keeping the
+     * old one meanwhile; otherwise the backdrop is made in place, once.
+     */
+    var live = false
+
     private var backdrop: Bitmap? = null
+    private var previous: Bitmap? = null
+    private var fade = 1f
+    private var fader: ValueAnimator? = null
     private var backdropFor: Rect? = null
+    private var making: Rect? = null
     private val backdropPaint = Paint(Paint.FILTER_BITMAP_FLAG or Paint.ANTI_ALIAS_FLAG).apply {
         colorFilter = ColorMatrixColorFilter(filterMatrix())
     }
     private val tintPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = context.getColor(R.color.glass_tint) }
+    private val shadePaint = Paint(Paint.ANTI_ALIAS_FLAG)
     private val fallbackPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply { color = context.getColor(R.color.glass_fallback) }
     private val bounds = RectF()
 
@@ -66,27 +94,82 @@ class LiquidGlassLayout @JvmOverloads constructor(
         setWillNotDraw(false)
     }
 
+    /** What's behind has changed: frost it again. */
+    fun refresh() {
+        backdropFor = null
+        invalidate()
+    }
+
     override fun draw(canvas: Canvas) {
         val page = page()
         val at = page?.let { placeOn(it) }
-        if (at != backdropFor) {
-            backdrop?.recycle()
-            backdrop = if (page != null && at != null) makeBackdrop(page, at) else null
-            backdropFor = at
+        if (at != backdropFor && at != making) {
+            if (page == null || at == null) {
+                backdrop = null
+                backdropFor = at
+            } else if (!live) {
+                backdrop?.recycle()
+                backdrop = snapshot(page, at)?.also { frost(it) }
+                backdropFor = at
+            } else {
+                makeLater(page, at)
+            }
         }
         val radius = cornerRadius
         bounds.set(0f, 0f, width.toFloat(), height.toFloat())
         val image = backdrop
         if (image != null) {
-            backdropPaint.shader = BitmapShader(image, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP).apply {
-                setLocalMatrix(Matrix().apply { setScale(width.toFloat() / image.width, height.toFloat() / image.height) })
-            }
-            canvas.drawRoundRect(bounds, radius, radius, backdropPaint)
+            val old = previous
+            if (old != null && fade < 1f) drawBackdrop(canvas, old, radius, 255)
+            drawBackdrop(canvas, image, radius, if (old != null && fade < 1f) (fade * 255).roundToInt() else 255)
             canvas.drawRoundRect(bounds, radius, radius, tintPaint)
+            if (shade != 0) canvas.drawRoundRect(bounds, radius, radius, shadePaint)
         } else {
             canvas.drawRoundRect(bounds, radius, radius, fallbackPaint)
         }
         super.draw(canvas)
+    }
+
+    private fun drawBackdrop(canvas: Canvas, image: Bitmap, radius: Float, alpha: Int) {
+        backdropPaint.shader = BitmapShader(image, Shader.TileMode.CLAMP, Shader.TileMode.CLAMP).apply {
+            setLocalMatrix(Matrix().apply { setScale(width.toFloat() / image.width, height.toFloat() / image.height) })
+        }
+        backdropPaint.alpha = alpha
+        canvas.drawRoundRect(bounds, radius, radius, backdropPaint)
+    }
+
+    /** Snapshots what's behind now, frosts it on [worker], then fades over to it. */
+    private fun makeLater(page: ViewGroup, at: Rect) {
+        val shot = snapshot(page, at) ?: return
+        making = at
+        worker.execute {
+            frost(shot)
+            post {
+                making = null
+                if (!isAttachedToWindow && !RUNS_DETACHED) return@post shot.recycle()
+                previous?.takeIf { it !== backdrop }?.recycle()
+                previous = backdrop
+                backdrop = shot
+                backdropFor = at
+                if (previous == null) {
+                    fade = 1f
+                    invalidate()
+                    return@post
+                }
+                fader?.cancel()
+                fade = 0f
+                fader = ValueAnimator.ofFloat(0f, 1f).apply {
+                    duration = FADE_MS
+                    addUpdateListener { fade = it.animatedValue as Float; invalidate() }
+                    start()
+                }
+            }
+        }
+    }
+
+    override fun onDetachedFromWindow() {
+        fader?.cancel()
+        super.onDetachedFromWindow()
     }
 
     /** The page the glass is on: its topmost ancestor below the window's content (or Canvas1440Layout). */
@@ -118,12 +201,11 @@ class LiquidGlassLayout @JvmOverloads constructor(
         return Rect(x.roundToInt(), y.roundToInt(), x.roundToInt() + width, y.roundToInt() + height)
     }
 
-    /** What's behind this view on `page`, inside its bounds `at`, bent and blurred; null if there's nothing to draw. */
-    private fun makeBackdrop(page: ViewGroup, at: Rect): Bitmap? {
+    /** What's behind this view on `page`, inside its bounds `at`, sharp; null if there's nothing to draw. */
+    private fun snapshot(page: ViewGroup, at: Rect): Bitmap? {
         if (width <= 0 || height <= 0) return null
-        val sigma = BLUR_DP * density * SCALE
-        val w = (width * SCALE).roundToInt().coerceAtLeast(1)
-        val h = (height * SCALE).roundToInt().coerceAtLeast(1)
+        val w = (width * scale).roundToInt().coerceAtLeast(1)
+        val h = (height * scale).roundToInt().coerceAtLeast(1)
         val bitmap = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
         canvas.scale(w.toFloat() / width, h.toFloat() / height)
@@ -141,21 +223,27 @@ class LiquidGlassLayout @JvmOverloads constructor(
             child.draw(canvas)
             canvas.restore()
         }
+        return bitmap
+    }
+
+    /** Bends and frosts `bitmap` in place: the ::before layer bends the sharp backdrop; the ::after layer frosts it. */
+    private fun frost(bitmap: Bitmap) {
+        val w = bitmap.width
+        val h = bitmap.height
         val pixels = IntArray(w * h)
         bitmap.getPixels(pixels, 0, w, 0, 0, w, h)
-        // The ::before layer bends the sharp backdrop; the ::after layer frosts what it shows.
-        refract(pixels, w, h, density * SCALE * PX_1440_IN_DP)
-        gaussianBlur(pixels, w, h, sigma)
+        refract(pixels, w, h, density * scale * PX_1440_IN_DP)
+        gaussianBlur(pixels, w, h, blur1440 * PX_1440_IN_DP * density * scale)
         bitmap.setPixels(pixels, 0, w, 0, 0, w, h)
-        return bitmap
     }
 
     companion object {
         /** One px of the 2560 × 1440 page, in dp of the 960 × 540 dp window. */
         const val PX_1440_IN_DP = 960f / 2560f
 
-        /** 4 px on the 2560 × 1440 page. */
-        const val BLUR_DP = 4f * PX_1440_IN_DP
+        /** Mango Liquid Glass's frost: 4 px on the 2560 × 1440 page. */
+        const val BLUR_1440 = 4f
+        const val BLUR_DP = BLUR_1440 * PX_1440_IN_DP
         const val SATURATE = 1.0f
         const val BRIGHTNESS = 0.70f
 
@@ -166,8 +254,14 @@ class LiquidGlassLayout @JvmOverloads constructor(
         const val REFRACT_GAIN = 3.3f
         val REFRACT_SCALES = floatArrayOf(18f, 21f, 24f)
 
-        /** The backdrop is made at the view's own pixels: with a 4 px blur, half of them would show. */
-        private const val SCALE = 1f
+        /** How long a live glass takes to fade over to a new backdrop. */
+        const val FADE_MS = 180L
+
+        /** Where live glass frosts its backdrops: one thread, so the newest lands last. Tests run it in place. */
+        internal var worker: java.util.concurrent.Executor = java.util.concurrent.Executors.newSingleThreadExecutor()
+
+        /** Tests draw pages that aren't in a window. */
+        internal var RUNS_DETACHED = false
 
         /** CSS saturate() then brightness(), as one colour matrix. */
         fun filterMatrix(): ColorMatrix {

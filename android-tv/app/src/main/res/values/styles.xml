@@ -45,19 +45,19 @@
         <item name="android:clickable">true</item>
     </style>
 
-    <!-- Home screen: an item of the menu, Montserrat (the nearest free face to Roku's Gotham) at Roku's size,
-         its capitals 10 dp below the top of its bar. -->
+    <!-- Home screen: an item of the menu, Geist at the Roku menu's cap height, tracked out a little to its width,
+         its capitals 9.7 dp below the top of its bar. -->
     <style name="Mango.HomeMenuItem" parent="">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">34.2dp</item>
         <item name="android:background">@drawable/home_menu_item</item>
-        <item name="android:fontFamily">@font/montserrat_regular</item>
+        <item name="android:fontFamily">@font/geist_regular</item>
         <item name="android:gravity">top|start</item>
         <item name="android:includeFontPadding">false</item>
-        <item name="android:letterSpacing">-0.02</item>
+        <item name="android:letterSpacing">0.02</item>
         <item name="android:maxLines">1</item>
         <item name="android:paddingStart">15.2dp</item>
-        <item name="android:paddingTop">5.2dp</item>
+        <item name="android:paddingTop">4.9dp</item>
         <item name="android:textColor">@color/home_menu_text</item>
         <item name="android:textSize">19sp</item>
         <item name="android:focusable">true</item>
@@ -85,6 +85,35 @@
         <item name="android:minHeight">34dp</item>
         <item name="android:paddingStart">16dp</item>
         <item name="android:paddingEnd">16dp</item>
+        <item name="android:paddingTop">0dp</item>
+        <item name="android:paddingBottom">0dp</item>
+        <item name="android:focusable">true</item>
+    </style>
+
+    <!-- Browse pages: the small lines (where it plays, what it is, what OK does). -->
+    <style name="Mango.BrowseSmall" parent="">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:fontFamily">@font/geist_medium</item>
+        <item name="android:includeFontPadding">false</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:ellipsize">end</item>
+        <item name="android:textSize">13.3sp</item>
+    </style>
+
+    <!-- Browse pages: a button. Square, a visible border, white when focused. -->
+    <style name="Mango.BrowseButton" parent="@android:style/Widget.DeviceDefault.Button.Borderless">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">40dp</item>
+        <item name="android:background">@drawable/browse_button_bg</item>
+        <item name="android:fontFamily">@font/geist_medium</item>
+        <item name="android:textColor">@color/browse_button_text</item>
+        <item name="android:textSize">16sp</item>
+        <item name="android:textAllCaps">false</item>
+        <item name="android:minWidth">0dp</item>
+        <item name="android:minHeight">0dp</item>
+        <item name="android:paddingStart">24dp</item>
+        <item name="android:paddingEnd">24dp</item>
         <item name="android:paddingTop">0dp</item>
         <item name="android:paddingBottom">0dp</item>
         <item name="android:focusable">true</item>

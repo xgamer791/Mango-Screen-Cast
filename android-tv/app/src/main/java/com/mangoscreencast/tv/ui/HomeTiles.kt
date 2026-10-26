@@ -1,5 +1,6 @@
 package com.mangoscreencast.tv.ui
 
+import android.content.res.Resources
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
@@ -39,6 +40,11 @@ object HomeTiles {
 
     /** One of the TV's other apps: its name and its TV banner (if it has one). */
     class OtherTile(val app: AppLauncher.OtherApp, val label: CharSequence, val banner: Drawable?)
+
+    /** "14 Items", or "5 of 14" while the tile at `focused` (from 0) has the focus; -1 for none. */
+    fun count(resources: Resources, total: Int, focused: Int): String =
+        if (focused in 0 until total) resources.getString(R.string.home_item_position, focused + 1, total)
+        else resources.getQuantityString(R.plurals.home_item_count, total, total)
 
     /** The most of a tile's width a logo takes. */
     private const val LOGO_WIDTH = 0.78f

@@ -8,7 +8,7 @@
 
     <!-- Home -->
     <!-- The home screen's wordmark, top left, where the Roku home screen says "Roku TV". -->
-    <string name="home_wordmark">Mango</string>
+    <string name="home_wordmark">Mango TV</string>
     <string name="menu_home">Home</string>
     <string name="menu_what_to_watch">What to Watch</string>
     <string name="menu_featured_free">Featured Free</string>
@@ -20,10 +20,35 @@
     <string name="shortcut_news">News</string>
     <string name="shortcut_emulation">Emulation</string>
     <string name="shortcut_live_tv">Live TV</string>
+    <!-- Top right while a tile has the focus: which one of how many, as on the Roku. -->
+    <string name="home_item_position">%1$d of %2$d</string>
     <plurals name="home_item_count">
         <item quantity="one">%1$d Item</item>
         <item quantity="other">%1$d Items</item>
     </plurals>
+    <!-- Browse pages -->
+    <string name="browse_on">On %1$s</string>
+    <string name="browse_free_on">Free on %1$s</string>
+    <string name="browse_action_watch">Press OK to watch on %1$s</string>
+    <string name="browse_action_live">Press OK to watch on Live TV</string>
+    <string name="browse_action_get">Press OK to get %1$s on Google Play</string>
+    <string name="search_label">Search shows and films</string>
+    <string name="search_everywhere">Search everything on this TV</string>
+    <string name="search_try">Try one of these</string>
+    <plurals name="search_results">
+        <item quantity="one">%1$d match</item>
+        <item quantity="other">%1$d matches</item>
+    </plurals>
+    <string name="search_none">Nothing on Mango TV matches “%1$s”. Search everything on this TV to look in every app.</string>
+    <string name="store_installed">On this TV</string>
+    <string name="store_not_installed">Not on this TV yet</string>
+    <string name="store_action_open">Press OK to open %1$s</string>
+    <string name="store_your_apps">Your streaming apps</string>
+    <string name="store_more">More apps</string>
+    <string name="store_play">Google Play</string>
+    <string name="store_all_apps">App store</string>
+    <string name="store_about_play">Every app for this TV, from Google.</string>
+    <string name="store_action_play">Press OK to open Google Play</string>
     <string name="live_tv_missing">This TV has no Live TV app</string>
     <string name="store_missing">Couldn’t open an app store on this TV</string>
     <string name="search_missing">Couldn’t open search on this TV</string>
@@ -88,7 +113,7 @@
     <string name="overlay_message">To start mirroring while another app is open, Android needs Mango Screen Cast For macOS/iOS to have “Display over other apps” permission. If this TV has no settings screen for it, run this once from your Mac:\n\n%1$s</string>
     <string name="overlay_open">Open settings</string>
     <string name="overlay_later">Not now</string>
-    <string name="about">Mango Screen Cast For macOS/iOS %1$s. Built on UxPlay (GPL-3.0), libplist (LGPL-2.1) and OpenSSL; set in Geist and Montserrat (SIL OFL). AirPlay is a trademark of Apple Inc.; the streaming apps’ names and logos are trademarks of their owners.</string>
+    <string name="about">Mango Screen Cast For macOS/iOS %1$s. Built on UxPlay (GPL-3.0), libplist (LGPL-2.1) and OpenSSL; set in Geist (SIL OFL); show and film art from TVMaze and Wikimedia Commons. AirPlay is a trademark of Apple Inc.; the streaming apps’ names and logos are trademarks of their owners.</string>
 
     <!-- Updates -->
     <string name="version_label">Version %1$s</string>
