@@ -57,11 +57,11 @@ class TileGrid @JvmOverloads constructor(context: Context, attrs: AttributeSet? 
         const val COLUMNS = 4
         /** The wall's width: from 36 dp right of the menu's icons to the clock's right edge. */
         const val WIDTH_DP = 764.3f
-        /** A tile: 157.13 x 116.7 dp. */
-        const val TILE_WIDTH_DP = 157.13f
-        const val TILE_HEIGHT_DP = 116.7f
+        /** A tile: 144.56 x 107.36 dp (157.13 x 116.7 made 8% smaller). */
+        const val TILE_WIDTH_DP = 144.56f
+        const val TILE_HEIGHT_DP = 107.36f
         /**
-         * The gap between tiles, the same across and down (45.25 dp): the wall's width left over by
+         * The gap between tiles, the same across and down (62.02 dp): the wall's width left over by
          * four tiles, shared evenly between the three gaps, so the wall still runs from beside the
          * menu's icons to under the clock, and every gutter in the grid is one size.
          */

@@ -76,7 +76,7 @@ class HomeLayoutTest {
 
     /**
      * The wall: News, Emulation and Live TV on Liquid Glass, then every streaming app in order,
-     * four to a row, 180.6 x 134.6 dp, 13.9 dp apart, each logo whole inside its tile.
+     * four to a row, 144.56 x 107.36 dp, 62.02 dp apart, each logo whole inside its tile.
      */
     @Test
     fun theWall() {
@@ -92,11 +92,11 @@ class HomeLayoutTest {
         val dp = grid!!.resources.displayMetrics.density
         for ((i, tile) in tiles.withIndex()) {
             val name = tile.contentDescription
-            // 157.13 x 116.7 dp, 45.25 dp apart across and down.
-            assertEquals("$name's width", (157.13 * dp), tile.width.toDouble(), 1.0)
-            assertEquals("$name's height", (116.7 * dp), tile.height.toDouble(), 1.0)
-            assertEquals("$name's column", ((i % 4) * 202.38 * dp), tile.left.toDouble(), 1.0)
-            assertEquals("$name's row", ((i / 4) * 161.95 * dp), tile.top.toDouble(), 1.0)
+            // 144.56 x 107.36 dp, 62.02 dp apart across and down.
+            assertEquals("$name's width", (144.56 * dp), tile.width.toDouble(), 1.0)
+            assertEquals("$name's height", (107.36 * dp), tile.height.toDouble(), 1.0)
+            assertEquals("$name's column", ((i % 4) * 206.58 * dp), tile.left.toDouble(), 1.0)
+            assertEquals("$name's row", ((i / 4) * 169.38 * dp), tile.top.toDouble(), 1.0)
             // The fourth column still ends under the clock: the wall's full 764.3 dp.
             if (i % 4 == 3) assertEquals("$name's right edge", 764.3 * dp, tile.right.toDouble(), 1.0)
             if (i < 3) continue

@@ -1,14 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- One of the wall's first row (News, Emulation, Live TV): an icon on Mango Liquid Glass,
      its name in a band along the bottom, as Roku's Cable Box, Game Console and Live TV. Sizes are
-     Roku's scaled with the wall's tiles (TileGrid, 116.7 dp tall to Roku's 111): 83.2 dp, 3.1 dp, 14.6 sp and the icon × 1.0514. -->
+     Roku's scaled with the wall's tiles (TileGrid, 107.36 dp tall to Roku's 111): 83.2 dp, 3.1 dp, 14.6 sp and the icon × 0.9672. -->
 <com.mangoscreencast.tv.ui.LiquidGlassLayout xmlns:android="http://schemas.android.com/apk/res/android"
     style="@style/Mango.HomeTile"
     android:orientation="vertical">
 
     <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="87.47dp">
+        android:layout_height="80.47dp">
 
         <ImageView
             android:id="@+id/shortcut_icon"
@@ -16,8 +16,8 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:contentDescription="@null"
-            android:scaleX="1.0514"
-            android:scaleY="1.0514" />
+            android:scaleX="0.9672"
+            android:scaleY="0.9672" />
     </FrameLayout>
 
     <TextView
@@ -30,7 +30,7 @@
         android:includeFontPadding="false"
         android:letterSpacing="0.02"
         android:maxLines="1"
-        android:paddingTop="3.26dp"
+        android:paddingTop="3dp"
         android:textColor="#E6FFFFFF"
-        android:textSize="15.35sp" />
+        android:textSize="14.12sp" />
 </com.mangoscreencast.tv.ui.LiquidGlassLayout>
