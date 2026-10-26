@@ -18,8 +18,8 @@ import kotlin.math.roundToInt
  * hides under it.
  */
 object HomeMenu {
-    /** Where the wall starts, in dp from the page's left: beside the icons, and beside the open menu's bars. */
-    const val WALL_CLOSED_DP = 108f
+    /** Where the wall starts, in dp from the page's left: where the closed menu ends, and beside the open menu's bars. */
+    const val WALL_CLOSED_DP = 84f
     const val WALL_OPEN_DP = 402.3f
 
     /**

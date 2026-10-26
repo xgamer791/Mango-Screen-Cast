@@ -47,7 +47,7 @@
         android:textColor="#FFFFFF"
         android:textSize="27.5sp" />
 
-    <!-- The clock and the count, right edges lined up with the wall's (872.3 dp); the clock sits on the wordmark's baseline. -->
+    <!-- The clock and the count, right edges at 872.3 dp; the clock sits on the wordmark's baseline. -->
     <com.mangoscreencast.tv.ui.ClockView
         android:id="@+id/clock"
         android:layout_width="wrap_content"
@@ -146,7 +146,7 @@
         android:id="@+id/tile_name"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="108dp"
+        android:layout_marginStart="84dp"
         android:layout_marginTop="85.8dp"
         android:ellipsize="end"
         android:fontFamily="@font/geist_medium"
@@ -157,13 +157,13 @@
         android:textColor="#E6FFFFFF"
         android:textSize="19sp" />
 
-    <!-- The wall: 4 tiles across, from 108 dp (402.3 dp while the menu is open) to the clock's right
-         edge, from the bar's top to past the bottom of the screen. See TileGrid. -->
+    <!-- The wall: 4 tiles across, 690 dp wide from 84 dp (402.3 dp while the menu is open), the rest
+         of the screen's width free on the right, from the bar's top to past the bottom of the screen. See TileGrid. -->
     <com.mangoscreencast.tv.ui.TileWall
         android:id="@+id/tile_wall"
-        android:layout_width="764.3dp"
+        android:layout_width="690dp"
         android:layout_height="match_parent"
-        android:layout_marginStart="108dp"
+        android:layout_marginStart="84dp"
         android:layout_marginTop="116.9dp">
 
         <com.mangoscreencast.tv.ui.TileGrid

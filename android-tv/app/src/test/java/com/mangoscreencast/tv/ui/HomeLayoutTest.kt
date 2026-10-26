@@ -2,6 +2,7 @@ package com.mangoscreencast.tv.ui
 
 import android.app.Activity
 import android.app.Application
+import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.view.ContextThemeWrapper
@@ -13,6 +14,7 @@ import android.widget.Button
 import android.widget.ImageView
 import android.widget.TextView
 import com.mangoscreencast.tv.R
+import com.mangoscreencast.tv.apps.AppLauncher
 import com.mangoscreencast.tv.apps.StreamingApps
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -76,7 +78,7 @@ class HomeLayoutTest {
 
     /**
      * The wall: News, Emulation and Live TV on Liquid Glass, then every streaming app in order,
-     * four to a row, 144.56 x 107.36 dp, 62.02 dp apart, each logo whole inside its tile.
+     * four to a row, 168 x 125 dp, 6 dp apart, each logo whole inside its tile.
      */
     @Test
     fun theWall() {
@@ -92,13 +94,13 @@ class HomeLayoutTest {
         val dp = grid!!.resources.displayMetrics.density
         for ((i, tile) in tiles.withIndex()) {
             val name = tile.contentDescription
-            // 144.56 x 107.36 dp, 62.02 dp apart across and down.
-            assertEquals("$name's width", (144.56 * dp), tile.width.toDouble(), 1.0)
-            assertEquals("$name's height", (107.36 * dp), tile.height.toDouble(), 1.0)
-            assertEquals("$name's column", ((i % 4) * 206.58 * dp), tile.left.toDouble(), 1.0)
-            assertEquals("$name's row", ((i / 4) * 169.38 * dp), tile.top.toDouble(), 1.0)
-            // The fourth column still ends under the clock: the wall's full 764.3 dp.
-            if (i % 4 == 3) assertEquals("$name's right edge", 764.3 * dp, tile.right.toDouble(), 1.0)
+            // 168 x 125 dp, 6 dp apart across and down.
+            assertEquals("$name's width", (168.0 * dp), tile.width.toDouble(), 1.0)
+            assertEquals("$name's height", (125.0 * dp), tile.height.toDouble(), 1.0)
+            assertEquals("$name's column", ((i % 4) * 174.0 * dp), tile.left.toDouble(), 1.0)
+            assertEquals("$name's row", ((i / 4) * 131.0 * dp), tile.top.toDouble(), 1.0)
+            // The fourth column ends the wall's 690 dp.
+            if (i % 4 == 3) assertEquals("$name's right edge", 690.0 * dp, tile.right.toDouble(), 1.0)
             if (i < 3) continue
             val logo = tile.findViewById<ImageView>(R.id.app_logo)
             assertTrue("$name has no logo", logo.drawable != null)
@@ -108,10 +110,10 @@ class HomeLayoutTest {
             val shape = logo.drawable.intrinsicWidth.toFloat() / logo.drawable.intrinsicHeight
             assertEquals("$name's logo is squeezed", shape.toDouble(), drawn.toDouble(), 0.05)
         }
-        // From beside the menu's icons to the clock's right edge.
+        // From where the closed menu ends, 690 dp across, the rest of the screen free on the right.
         val left = IntArray(2).also { grid!!.getLocationInWindow(it) }[0]
-        assertEquals(108.0 * dp, left.toDouble(), 1.0)
-        assertEquals(872.3 * dp, (left + grid!!.width).toDouble(), 1.0)
+        assertEquals(84.0 * dp, left.toDouble(), 1.0)
+        assertEquals(774.0 * dp, (left + grid!!.width).toDouble(), 1.0)
     }
 
     /**
@@ -122,7 +124,7 @@ class HomeLayoutTest {
     fun theWallScrollsByWholeRows() {
         var root: View? = null
         check("wall-scrolled") { home ->
-            ready(home)
+            ready(home, fourthRow)
             root = home
         }
         val wall = root!!.findViewById<TileWall>(R.id.tile_wall)
@@ -142,9 +144,9 @@ class HomeLayoutTest {
             down()
             scrolls += wall.scrollY / pitch
         }
-        // Row 2 is in view; row 3 runs past the bottom, so it brings the wall up exactly one row; row 3
-        // is the last, so no more.
-        val rows = listOf(0f, 1f, 1f, 1f)
+        // Rows 2 and 3 are in view; row 4 runs past the bottom, so it brings the wall up exactly one row;
+        // row 4 is the last, so no more.
+        val rows = listOf(0f, 0f, 1f, 1f, 1f)
         assertEquals(rows.size, grid.rows + 1)
         for (i in rows.indices) assertEquals("$scrolls", rows[i].toDouble(), scrolls[i].toDouble(), 0.01)
         assertEquals(grid.childCount - TileGrid.COLUMNS, grid.indexOfChild(grid.findFocus()))
@@ -172,7 +174,7 @@ class HomeLayoutTest {
     fun theWallGlidesToItsRowRatherThanJumping() {
         var root: View? = null
         check("wall-glide") { home ->
-            ready(home)
+            ready(home, fourthRow)
             root = home
         }
         // From here, frames every 16 ms as the clock moves on, as on the TV.
@@ -182,13 +184,13 @@ class HomeLayoutTest {
         val grid = root!!.findViewById<TileGrid>(R.id.tile_grid)
         val pitch = TileGrid.ROW_PITCH_DP * wall.resources.displayMetrics.density
         grid.tiles.forEach { it.isFocusableInTouchMode = true }
-        // The second row's first tile, so Down (to the third, which runs past the bottom) brings the wall up a row.
-        grid.getChildAt(1 * TileGrid.COLUMNS).requestFocus()
+        // The third row's first tile, so Down (to the fourth, which runs past the bottom) brings the wall up a row.
+        grid.getChildAt(2 * TileGrid.COLUMNS).requestFocus()
         frames(TileWall.GLIDE_MS + 32)
         assertEquals(0, wall.scrollY)
         wall.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DPAD_DOWN))
         wall.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_DPAD_DOWN))
-        assertEquals("the focus moves at once", 2 * TileGrid.COLUMNS, grid.indexOfChild(grid.findFocus()))
+        assertEquals("the focus moves at once", 3 * TileGrid.COLUMNS, grid.indexOfChild(grid.findFocus()))
         assertEquals("the wall hasn't jumped", 0, wall.scrollY)
         frames(TileWall.GLIDE_MS / 4)
         val early = wall.scrollY
@@ -228,8 +230,8 @@ class HomeLayoutTest {
         val wall = root.findViewById<View>(R.id.tile_wall)
         val name = root.findViewById<TextView>(R.id.tile_name)
         val count = root.findViewById<TextView>(R.id.item_count)
-        assertEquals(108.0 * dp, wall.left.toDouble(), 1.0)
-        assertTrue("the closed menu (to ${menu.right}) reaches over the wall (from ${wall.left})", menu.right < wall.left)
+        assertEquals(84.0 * dp, wall.left.toDouble(), 1.0)
+        assertTrue("the closed menu (to ${menu.right}) reaches over the wall (from ${wall.left})", menu.right <= wall.left)
         assertEquals(wall.left, name.left)
         assertEquals((count.top + count.baseline).toDouble(), (name.top + name.baseline).toDouble(), 1.0)
         assertEquals(View.VISIBLE, root.findViewById<View>(R.id.home_chevron).visibility)
@@ -271,7 +273,7 @@ class HomeLayoutTest {
         // Closed again, all back.
         HomeMenu.show(root, open = false)
         root.relayout()
-        assertEquals(108.0 * dp, root.findViewById<View>(R.id.tile_wall).left.toDouble(), 1.0)
+        assertEquals(84.0 * dp, root.findViewById<View>(R.id.tile_wall).left.toDouble(), 1.0)
     }
 
     @Test
@@ -307,10 +309,13 @@ class HomeLayoutTest {
         return LayoutInflater.from(ContextThemeWrapper(activity, R.style.Theme_Mango)).inflate(R.layout.activity_home, null)
     }
 
+    /** Four of the TV's other apps after the streaming apps: a fourth row, which runs past the bottom of the screen. */
+    private val fourthRow = (1..4).map { HomeTiles.OtherTile(AppLauncher.OtherApp("app.$it", Intent(), 0L), "App $it", null) }
+
     /** The wall filled, the clock at 3:24 pm as in the Roku capture, and Home focused. */
-    private fun ready(root: View) {
+    private fun ready(root: View, others: List<HomeTiles.OtherTile> = emptyList()) {
         val grid = root.findViewById<TileGrid>(R.id.tile_grid)
-        HomeTiles.fill(grid, emptyList(), HomeTiles.Actions())
+        HomeTiles.fill(grid, others, HomeTiles.Actions())
         root.text(R.id.clock, "3:24 pm")
         root.text(R.id.tile_name, grid.getChildAt(0).contentDescription.toString())
         root.text(R.id.item_count, root.resources.getQuantityString(R.plurals.home_item_count, grid.childCount, grid.childCount))

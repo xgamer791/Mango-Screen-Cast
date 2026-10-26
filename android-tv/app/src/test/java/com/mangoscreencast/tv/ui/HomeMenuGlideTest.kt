@@ -49,7 +49,7 @@ class HomeMenuGlideTest {
         frames(16)
         // Its place is the open one at once (the remote finds it there), but it's still drawn where it was.
         assertEquals(HomeMenu.WALL_OPEN_DP * dp, wall.left.toFloat(), 1f)
-        assertEquals("the wall hasn't jumped", closed.toDouble(), drawn(wall).toDouble(), (12 * dp).toDouble())
+        assertEquals("the wall hasn't jumped", closed.toDouble(), drawn(wall).toDouble(), ((HomeMenu.WALL_OPEN_DP - HomeMenu.WALL_CLOSED_DP) * dp / 10).toDouble())
 
         frames(TileWall.GLIDE_MS / 2)
         val half = drawn(wall)
