@@ -21,11 +21,22 @@ object HomeMenu {
     const val WALL_CLOSED_DP = 108f
     const val WALL_OPEN_DP = 402.3f
 
+    /**
+     * The menu's width: its bars open (to 351 dp, as Roku's); closed, just its icons (12 dp in, 20 dp
+     * wide, 12 dp after), so nothing unseen of it reaches over the wall. A closed menu as wide as its
+     * bars lay under the wall's first column and reached past it, so Left from the second column
+     * went straight to the menu.
+     */
+    const val MENU_OPEN_DP = 311.2f
+    const val MENU_CLOSED_DP = 44f
+
     fun show(page: View, open: Boolean) {
         val menu = page.findViewById<ViewGroup>(R.id.menu)
         val words = if (open) ContextCompat.getColorStateList(page.context, R.color.home_menu_text)
         else ColorStateList.valueOf(Color.TRANSPARENT)
         for (i in 0 until menu.childCount) (menu.getChildAt(i) as TextView).setTextColor(words)
+        val width = ((if (open) MENU_OPEN_DP else MENU_CLOSED_DP) * page.resources.displayMetrics.density).roundToInt()
+        if (menu.layoutParams.width != width) menu.layoutParams = menu.layoutParams.apply { this.width = width }
         val start = ((if (open) WALL_OPEN_DP else WALL_CLOSED_DP) * page.resources.displayMetrics.density).roundToInt()
         for (id in intArrayOf(R.id.tile_wall, R.id.tile_name)) {
             val view = page.findViewById<View>(id)
