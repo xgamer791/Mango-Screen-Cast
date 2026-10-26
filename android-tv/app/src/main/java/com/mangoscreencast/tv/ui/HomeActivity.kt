@@ -27,16 +27,19 @@ import com.mangoscreencast.tv.browse.Page
 import com.mangoscreencast.tv.update.AppUpdater
 
 /**
- * The home screen, laid out as the Roku TV home screen: the menu on the
- * left, the wall of tiles on the right (News, Emulation and Live TV on
- * Liquid Glass, then the streaming apps, then the TV's other apps), the
- * clock and the number of tiles top right.
+ * The home screen, laid out as the Roku TV home screen: the menu's icons on
+ * the left (Left from the wall opens it, see HomeMenu), the wall of tiles
+ * four across (News, Emulation and Live TV on Liquid Glass, then the
+ * streaming apps, then the TV's other apps) with the focused tile's name over
+ * it, the clock and the number of tiles top right.
  */
 class HomeActivity : Activity(), AirPlayReceiver.Listener, AppUpdater.Listener {
     private lateinit var updateArea: View
     private lateinit var updateStatus: TextView
     private lateinit var updateButton: Button
     private lateinit var itemCount: TextView
+    private lateinit var tileName: TextView
+    private lateinit var page: View
     private lateinit var grid: TileGrid
 
     private val receiver get() = MangoApp.receiver
@@ -56,6 +59,12 @@ class HomeActivity : Activity(), AirPlayReceiver.Listener, AppUpdater.Listener {
 
     private fun leadLeftTo(item: Int) =
         grid.tiles.forEachIndexed { i, tile -> if (i % TileGrid.COLUMNS == 0) tile.nextFocusLeftId = item }
+
+    /** The wall's tile focused last: Right from the menu goes back to it. */
+    private var lastTile = 0
+
+    /** Whether there's an update to tell about under the menu (shown while the menu is open). */
+    private var updateToTell = false
 
     /** The TV's other apps on the wall now, so it's filled again only when they change. */
     private var othersShown: List<String>? = null
@@ -81,6 +90,8 @@ class HomeActivity : Activity(), AirPlayReceiver.Listener, AppUpdater.Listener {
         updateStatus = findViewById(R.id.update_status)
         updateButton = findViewById(R.id.update_button)
         itemCount = findViewById(R.id.item_count)
+        tileName = findViewById(R.id.tile_name)
+        page = window.decorView
         grid = findViewById(R.id.tile_grid)
         updateButton.setOnClickListener {
             when (updater.state) {
@@ -106,11 +117,17 @@ class HomeActivity : Activity(), AirPlayReceiver.Listener, AppUpdater.Listener {
         )) findViewById<View>(item).setOnClickListener { BrowseActivity.open(this, page) }
         findViewById<View>(R.id.menu_settings).setOnClickListener { SettingsMenuActivity.open(this) }
 
-        // Top right: how many tiles there are, or which of them has the focus.
-        findViewById<View>(android.R.id.content).viewTreeObserver.addOnGlobalFocusChangeListener { _, _ -> count() }
+        // Top right: how many tiles there are, or which of them has the focus. The menu is open while it
+        // has the focus; over the wall, the name of the tile focused last.
+        findViewById<View>(android.R.id.content).viewTreeObserver.addOnGlobalFocusChangeListener { _, now ->
+            count()
+            focusMoved(now)
+        }
 
         fillWall()
-        findViewById<View>(R.id.menu_home).requestFocus()
+        // As on the Roku, Home opens on the wall's first tile with the menu closed.
+        HomeMenu.show(page, open = false)
+        (grid.getChildAt(0) ?: findViewById(R.id.menu_home)).requestFocus()
         ReceiverService.sync(this)
     }
 
@@ -140,6 +157,29 @@ class HomeActivity : Activity(), AirPlayReceiver.Listener, AppUpdater.Listener {
         leadLeftTo(cameFrom)
         focused?.let { grid.getChildAt(it.coerceAtMost(grid.childCount - 1))?.requestFocus() }
         count()
+    }
+
+    private fun focusMoved(now: View?) {
+        val open = HomeMenu.has(page, now)
+        HomeMenu.show(page, open)
+        updateArea.visibility = if (updateToTell && open) View.VISIBLE else View.GONE
+        val at = now?.let { grid.indexOfChild(it) } ?: -1
+        if (at >= 0) {
+            lastTile = at
+            tileName.text = now?.contentDescription
+        }
+    }
+
+    /** Right from the menu goes back to the tile the wall was left from, as on the Roku. */
+    override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+        if (event.keyCode == KeyEvent.KEYCODE_DPAD_RIGHT && HomeMenu.has(page, currentFocus)) {
+            val tile = grid.getChildAt(lastTile.coerceAtMost(grid.childCount - 1))
+            if (tile != null) {
+                if (event.action == KeyEvent.ACTION_DOWN) tile.requestFocus()
+                return true
+            }
+        }
+        return super.dispatchKeyEvent(event)
     }
 
     /** "14 Items", or "5 of 14" while the fifth tile has the focus, as on the Roku. */
@@ -218,9 +258,11 @@ class HomeActivity : Activity(), AirPlayReceiver.Listener, AppUpdater.Listener {
             is AppUpdater.State.Installing -> getString(R.string.update_installing) to null
             is AppUpdater.State.Failed -> state.message to getString(R.string.update_retry)
         }
-        // The home screen says nothing about versions unless there's an update to tell about.
+        // The home screen says nothing about versions unless there's an update to tell about, and then
+        // only under the open menu, as Roku shows its offers there.
         val quiet = state is AppUpdater.State.Idle || state is AppUpdater.State.Checking || state is AppUpdater.State.UpToDate
-        updateArea.visibility = if (quiet) View.GONE else View.VISIBLE
+        updateToTell = !quiet
+        updateArea.visibility = if (updateToTell && HomeMenu.has(page, currentFocus)) View.VISIBLE else View.GONE
         updateStatus.text = text
         updateButton.visibility = if (button == null) View.GONE else View.VISIBLE
         button?.let { updateButton.text = it }

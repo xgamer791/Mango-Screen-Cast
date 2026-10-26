@@ -3,16 +3,17 @@
   The home screen, a clone of the Roku TV home screen on Android TV's 960 x 540 dp
   canvas (the same on 1080p and 4K panels). Every place and size is the Roku
   screen's, measured on a 4450 x 2546 capture: x px × 0.2157, y px × 0.2121.
-  The wordmark, clock and item count across the top; the menu on the left with
-  a white bar on the focused item; the wall of tiles on the right, three
-  across, the three Liquid Glass shortcuts first.
+  The wordmark, clock and item count across the top; the menu on the left,
+  only its icons until Left from the wall opens it (HomeMenu); the wall of
+  tiles four across, the three Liquid Glass shortcuts first, running on past
+  the bottom of the screen, the focused tile's name over its left edge.
 -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/home_background">
 
-    <!-- Wallpaper: a tropical coast at sunset, horizon high as on the Roku, 2560 x 1440: pixel for pixel on the 1440p surface the page is drawn into. -->
+    <!-- Wallpaper: Halloween night on the bay, 2560 x 1440: pixel for pixel on the 1440p surface the page is drawn into. -->
     <ImageView
         android:id="@+id/wallpaper"
         android:layout_width="match_parent"
@@ -64,69 +65,95 @@
         android:textSize="13.75sp" />
 
     <!-- The menu: bars 34.2 dp tall every 35.85 dp, each placed on its own so no rounding adds up;
-         the focused one is white. -->
+         the focused one is white. The icons line up with the wordmark's left edge (51.8 dp); the
+         bars end where Roku's do (351 dp). -->
     <FrameLayout
         android:id="@+id/menu"
-        android:layout_width="268.8dp"
+        android:layout_width="311.2dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="82.2dp"
+        android:layout_marginStart="39.8dp"
         android:layout_marginTop="116.65dp">
 
         <TextView
             android:id="@+id/menu_home"
             style="@style/Mango.HomeMenuItem"
+            android:drawableStart="@drawable/ic_menu_home"
             android:layout_marginTop="0dp"
             android:text="@string/menu_home" />
 
         <TextView
             android:id="@+id/menu_what_to_watch"
             style="@style/Mango.HomeMenuItem"
+            android:drawableStart="@drawable/ic_menu_what_to_watch"
             android:layout_marginTop="35.85dp"
             android:text="@string/menu_what_to_watch" />
 
         <TextView
             android:id="@+id/menu_featured_free"
             style="@style/Mango.HomeMenuItem"
+            android:drawableStart="@drawable/ic_menu_featured_free"
             android:layout_marginTop="71.7dp"
             android:text="@string/menu_featured_free" />
 
         <TextView
             android:id="@+id/menu_live_tv"
             style="@style/Mango.HomeMenuItem"
+            android:drawableStart="@drawable/ic_menu_live_tv"
             android:layout_marginTop="107.55dp"
             android:text="@string/menu_live_tv" />
 
         <TextView
             android:id="@+id/menu_sports"
             style="@style/Mango.HomeMenuItem"
+            android:drawableStart="@drawable/ic_menu_sports"
             android:layout_marginTop="143.4dp"
             android:text="@string/menu_sports" />
 
         <TextView
             android:id="@+id/menu_search"
             style="@style/Mango.HomeMenuItem"
+            android:drawableStart="@drawable/ic_menu_search"
             android:layout_marginTop="179.25dp"
             android:text="@string/menu_search" />
 
         <TextView
             android:id="@+id/menu_store"
             style="@style/Mango.HomeMenuItem"
+            android:drawableStart="@drawable/ic_menu_store"
             android:layout_marginTop="215.1dp"
             android:text="@string/menu_store" />
 
         <TextView
             android:id="@+id/menu_settings"
             style="@style/Mango.HomeMenuItem"
+            android:drawableStart="@drawable/ic_menu_settings"
             android:layout_marginTop="250.95dp"
             android:text="@string/menu_settings" />
     </FrameLayout>
 
-    <!-- The wall: 3 × 149 dp tiles with 11.5 dp between, from the bar's top to the bottom of the screen. -->
+    <!-- The focused tile's name, over the wall's left edge, on the count's baseline; it moves with the wall. -->
+    <TextView
+        android:id="@+id/tile_name"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="108dp"
+        android:layout_marginTop="85.8dp"
+        android:ellipsize="end"
+        android:fontFamily="@font/geist_medium"
+        android:includeFontPadding="false"
+        android:letterSpacing="0.02"
+        android:maxLines="1"
+        android:maxWidth="420dp"
+        android:textColor="#E6FFFFFF"
+        android:textSize="19sp" />
+
+    <!-- The wall: 4 tiles across, from 108 dp (402.3 dp while the menu is open) to the clock's right
+         edge, from the bar's top to past the bottom of the screen. See TileGrid. -->
     <com.mangoscreencast.tv.ui.TileWall
         android:id="@+id/tile_wall"
-        android:layout_width="470dp"
+        android:layout_width="764.3dp"
         android:layout_height="match_parent"
-        android:layout_marginStart="402.3dp"
+        android:layout_marginStart="108dp"
         android:layout_marginTop="116.9dp">
 
         <com.mangoscreencast.tv.ui.TileGrid
@@ -135,8 +162,9 @@
             android:layout_height="wrap_content" />
     </com.mangoscreencast.tv.ui.TileWall>
 
-    <!-- The arrow right of the wall's first row, level with the menu's bar. -->
+    <!-- The arrow right of the wall's first row, level with the menu's bar; hidden while the menu is open. -->
     <ImageView
+        android:id="@+id/home_chevron"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="896.9dp"

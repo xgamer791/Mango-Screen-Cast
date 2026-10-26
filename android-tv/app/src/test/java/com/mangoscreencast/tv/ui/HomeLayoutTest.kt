@@ -76,7 +76,7 @@ class HomeLayoutTest {
 
     /**
      * The wall: News, Emulation and Live TV on Liquid Glass, then every streaming app in order,
-     * three to a row, 149 x 111 dp, 11.5 dp apart, each logo whole inside its tile.
+     * four to a row, 180.6 x 134.6 dp, 13.9 dp apart, each logo whole inside its tile.
      */
     @Test
     fun theWall() {
@@ -92,10 +92,10 @@ class HomeLayoutTest {
         val dp = grid!!.resources.displayMetrics.density
         for ((i, tile) in tiles.withIndex()) {
             val name = tile.contentDescription
-            assertEquals("$name's width", (149 * dp).toDouble(), tile.width.toDouble(), 1.0)
-            assertEquals("$name's height", (111 * dp).toDouble(), tile.height.toDouble(), 1.0)
-            assertEquals("$name's column", ((i % 3) * 160.5 * dp).toDouble(), tile.left.toDouble(), 1.0)
-            assertEquals("$name's row", ((i / 3) * 122.5 * dp).toDouble(), tile.top.toDouble(), 1.0)
+            assertEquals("$name's width", (180.62 * dp), tile.width.toDouble(), 1.0)
+            assertEquals("$name's height", (134.56 * dp), tile.height.toDouble(), 1.0)
+            assertEquals("$name's column", ((i % 4) * 194.56 * dp), tile.left.toDouble(), 1.0)
+            assertEquals("$name's row", ((i / 4) * 148.5 * dp), tile.top.toDouble(), 1.0)
             if (i < 3) continue
             val logo = tile.findViewById<ImageView>(R.id.app_logo)
             assertTrue("$name has no logo", logo.drawable != null)
@@ -105,13 +105,15 @@ class HomeLayoutTest {
             val shape = logo.drawable.intrinsicWidth.toFloat() / logo.drawable.intrinsicHeight
             assertEquals("$name's logo is squeezed", shape.toDouble(), drawn.toDouble(), 0.05)
         }
-        val right = IntArray(2).also { grid!!.getLocationInWindow(it) }[0] + grid!!.width
-        assertTrue("the wall runs past the screen", right <= grid!!.rootView.width)
+        // From beside the menu's icons to the clock's right edge.
+        val left = IntArray(2).also { grid!!.getLocationInWindow(it) }[0]
+        assertEquals(108.0 * dp, left.toDouble(), 1.0)
+        assertEquals(872.3 * dp, (left + grid!!.width).toDouble(), 1.0)
     }
 
     /**
-     * Down through the wall: it scrolls a whole row at a time, only once the next row would be
-     * under the fade, and not at all past the last row.
+     * Down through the wall: it scrolls a whole row at a time, only once the next row would run
+     * past the bottom of the screen, and not at all past the last row.
      */
     @Test
     fun theWallScrollsByWholeRows() {
@@ -122,7 +124,7 @@ class HomeLayoutTest {
         }
         val wall = root!!.findViewById<TileWall>(R.id.tile_wall)
         val grid = root!!.findViewById<TileGrid>(R.id.tile_grid)
-        val pitch = 122.5f * wall.resources.displayMetrics.density
+        val pitch = 148.5f * wall.resources.displayMetrics.density
         // The test runs in touch mode, which the TV doesn't have.
         grid.tiles.forEach { it.isFocusableInTouchMode = true }
         grid.getChildAt(0).requestFocus()
@@ -137,10 +139,12 @@ class HomeLayoutTest {
             down()
             scrolls += wall.scrollY / pitch
         }
-        // Rows 2 and 3 are in view; row 4 brings the wall up exactly one row; row 4 is the last, so no more.
-        val rows = listOf(0f, 0f, 1f, 1f, 1f)
+        // Row 2 is in view; row 3 runs past the bottom, so it brings the wall up exactly one row; row 3
+        // is the last, so no more.
+        val rows = listOf(0f, 1f, 1f, 1f)
+        assertEquals(rows.size, grid.rows + 1)
         for (i in rows.indices) assertEquals("$scrolls", rows[i].toDouble(), scrolls[i].toDouble(), 0.01)
-        assertEquals(grid.childCount - 3, grid.indexOfChild(grid.findFocus()))
+        assertEquals(grid.childCount - TileGrid.COLUMNS, grid.indexOfChild(grid.findFocus()))
         // Back up to the first row, and once more: the focus stays on it, not the menu beside it.
         repeat(grid.rows + 1) {
             wall.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DPAD_UP))
@@ -173,15 +177,15 @@ class HomeLayoutTest {
         org.robolectric.shadows.ShadowChoreographer.setFrameDelay(java.time.Duration.ofMillis(16))
         val wall = root!!.findViewById<TileWall>(R.id.tile_wall)
         val grid = root!!.findViewById<TileGrid>(R.id.tile_grid)
-        val pitch = 122.5f * wall.resources.displayMetrics.density
+        val pitch = 148.5f * wall.resources.displayMetrics.density
         grid.tiles.forEach { it.isFocusableInTouchMode = true }
-        // The third row's first tile, so Down brings the wall up a row.
-        grid.getChildAt(2 * TileGrid.COLUMNS).requestFocus()
+        // The second row's first tile, so Down (to the third, which runs past the bottom) brings the wall up a row.
+        grid.getChildAt(1 * TileGrid.COLUMNS).requestFocus()
         frames(TileWall.GLIDE_MS + 32)
         assertEquals(0, wall.scrollY)
         wall.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DPAD_DOWN))
         wall.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_UP, KeyEvent.KEYCODE_DPAD_DOWN))
-        assertEquals("the focus moves at once", 3 * TileGrid.COLUMNS, grid.indexOfChild(grid.findFocus()))
+        assertEquals("the focus moves at once", 2 * TileGrid.COLUMNS, grid.indexOfChild(grid.findFocus()))
         assertEquals("the wall hasn't jumped", 0, wall.scrollY)
         frames(TileWall.GLIDE_MS / 4)
         val early = wall.scrollY
@@ -195,12 +199,84 @@ class HomeLayoutTest {
         assertEquals("on the row", pitch.toDouble(), wall.scrollY.toDouble(), 1.0)
     }
 
+    /**
+     * The menu closed, as Home opens: its icons only, lined up with the wordmark's left edge, each
+     * in the middle of its bar; the wall beside them with the focused tile's name over its left edge,
+     * on the count's baseline.
+     */
+    @Test
+    fun theMenuClosed() {
+        val root = laidOut { HomeMenu.show(it, open = false) }
+        val dp = root.resources.displayMetrics.density
+        val wordmark = root.findViewById<TextView>(R.id.wordmark)
+        val menu = root.findViewById<ViewGroup>(R.id.menu)
+        for (i in 0 until menu.childCount) {
+            val item = menu.getChildAt(i) as TextView
+            val icon = item.compoundDrawablesRelative[0]
+            assertTrue("${item.text} has no icon", icon != null)
+            assertEquals("${item.text}'s words show", 0, item.currentTextColor)
+            // The icon is drawn at the item's start padding; the words start after it and its padding.
+            assertEquals("${item.text}'s icon isn't under the wordmark's left edge", wordmark.left.toDouble(),
+                (menu.left + item.left + item.compoundPaddingStart - item.compoundDrawablePadding - icon.bounds.width()).toDouble(), 1.0)
+            val iconTop = item.compoundPaddingTop + (item.height - item.compoundPaddingTop - item.compoundPaddingBottom - icon.bounds.height()) / 2f
+            assertEquals("${item.text}'s icon is off the middle of its bar", item.height / 2.0,
+                (iconTop + icon.bounds.height() / 2f).toDouble(), 0.6 * dp)
+        }
+        val wall = root.findViewById<View>(R.id.tile_wall)
+        val name = root.findViewById<TextView>(R.id.tile_name)
+        val count = root.findViewById<TextView>(R.id.item_count)
+        assertEquals(108.0 * dp, wall.left.toDouble(), 1.0)
+        assertEquals(wall.left, name.left)
+        assertEquals((count.top + count.baseline).toDouble(), (name.top + name.baseline).toDouble(), 1.0)
+        assertEquals(View.VISIBLE, root.findViewById<View>(R.id.home_chevron).visibility)
+    }
+
+    /** The menu open: its words show, and the wall and the name move right of its bars, the arrow under them. */
+    @Test
+    fun theMenuOpen() {
+        val root = laidOut { HomeMenu.show(it, open = true) }
+        val dp = root.resources.displayMetrics.density
+        val menu = root.findViewById<ViewGroup>(R.id.menu)
+        for (i in 0 until menu.childCount) {
+            val item = menu.getChildAt(i) as TextView
+            assertTrue("${item.text}'s words don't show", item.currentTextColor != 0)
+        }
+        assertEquals(351.0 * dp, menu.right.toDouble(), 1.0)
+        assertEquals(402.3 * dp, root.findViewById<View>(R.id.tile_wall).left.toDouble(), 1.0)
+        assertEquals(402.3 * dp, root.findViewById<View>(R.id.tile_name).left.toDouble(), 1.0)
+        assertEquals(View.INVISIBLE, root.findViewById<View>(R.id.home_chevron).visibility)
+        // Closed again, all back.
+        HomeMenu.show(root, open = false)
+        root.relayout()
+        assertEquals(108.0 * dp, root.findViewById<View>(R.id.tile_wall).left.toDouble(), 1.0)
+    }
+
     @Test
     fun noSettingsButtonTheGearOpensTheMenu() {
         val root = home()
         val buttons = mutableListOf<String>()
         visit(root) { if (it is Button) buttons += it.text.toString() }
         assertTrue(buttons.toString(), root.context.getString(R.string.settings) !in buttons)
+    }
+
+    /** Home on screen, filled and laid out on the 960 x 540 dp screen, after `change`. */
+    private fun laidOut(change: (View) -> Unit): View {
+        val activity = Robolectric.buildActivity(Activity::class.java).setup().get()
+        val root = LayoutInflater.from(ContextThemeWrapper(activity, R.style.Theme_Mango)).inflate(R.layout.activity_home, null)
+        activity.setContentView(root)
+        ready(root)
+        change(root)
+        root.relayout()
+        return root
+    }
+
+    private fun View.relayout() {
+        val metrics = resources.displayMetrics
+        measure(
+            View.MeasureSpec.makeMeasureSpec(metrics.widthPixels, View.MeasureSpec.EXACTLY),
+            View.MeasureSpec.makeMeasureSpec(metrics.heightPixels, View.MeasureSpec.EXACTLY),
+        )
+        layout(0, 0, metrics.widthPixels, metrics.heightPixels)
     }
 
     private fun home(): View {
@@ -213,6 +289,7 @@ class HomeLayoutTest {
         val grid = root.findViewById<TileGrid>(R.id.tile_grid)
         HomeTiles.fill(grid, emptyList(), HomeTiles.Actions())
         root.text(R.id.clock, "3:24 pm")
+        root.text(R.id.tile_name, grid.getChildAt(0).contentDescription.toString())
         root.text(R.id.item_count, root.resources.getQuantityString(R.plurals.home_item_count, grid.childCount, grid.childCount))
     }
 
@@ -222,8 +299,9 @@ class HomeLayoutTest {
         val root = LayoutInflater.from(context).inflate(R.layout.activity_home, null)
         activity.setContentView(root)
         fill(root)
-        // As on the TV, which has no touch mode: Home has the focus.
-        root.findViewById<View>(R.id.menu_home).apply { isFocusableInTouchMode = true }.requestFocus()
+        // As on the TV, which has no touch mode: the wall's first tile has the focus (Home if it's empty).
+        val grid = root.findViewById<TileGrid>(R.id.tile_grid)
+        (grid.getChildAt(0) ?: root.findViewById(R.id.menu_home)).apply { isFocusableInTouchMode = true }.requestFocus()
 
         val metrics = context.resources.displayMetrics
         val width = metrics.widthPixels

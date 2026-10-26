@@ -38,15 +38,15 @@
     <!-- Home screen: a tile on the wall (TileGrid sizes it), square as Roku's. Focusable, so the remote can walk the wall;
          the focused one gets a mango ring. -->
     <style name="Mango.HomeTile" parent="">
-        <item name="android:layout_width">149dp</item>
-        <item name="android:layout_height">111dp</item>
+        <item name="android:layout_width">180.62dp</item>
+        <item name="android:layout_height">134.56dp</item>
         <item name="android:foreground">@drawable/tile_focus</item>
         <item name="android:focusable">true</item>
         <item name="android:clickable">true</item>
     </style>
 
-    <!-- Home screen: an item of the menu, Geist at the Roku menu's cap height, tracked out a little to its width,
-         its capitals 9.7 dp below the top of its bar. -->
+    <!-- Home screen: an item of the menu, its Lucide icon centred on its bar, then Geist at the Roku menu's cap
+         height, tracked out a little to its width, its capitals 9.7 dp below the top of its bar. -->
     <style name="Mango.HomeMenuItem" parent="">
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">34.2dp</item>
@@ -56,9 +56,13 @@
         <item name="android:includeFontPadding">false</item>
         <item name="android:letterSpacing">0.02</item>
         <item name="android:maxLines">1</item>
-        <item name="android:paddingStart">15.2dp</item>
+        <item name="android:paddingStart">12dp</item>
         <item name="android:paddingTop">4.9dp</item>
-        <item name="android:textColor">@color/home_menu_text</item>
+        <item name="android:paddingBottom">4.4dp</item>
+        <item name="android:drawablePadding">12dp</item>
+        <item name="android:drawableTint">@color/home_menu_text</item>
+        <!-- The words are hidden until the menu opens (HomeMenu); the icons always show. -->
+        <item name="android:textColor">@android:color/transparent</item>
         <item name="android:textSize">19sp</item>
         <item name="android:focusable">true</item>
         <item name="android:clickable">true</item>
