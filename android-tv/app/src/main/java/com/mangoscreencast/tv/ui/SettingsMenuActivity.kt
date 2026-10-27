@@ -545,7 +545,7 @@ class SettingsMenuActivity : Activity() {
 
     private fun allNotificationsRow(count: Int, open: () -> Unit): View {
         val view = notificationView(PanelNotifications.Item(getString(R.string.panel_all_notifications), "", null))
-        val number = label(count.toString(), size = 13f).apply { gravity = Gravity.CENTER }
+        val number = label(count.toString(), size = 11f).apply { gravity = Gravity.CENTER }
         (view as LinearLayout).addView(number, LinearLayout.LayoutParams((20 * dp).roundToInt(), ViewGroup.LayoutParams.WRAP_CONTENT))
         view.contentDescription = getString(R.string.panel_all_notifications) + ", " + count
         view.setOnClickListener { open() }
@@ -568,8 +568,9 @@ class SettingsMenuActivity : Activity() {
             }
             importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
         }
-        val title = label(item.title, size = 13f)
-        val text = label(item.text, size = 11f).apply { alpha = 0.72f }
+        // Geist runs wider than the dashboard's face: at 11 and 10 sp it fits the lines the dashboard fits.
+        val title = label(item.title, size = 11f)
+        val text = label(item.text, size = 10f).apply { alpha = 0.72f }
         val words = LinearLayout(this).apply {
             orientation = LinearLayout.VERTICAL
             addView(title)
