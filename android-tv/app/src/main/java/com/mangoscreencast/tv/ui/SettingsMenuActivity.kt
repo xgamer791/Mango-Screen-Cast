@@ -1,6 +1,5 @@
 package com.mangoscreencast.tv.ui
 
-import android.accounts.AccountManager
 import android.animation.Animator
 import android.animation.AnimatorListenerAdapter
 import android.animation.ArgbEvaluator
@@ -207,20 +206,9 @@ class SettingsMenuActivity : Activity() {
         }
         allSettings.setOnClickListener { launch(PanelTiles.allSettings(), getString(R.string.panel_all_settings)) }
 
-        val account = findViewById<TextView>(R.id.panel_account)
-        account.text = accountInitial()
-        account.contentDescription = getString(R.string.panel_account)
-        account.setOnClickListener { launch(PanelTiles.account(), getString(R.string.panel_account)) }
-    }
-
-    /** The Google account's first letter, as the dashboard's monogram; a dot when it can't be read. */
-    private fun accountInitial(): String {
-        val name = try {
-            AccountManager.get(this).getAccountsByType("com.google").firstOrNull()?.name
-        } catch (_: SecurityException) {
-            null
+        findViewById<View>(R.id.panel_account).setOnClickListener {
+            launch(PanelTiles.account(), getString(R.string.panel_account))
         }
-        return name?.firstOrNull()?.uppercaseChar()?.toString() ?: "•"
     }
 
     private fun footer() {
@@ -257,6 +245,9 @@ class SettingsMenuActivity : Activity() {
             }
         }
         gridHolder.addView(grid, FrameLayout.LayoutParams(columns * step, ViewGroup.LayoutParams.MATCH_PARENT))
+        // Columns out of view are cut off at the box's edge (clipChildren only keeps each child in its own bounds).
+        gridHolder.outlineProvider = ViewOutlineProvider.BOUNDS
+        gridHolder.clipToOutline = true
         dots()
     }
 
@@ -531,14 +522,34 @@ class SettingsMenuActivity : Activity() {
             list.animate().alpha(if (inside) 1f else NOTIFICATIONS_DIMMED).setDuration(FOCUS_OUT_MS).start()
         }
         list.removeAllViews()
-        for (item in PanelNotifications.current()) {
-            list.addView(
-                notificationView(item),
-                LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
-                    topMargin = (NOTIFICATION_GAP_DP * dp).roundToInt()
-                },
-            )
+        val listed = PanelNotifications.current()
+        listed.cards.forEach { addNotification(list, notificationView(it)) }
+        if (listed.rest.isNotEmpty()) {
+            // All notifications, with how many: it opens out into their cards.
+            lateinit var row: View
+            row = allNotificationsRow(listed.rest.size) {
+                val at = list.indexOfChild(row)
+                list.removeView(row)
+                listed.rest.forEachIndexed { i, item -> addNotification(list, notificationView(item), at + i) }
+                list.getChildAt(at)?.requestFocus()
+            }
+            addNotification(list, row)
         }
+    }
+
+    private fun addNotification(list: LinearLayout, view: View, at: Int = -1) {
+        list.addView(view, at, LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT).apply {
+            topMargin = (NOTIFICATION_GAP_DP * dp).roundToInt()
+        })
+    }
+
+    private fun allNotificationsRow(count: Int, open: () -> Unit): View {
+        val view = notificationView(PanelNotifications.Item(getString(R.string.panel_all_notifications), "", null))
+        val number = label(count.toString(), size = 13f).apply { gravity = Gravity.CENTER }
+        (view as LinearLayout).addView(number, LinearLayout.LayoutParams((20 * dp).roundToInt(), ViewGroup.LayoutParams.WRAP_CONTENT))
+        view.contentDescription = getString(R.string.panel_all_notifications) + ", " + count
+        view.setOnClickListener { open() }
+        return view
     }
 
     private fun notificationView(item: PanelNotifications.Item): View {

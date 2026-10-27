@@ -1,7 +1,6 @@
 package com.mangoscreencast.tv.ui
 
 import android.content.Intent
-import android.net.Uri
 import android.provider.Settings
 import com.mangoscreencast.tv.R
 
@@ -20,6 +19,7 @@ internal object PanelTiles {
     const val HISENSE_SETTINGS = "com.vt.customsettings"
     const val HISENSE_INPUTS = "com.vt.tv.input"
     const val GOOGLE_SCREENSAVER = "com.google.android.apps.tv.dreamx"
+    const val BLUETOOTH_SLICE = "content://com.android.tv.settings.accessories.sliceprovider/general"
 
     /** Four tiles down a column, two columns in view. */
     const val ROWS = 4
@@ -46,10 +46,11 @@ internal object PanelTiles {
             Intent(Settings.ACTION_WIFI_SETTINGS).setPackage(TV_SETTINGS)
         },
         Tile(R.string.panel_bluetooth, R.drawable.ic_panel_bluetooth) {
-            // Remotes & Accessories, the slice the TV's Bluetooth tile showed.
+            // Remotes & Accessories, the slice the TV's Bluetooth tile showed: TvSettings' SliceActivity
+            // takes the slice in its slice_uri extra, and only when it's named (its filter has no data).
             Intent("android.settings.SLICE_SETTINGS")
-                .setData(Uri.parse("content://com.android.tv.settings.accessories.sliceprovider/general"))
-                .setPackage(TV_SETTINGS)
+                .setClassName(TV_SETTINGS, "$TV_SETTINGS.slice.SliceActivity")
+                .putExtra("slice_uri", BLUETOOTH_SLICE)
         },
         Tile(R.string.panel_inputs, R.drawable.ic_panel_inputs) {
             Intent("com.android.tv.action.VIEW_INPUTS").setPackage(HISENSE_INPUTS)

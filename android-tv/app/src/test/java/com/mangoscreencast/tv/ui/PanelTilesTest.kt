@@ -33,11 +33,14 @@ class PanelTilesTest {
         check("Sound", Settings.ACTION_SOUND_SETTINGS, "com.vt.customsettings")
         check("Wi-Fi", Settings.ACTION_WIFI_SETTINGS, "com.android.tv.settings")
         check("Google Home", "com.google.android.libraries.tv.smarthome.intent.action.OPEN_SMART_HOME", "com.google.android.apps.tv.dreamx")
-        check("Bluetooth", "android.settings.SLICE_SETTINGS", "com.android.tv.settings")
         check("Accessibility", Settings.ACTION_ACCESSIBILITY_SETTINGS, "com.android.tv.settings")
+        val bluetooth = target("Bluetooth")
+        assertEquals("android.settings.SLICE_SETTINGS", bluetooth.action)
+        assertEquals("com.android.tv.settings.slice.SliceActivity", bluetooth.component?.className)
         assertEquals(
+            "Remotes & Accessories, in SliceActivity's slice_uri extra",
             "content://com.android.tv.settings.accessories.sliceprovider/general",
-            target("Bluetooth").data.toString(),
+            bluetooth.getStringExtra("slice_uri"),
         )
     }
 
@@ -64,28 +67,44 @@ class PanelTilesTest {
         assertEquals(Settings.ACTION_SETTINGS, PanelTiles.allSettings().action)
     }
 
-    private fun sbn(id: Int, time: Long, title: String?, text: String?, summary: Boolean = false): StatusBarNotification {
+    private fun sbn(
+        id: Int,
+        time: Long,
+        title: String?,
+        text: String?,
+        pkg: String = "p",
+        uid: Int = 10_100,
+        summary: Boolean = false,
+        foreground: Boolean = false,
+    ): StatusBarNotification {
         val context = RuntimeEnvironment.getApplication()
         val notification = Notification.Builder(context, "c").setSmallIcon(android.R.drawable.ic_dialog_info).apply {
             title?.let(::setContentTitle)
             text?.let(::setContentText)
             if (summary) setGroup("g").setGroupSummary(true)
         }.build()
+        if (foreground) notification.flags = notification.flags or Notification.FLAG_FOREGROUND_SERVICE
         @Suppress("DEPRECATION")
-        return StatusBarNotification("p", "p", id, null, 0, 0, 0, notification, UserHandle.getUserHandleForUid(0), time)
+        return StatusBarNotification(pkg, pkg, id, null, uid, 0, 0, notification, UserHandle.getUserHandleForUid(uid), time)
     }
 
     @Test
-    fun notificationsNewestFirstWithoutEmptyOnesOrGroupSummaries() {
-        val items = PanelNotifications.items(
+    fun theSystemsNoticesOnCardsTheRestThatMatterCounted() {
+        val low = sbn(9, 900, "Keyboard configured", "x", pkg = "android", uid = 1000)
+        val listed = PanelNotifications.list(
             listOf(
-                sbn(1, 100, "Older", "a"),
-                sbn(2, 300, "Newest", "b"),
-                sbn(3, 200, null, null),
-                sbn(4, 400, "Summary", "s", summary = true),
+                sbn(1, 100, "Developer options enabled", "a", pkg = "android", uid = 1000),
+                sbn(2, 300, "Wireless debugging connected", "b", pkg = "android", uid = 1000),
+                low,
+                sbn(3, 200, "Security alert", "s"),
+                sbn(4, 250, "New sign-in", "t"),
+                sbn(5, 400, "Foreground Service", "f", foreground = true),
+                sbn(6, 500, "CustomSettings is running", "c", pkg = "com.vt.customsettings", uid = 1000),
+                sbn(7, 600, null, null),
+                sbn(8, 700, "Summary", "s", summary = true),
             ),
-        )
-        assertEquals(listOf("Newest", "Older"), items.map { it.title })
-        assertEquals("b", items.first().text)
+        ) { if (it === low) android.app.NotificationManager.IMPORTANCE_LOW else android.app.NotificationManager.IMPORTANCE_DEFAULT }
+        assertEquals(listOf("Wireless debugging connected", "Developer options enabled"), listed.cards.map { it.title })
+        assertEquals(listOf("New sign-in", "Security alert"), listed.rest.map { it.title })
     }
 }

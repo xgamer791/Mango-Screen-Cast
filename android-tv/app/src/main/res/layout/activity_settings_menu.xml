@@ -126,8 +126,9 @@
                         android:textColor="@color/panel_label"
                         android:textSize="10sp" />
 
-                    <!-- The account: its initial on a disc, as the dashboard shows a monogram. -->
-                    <TextView
+                    <!-- The account, on the dashboard's disc. Google keeps the profile's name from other
+                         apps, so where the dashboard had its initial, Lucide's person. -->
+                    <ImageView
                         android:id="@+id/panel_account"
                         android:layout_width="27dp"
                         android:layout_height="27dp"
@@ -135,12 +136,11 @@
                         android:layout_marginTop="10dp"
                         android:layout_marginEnd="0dp"
                         android:background="@drawable/panel_avatar_background"
+                        android:contentDescription="@string/panel_account"
                         android:focusable="true"
-                        android:fontFamily="@font/geist_medium"
-                        android:gravity="center"
-                        android:includeFontPadding="false"
-                        android:textColor="@android:color/white"
-                        android:textSize="13sp" />
+                        android:padding="6dp"
+                        android:src="@drawable/ic_panel_account"
+                        android:tint="@android:color/white" />
                 </FrameLayout>
 
                 <!-- The setting tiles, four down a column and two columns in view (ui/SettingsMenuActivity.kt
@@ -240,7 +240,7 @@
                 android:id="@+id/panel_sleep_choices"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="18dp"
+                android:layout_marginTop="22dp"
                 android:clipChildren="false"
                 android:orientation="vertical" />
         </LinearLayout>

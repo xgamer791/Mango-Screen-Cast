@@ -9,8 +9,6 @@
         android:name="android.permission.READ_EXTERNAL_STORAGE"
         android:maxSdkVersion="29" />
     <uses-permission android:name="android.permission.INTERNET" />
-    <!-- The gear panel's account monogram: the Google account's first letter (granted over adb). -->
-    <uses-permission android:name="android.permission.GET_ACCOUNTS" />
     <!-- The gear panel's Help opens the TV's Help & feedback, which asks for this permission.
          Nothing on this TV declares it, so Mango does, and holds it. -->
     <permission

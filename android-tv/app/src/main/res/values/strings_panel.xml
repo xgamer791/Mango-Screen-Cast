@@ -18,6 +18,7 @@
     <string name="panel_sleep_left">%1$s left</string>
     <string name="panel_open_failed">Couldn’t open %1$s on this TV</string>
     <string name="panel_notification_settings">Notification access</string>
+    <string name="panel_all_notifications">All notifications</string>
     <plurals name="panel_minutes">
         <item quantity="one">%d minute</item>
         <item quantity="other">%d minutes</item>
