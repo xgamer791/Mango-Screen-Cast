@@ -125,25 +125,16 @@
             android:configChanges="keyboard|keyboardHidden|navigation|screenSize|screenLayout|smallestScreenSize|orientation|uiMode|density" />
 
         <!--
-            The remote's gear. On this Hisense (Google TV) the gear goes through
-            Hisense's key handling (com.hisense.KEY_EVENT) to the system, which
-            looks up activities for MAIN + LEANBACK_SETTINGS, as TvSettings'
-            MainSettings declares them (at priority 3, with no DEFAULT), and
-            opens what it finds by component. So this filter has MAIN and
-            LEANBACK_SETTINGS. android.settings.SETTINGS with DEFAULT is what
-            `am start -a android.settings.SETTINGS` and other apps start.
-
-            The priority is a request only: Android sets an intent filter's
-            priority to 0 for an app that isn't privileged, so stock TvSettings
-            (privileged, priority 3) comes first while it's enabled. For the
-            gear to open Mango Settings, TvSettings has to stay off
-            (adb shell pm disable-user com.android.tv.settings), which
-            leaves Mango the only MAIN + LEANBACK_SETTINGS handler. Settings'
-            last row opens the TV's own settings by component when they're on.
+            Mango Settings. MAIN + LEANBACK_SETTINGS is what TvSettings' MainSettings
+            declares, and android.settings.SETTINGS with DEFAULT is what
+            `am start -a android.settings.SETTINGS` and other apps start. The
+            priority is a request only: Android sets an intent filter's priority
+            to 0 for an app that isn't privileged, so stock TvSettings (privileged,
+            priority 3) comes first while it's on. Settings' last row opens the
+            TV's own settings by component.
         -->
-        <!-- No task affinity: opened by the gear (ui/GearKeyService.kt) it's a task
-             of its own, so Back goes back to the app the gear was pressed in.
-             Opened from Home, it's in Home's task as before. -->
+        <!-- No task affinity: a task of its own, so Back goes back to the app it
+             was opened over. Opened from Home, it's in Home's task as before. -->
         <activity
             android:name=".ui.SettingsActivity"
             android:exported="true"
@@ -157,8 +148,8 @@
             </intent-filter>
         </activity>
 
-        <!-- The gear's menu (ui/SettingsMenuActivity.kt): its own task, over the app
-             the gear was pressed in, which it goes back to as it closes. -->
+        <!-- The menu's Settings panel (ui/SettingsMenuActivity.kt): its own task, over
+             the screen it was opened from, which it goes back to as it closes. -->
         <activity
             android:name=".ui.SettingsMenuActivity"
             android:exported="false"
@@ -168,20 +159,20 @@
             android:theme="@style/Theme.Mango.Menu"
             android:configChanges="keyboard|keyboardHidden|navigation|screenSize|screenLayout|smallestScreenSize|orientation|uiMode|density" />
 
-        <!-- The remote's gear (ui/GearKeyService.kt): the system takes it before any
-             app and gives it only to a system app's panel, so Mango takes it first,
-             as an accessibility service filtering keys. Turned on once over adb. -->
+        <!-- The remote's Home button (ui/HomeKeyService.kt): with Google TV's launcher
+             on for the gear's settings panel, Home would open it, so Mango takes Home
+             first, as an accessibility service filtering keys. Turned on once over adb. -->
         <service
-            android:name=".ui.GearKeyService"
+            android:name=".ui.HomeKeyService"
             android:exported="true"
-            android:label="@string/gear_service_label"
+            android:label="@string/home_service_label"
             android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
             <intent-filter>
                 <action android:name="android.accessibilityservice.AccessibilityService" />
             </intent-filter>
             <meta-data
                 android:name="android.accessibilityservice"
-                android:resource="@xml/gear_key_service" />
+                android:resource="@xml/home_key_service" />
         </service>
 
         <service

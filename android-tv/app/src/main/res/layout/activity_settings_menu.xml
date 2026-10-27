@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- The gear's menu (ui/SettingsMenuActivity.kt): over whatever is on screen,
+<!-- The menu's Settings panel (ui/SettingsMenuActivity.kt): over whatever is on screen,
      a panel on the right, 540 px of a 1920 px wide screen (set in code). Empty for now. -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"

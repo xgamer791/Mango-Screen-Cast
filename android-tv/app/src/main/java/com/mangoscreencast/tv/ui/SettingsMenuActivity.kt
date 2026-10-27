@@ -12,15 +12,13 @@ import kotlin.math.abs
 import kotlin.math.roundToLong
 
 /**
- * The gear's menu: a panel on the right, 540 px of a 1920 px wide screen, over
- * whatever is on screen. It slides in from the right edge as the gear opens
- * it, and back out to it, in the same time and on the same curve, as the gear
- * or Back closes it; the gear while it's sliding turns it around at the same
- * speed. Closed, the app behind it is as it was. Empty for now.
+ * The menu's Settings panel: a panel on the right, 540 px of a 1920 px wide
+ * screen, over whatever is on screen. It slides in from the right edge as it
+ * opens, and back out to it, in the same time and on the same curve, as Back
+ * closes it. Closed, the screen behind it is as it was. Empty for now.
  */
 class SettingsMenuActivity : Activity() {
     private lateinit var panel: View
-    private var closing = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -32,24 +30,10 @@ class SettingsMenuActivity : Activity() {
         slide(open = true)
     }
 
-    override fun onResume() {
-        super.onResume()
-        FrontSettings.shown(this)
-    }
-
-    override fun onPause() {
-        FrontSettings.hidden(this)
-        super.onPause()
-    }
-
-    /** The gear (GearKeyService): closes the menu, or keeps it if it's on its way out. */
-    fun gear() = slide(open = closing)
-
-    @Deprecated("Back slides the menu out, as the gear does")
+    @Deprecated("Back slides the menu out")
     override fun onBackPressed() = slide(open = false)
 
     private fun slide(open: Boolean) {
-        closing = !open
         val width = panel.layoutParams.width.toFloat()
         val target = if (open) 0f else width
         // The whole way takes SLIDE_MS; turned around part way, the rest at the same speed.

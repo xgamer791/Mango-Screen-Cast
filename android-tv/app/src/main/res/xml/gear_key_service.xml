@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!-- The gear key service (ui/GearKeyService.kt): it only filters keys, so it
-     asks for no accessibility events and gives no feedback of its own. -->
-<accessibility-service xmlns:android="http://schemas.android.com/apk/res/android"
-    android:accessibilityFeedbackType="feedbackGeneric"
-    android:accessibilityFlags="flagRequestFilterKeyEvents"
-    android:canRequestFilterKeyEvents="true"
-    android:description="@string/gear_service_description"
-    android:notificationTimeout="0" />

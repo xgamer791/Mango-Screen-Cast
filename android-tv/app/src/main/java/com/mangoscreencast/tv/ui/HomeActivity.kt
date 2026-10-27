@@ -205,18 +205,6 @@ class HomeActivity : Activity(), AirPlayReceiver.Listener, AppUpdater.Listener {
         }
     }
 
-    /**
-     * The remote's gear opens the menu from anywhere (GearKeyService). Without
-     * that service, a remote that sends KEYCODE_SETTINGS opens it from here.
-     */
-    override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
-        if (keyCode == KeyEvent.KEYCODE_SETTINGS && event.repeatCount == 0) {
-            SettingsMenuActivity.open(this)
-            return true
-        }
-        return super.onKeyDown(keyCode, event)
-    }
-
     // As the TV's Home app there is nowhere to go back to: Back must not close this screen.
     override fun onBackPressed() {}
 

@@ -11,7 +11,6 @@ import android.os.Looper
 import android.text.Editable
 import android.text.TextWatcher
 import android.util.LruCache
-import android.view.KeyEvent
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.widget.EditText
@@ -26,7 +25,6 @@ import com.mangoscreencast.tv.ui.Canvas1440Layout
 import com.mangoscreencast.tv.ui.HomeWallpaper
 import com.mangoscreencast.tv.ui.LiquidGlassLayout
 import com.mangoscreencast.tv.ui.Opener
-import com.mangoscreencast.tv.ui.SettingsMenuActivity
 import java.util.concurrent.Executors
 import kotlin.math.min
 import kotlin.math.roundToInt
@@ -223,14 +221,6 @@ class BrowseActivity : Activity() {
         val h = frame.layoutParams.height * app.logoHeight
         val s = min(w / d.intrinsicWidth, h / d.intrinsicHeight)
         RowsView.centred(frame, logo, (d.intrinsicWidth * s).roundToInt(), (d.intrinsicHeight * s).roundToInt())
-    }
-
-    override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
-        if (keyCode == KeyEvent.KEYCODE_SETTINGS && event.repeatCount == 0) {
-            SettingsMenuActivity.open(this)
-            return true
-        }
-        return super.onKeyDown(keyCode, event)
     }
 
     override fun onDestroy() {

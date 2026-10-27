@@ -24,7 +24,7 @@ import com.mangoscreencast.tv.display.DisplayCapabilities
 import com.mangoscreencast.tv.media.VideoDecoder
 import kotlin.math.abs
 
-/** Full-screen mirrored picture. Back twice disconnects; OK shows stats; gear opens Settings. */
+/** Full-screen mirrored picture. Back twice disconnects; OK shows stats. */
 class MirrorActivity : Activity(), SurfaceHolder.Callback, AirPlayReceiver.Listener, VideoDecoder.Listener {
     private lateinit var frame: AspectFrameLayout
     private lateinit var surfaceView: SurfaceView
@@ -264,11 +264,6 @@ class MirrorActivity : Activity(), SurfaceHolder.Callback, AirPlayReceiver.Liste
             KeyEvent.KEYCODE_DPAD_CENTER, KeyEvent.KEYCODE_ENTER, KeyEvent.KEYCODE_INFO -> {
                 showStats = !showStats
                 updateStatsVisibility()
-                return true
-            }
-            KeyEvent.KEYCODE_SETTINGS -> {
-                // The gear's menu (GearKeyService takes the gear first), over the picture.
-                if (event.repeatCount == 0) SettingsMenuActivity.open(this)
                 return true
             }
             KeyEvent.KEYCODE_DPAD_UP, KeyEvent.KEYCODE_DPAD_DOWN -> {
