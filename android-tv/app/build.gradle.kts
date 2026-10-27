@@ -96,6 +96,9 @@ android {
 
 dependencies {
     implementation("androidx.core:core-ktx:1.13.1")
+    // The guide's player: Pluto TV's channels are HLS streams.
+    implementation("androidx.media3:media3-exoplayer:1.4.1")
+    implementation("androidx.media3:media3-exoplayer-hls:1.4.1")
     // Prebuilt OpenSSL for the NDK, published by Google. UxPlay uses it for
     // AirPlay pairing and stream decryption.
     implementation("com.android.ndk.thirdparty:openssl:1.1.1q-beta-1")

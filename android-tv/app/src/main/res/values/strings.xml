@@ -52,6 +52,14 @@
     <string name="store_about_play">Every app for this TV, from Google.</string>
     <string name="store_action_play">Press OK to open Google Play</string>
     <string name="live_tv_missing">This TV has no Live TV app</string>
+    <string name="guide_pluto">Pluto TV</string>
+    <string name="guide_loading">Loading channels</string>
+    <string name="guide_unreachable">Couldn’t load the listings</string>
+    <string name="guide_retry">Press OK to try again</string>
+    <string name="guide_now_showing">Now showing</string>
+    <string name="guide_until">Until %1$s</string>
+    <string name="guide_channel">Channel %1$d</string>
+    <string name="guide_not_playing">Pluto TV isn’t sending this channel right now</string>
     <string name="news_missing">Couldn’t find KSAT 12’s latest news on YouTube</string>
     <string name="emulation_missing">RetroArch isn\u2019t on this TV</string>
     <string name="store_missing">Couldn’t open an app store on this TV</string>

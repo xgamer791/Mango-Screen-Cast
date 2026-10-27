@@ -63,6 +63,9 @@ class Opener(private val activity: Activity) {
 
     fun liveTv() = start(launcher.liveTv(), R.string.live_tv_missing)
 
+    /** The guide: Pluto TV's channels on the Prevue Channel's grid, for the Live TV tile. */
+    fun guide() = activity.startActivity(Intent(activity, com.mangoscreencast.tv.guide.GuideActivity::class.java))
+
     /** The Games page, for the Emulation tile (it plays the games in RetroArch); RetroArch must be on the TV. */
     fun emulation() {
         if (launcher.emulation() == null) return Toast.makeText(activity, R.string.emulation_missing, Toast.LENGTH_LONG).show()

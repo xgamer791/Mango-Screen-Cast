@@ -196,11 +196,11 @@ class HomeActivity : Activity(), AirPlayReceiver.Listener, AppUpdater.Listener {
         itemCount.text = HomeTiles.count(resources, total, at)
     }
 
-    /** News plays KSAT 12's latest newscast on YouTube; Emulation opens RetroArch, and Live TV the TV's own. */
+    /** News plays KSAT 12's latest newscast on YouTube; Emulation opens the Games page, and Live TV the guide. */
     private fun openShortcut(shortcut: HomeTiles.Shortcut) {
         when (shortcut) {
             HomeTiles.Shortcut.EMULATION -> opener.emulation()
-            HomeTiles.Shortcut.LIVE_TV -> opener.liveTv()
+            HomeTiles.Shortcut.LIVE_TV -> opener.guide()
             HomeTiles.Shortcut.NEWS -> opener.news()
         }
     }

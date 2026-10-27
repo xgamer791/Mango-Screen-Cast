@@ -114,6 +114,13 @@
             android:exported="false"
             android:configChanges="keyboard|keyboardHidden|navigation|screenSize|screenLayout|smallestScreenSize|orientation|uiMode" />
 
+        <!-- The guide (guide/GuideActivity.kt): Home's Live TV tile, Pluto TV's channels on Prevue's grid. -->
+        <activity
+            android:name=".guide.GuideActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Mango.Fullscreen"
+            android:configChanges="keyboard|keyboardHidden|navigation|screenSize|screenLayout|smallestScreenSize|orientation|uiMode" />
+
         <!-- The pages the home screen's menu opens (What to Watch, Featured Free, Live TV, Sports, Search, Streaming Store). -->
         <activity
             android:name=".browse.BrowseActivity"

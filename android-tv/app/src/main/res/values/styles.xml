@@ -122,4 +122,24 @@
         <item name="android:paddingBottom">0dp</item>
         <item name="android:focusable">true</item>
     </style>
+
+    <!-- The guide's box above its grid: Prevue's text, white over a hard black shadow, centred line under line. Sized in
+         dp, not sp, so the box keeps Prevue's shape whatever the TV's text size. -->
+    <style name="Guide.Info" parent="">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:fontFamily">@font/barlow_semi_condensed_bold</item>
+        <item name="android:textSize">22dp</item>
+        <item name="android:textColor">@android:color/white</item>
+        <item name="android:gravity">center</item>
+        <item name="android:maxLines">1</item>
+        <item name="android:ellipsize">end</item>
+        <item name="android:shadowColor">@android:color/black</item>
+        <item name="android:shadowDx">3</item>
+        <item name="android:shadowDy">3</item>
+        <item name="android:shadowRadius">0.01</item>
+        <item name="android:includeFontPadding">false</item>
+        <item name="android:lineSpacingMultiplier">0.95</item>
+        <item name="android:paddingVertical">2dp</item>
+    </style>
 </resources>

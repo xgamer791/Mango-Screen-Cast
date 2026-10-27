@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The guide (guide/GuideActivity.kt): Prevue's 1990s screen. The chosen channel's show in a blue box and its picture
+     along the top, the grid below. The picture is the last child, so it can grow to fill the screen. -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/guide_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@android:color/black">
+
+    <LinearLayout
+        android:id="@+id/guide_page"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:paddingHorizontal="24dp"
+        android:paddingVertical="20dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="240dp"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:id="@+id/guide_info"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:background="@drawable/guide_info_bg"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:paddingHorizontal="24dp">
+
+                <TextView
+                    android:id="@+id/guide_info_channel"
+                    style="@style/Guide.Info" />
+
+                <TextView
+                    android:id="@+id/guide_info_title"
+                    style="@style/Guide.Info"
+                    android:maxLines="2"
+                    android:textColor="#F6F04A" />
+
+                <TextView
+                    android:id="@+id/guide_info_when"
+                    style="@style/Guide.Info" />
+
+                <TextView
+                    android:id="@+id/guide_info_until"
+                    style="@style/Guide.Info" />
+
+                <TextView
+                    android:id="@+id/guide_info_number"
+                    style="@style/Guide.Info" />
+            </LinearLayout>
+
+            <!-- Where the picture sits while the grid is up. -->
+            <View
+                android:id="@+id/guide_video_spot"
+                android:layout_width="427dp"
+                android:layout_height="match_parent"
+                android:layout_marginStart="6dp" />
+        </LinearLayout>
+
+        <com.mangoscreencast.tv.guide.GuideView
+            android:id="@+id/guide_grid"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginTop="6dp"
+            android:layout_weight="1" />
+    </LinearLayout>
+
+    <FrameLayout
+        android:id="@+id/guide_video"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:background="@android:color/black">
+
+        <com.mangoscreencast.tv.ui.AspectFrameLayout
+            android:id="@+id/guide_video_frame"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_gravity="center">
+
+            <SurfaceView
+                android:id="@+id/guide_surface"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+        </com.mangoscreencast.tv.ui.AspectFrameLayout>
+
+        <TextView
+            android:id="@+id/guide_video_note"
+            style="@style/Guide.Info"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:paddingHorizontal="24dp"
+            android:visibility="gone" />
+    </FrameLayout>
+</FrameLayout>
