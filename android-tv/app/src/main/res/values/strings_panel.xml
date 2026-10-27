@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The gear's panel (ui/SettingsMenuActivity.kt): the Hisense panel's own words. -->
+<resources>
+    <string name="panel_all_settings">All settings</string>
+    <string name="panel_help">Help</string>
+    <string name="panel_wordmark">Mango TV</string>
+    <string name="panel_account">Account</string>
+    <string name="panel_screensaver">Screensaver</string>
+    <string name="panel_inputs">Inputs</string>
+    <string name="panel_picture">Display &amp; Picture</string>
+    <string name="panel_sound">Sound</string>
+    <string name="panel_wifi">Wi-Fi</string>
+    <string name="panel_google_home">Google Home</string>
+    <string name="panel_bluetooth">Bluetooth</string>
+    <string name="panel_sleep_timer">Sleep timer</string>
+    <string name="panel_accessibility">Accessibility</string>
+    <string name="panel_sleep_off">Turn off timer</string>
+    <!-- How long the TV has left before it goes to sleep, on the Sleep timer tile. -->
+    <string name="panel_sleep_left">%1$s left</string>
+    <string name="panel_open_failed">Couldn’t open %1$s on this TV</string>
+    <string name="panel_notification_settings">Notification access</string>
+    <plurals name="panel_minutes">
+        <item quantity="one">%d minute</item>
+        <item quantity="other">%d minutes</item>
+    </plurals>
+    <plurals name="panel_hours">
+        <item quantity="one">%d hour</item>
+        <item quantity="other">%d hours</item>
+    </plurals>
+</resources>

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The panel's Sleep timer page: Google's slate, with the panel's corners. -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" android:shape="rectangle">
+    <solid android:color="@color/panel_page_background" />
+    <corners android:radius="@dimen/panel_corner_radius" />
+</shape>

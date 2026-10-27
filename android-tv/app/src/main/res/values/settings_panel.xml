@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The gear's panel (ui/SettingsMenuActivity.kt), a copy of the panel the Hisense's gear
+     opened (Google TV's dashboard): its sizes from the launcher's own dimens, its colours
+     measured on this TV, where the system's palette tints Google's. -->
+<resources>
+    <color name="panel_background">#131D23</color>
+    <color name="panel_tile">#1C262C</color>
+    <color name="panel_tile_focused">#CCE8FF</color>
+    <color name="panel_content">#86959E</color>
+    <color name="panel_content_focused">#0E0E0F</color>
+    <color name="panel_icon_focused">#292E33</color>
+    <color name="panel_time">#82919A</color>
+    <color name="panel_label">#989CA3</color>
+    <color name="panel_button_focused">#CCE8FF</color>
+    <color name="panel_button_icon_focused">#292E33</color>
+    <color name="panel_avatar">#8D6E63</color>
+    <color name="panel_notification">#182127</color>
+    <!-- The dots: the one for where the tiles are now grey, the other light. -->
+    <color name="panel_dot">#A0ACB5</color>
+    <color name="panel_dot_current">#868B92</color>
+    <color name="panel_wordmark">#80868B</color>
+    <!-- The Sleep timer page: Google's own slate, its rows, its title and their text. -->
+    <color name="panel_page_background">#1E232C</color>
+    <color name="panel_row">#272B35</color>
+    <color name="panel_title">#E4F3FF</color>
+    <color name="panel_row_text">#8B98A2</color>
+
+    <!-- dashboard_width, dashboard_horizontal_margin, dashboard_vertical_margin, dashboard_corner_radius -->
+    <dimen name="panel_width">272dp</dimen>
+    <dimen name="panel_margin_end">24dp</dimen>
+    <dimen name="panel_margin_vertical">16dp</dimen>
+    <dimen name="panel_corner_radius">20dp</dimen>
+    <!-- dashboard_half_tile_width, dashboard_general_tile_height, dashboard_general_tile_corner_radius_large -->
+    <dimen name="panel_tile_width">121dp</dimen>
+    <dimen name="panel_tile_height">54dp</dimen>
+    <dimen name="panel_tile_radius">16dp</dimen>
+    <!-- The tiles' gaps, and their inset from the panel's edges. -->
+    <dimen name="panel_tile_gap">6dp</dimen>
+    <dimen name="panel_inset">12dp</dimen>
+    <!-- dashboard_panel_fading_edge_length -->
+    <dimen name="panel_fade">60dp</dimen>
+</resources>

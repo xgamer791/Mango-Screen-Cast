@@ -108,11 +108,11 @@ class GearKeyServiceTest {
     @Test
     fun theGearSlidesTheMenuClosedWhenItsOpen() {
         val menu = Robolectric.buildActivity(SettingsMenuActivity::class.java).setup().get()
-        frames(SettingsMenuActivity.SLIDE_MS + 100)
+        frames(SettingsMenuActivity.OPEN_MS + 100)
         assertEquals(true to true, press(KeyEvent.KEYCODE_NOTIFICATION))
         assertFalse("it slides out first", menu.isFinishing)
         assertNull("nothing new opens", started())
-        frames(SettingsMenuActivity.SLIDE_MS + 100)
+        frames(SettingsMenuActivity.CLOSE_MS + 100)
         assertTrue("then it closes", menu.isFinishing)
     }
 
@@ -148,6 +148,33 @@ class GearKeyServiceTest {
             assertEquals(KeyEvent.keyCodeToString(code), false to false, press(code))
         }
         assertNull(started())
+    }
+
+    @Test
+    fun whenThePanelsSleepTimerEndsTheTvGoesToSleep() {
+        val start = 5_000_000L
+        var clock = start
+        SleepTimer.now = { clock }
+        try {
+            SleepTimer.set(context, 15)
+            val shadow = shadowOf(service)
+            org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper()).idleFor(java.time.Duration.ofMinutes(14))
+            assertTrue("not yet", shadow.globalActionsPerformed.isEmpty())
+            clock = start + 15 * 60_000L
+            org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper()).idleFor(java.time.Duration.ofMinutes(2))
+            assertEquals(listOf(AccessibilityService.GLOBAL_ACTION_LOCK_SCREEN), shadow.globalActionsPerformed)
+            assertEquals("the timer's done", null, SleepTimer.end(context))
+        } finally {
+            SleepTimer.now = System::currentTimeMillis
+        }
+    }
+
+    @Test
+    fun aTimerTurnedOffPutsNothingToSleep() {
+        SleepTimer.set(context, 15)
+        SleepTimer.cancel(context)
+        org.robolectric.Shadows.shadowOf(android.os.Looper.getMainLooper()).idleFor(java.time.Duration.ofMinutes(20))
+        assertTrue(shadowOf(service).globalActionsPerformed.isEmpty())
     }
 
     @Test

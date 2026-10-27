@@ -2,12 +2,15 @@ package com.mangoscreencast.tv.ui
 
 import android.accessibilityservice.AccessibilityService
 import android.app.Activity
+import android.os.Handler
+import android.os.Looper
 import android.view.KeyEvent
 import android.view.accessibility.AccessibilityEvent
 import java.lang.ref.WeakReference
 
 /**
- * The remote's gear opens Mango Settings, from whatever is on screen.
+ * The remote's gear opens the gear's panel (SettingsMenuActivity), from whatever is on screen;
+ * and while the panel's sleep timer runs (SleepTimer), this service waits for it.
  *
  * The Hisense gear sends KEYCODE_NOTIFICATION (scancode 598). The system takes
  * it before any app sees it and opens the notification handler's panel, here
@@ -41,6 +44,46 @@ class GearKeyService : AccessibilityService() {
     override fun onAccessibilityEvent(event: AccessibilityEvent?) {}
 
     override fun onInterrupt() {}
+
+    override fun onCreate() {
+        super.onCreate()
+        running = WeakReference(this)
+    }
+
+    override fun onServiceConnected() {
+        super.onServiceConnected()
+        sleepTimer()
+    }
+
+    override fun onDestroy() {
+        main.removeCallbacks(sleep)
+        if (running?.get() === this) running = null
+        super.onDestroy()
+    }
+
+    private val main = Handler(Looper.getMainLooper())
+
+    /** The sleep timer's end: the TV goes to sleep, as when its power button is pressed. */
+    private val sleep = Runnable {
+        SleepTimer.cancel(this)
+        performGlobalAction(GLOBAL_ACTION_LOCK_SCREEN)
+    }
+
+    /** Waits for the panel's sleep timer (SleepTimer), or stops waiting when it's turned off. */
+    private fun sleepTimer() {
+        main.removeCallbacks(sleep)
+        val end = SleepTimer.end(this) ?: return
+        main.postDelayed(sleep, (end - SleepTimer.now()).coerceAtLeast(0L))
+    }
+
+    companion object {
+        private var running: WeakReference<GearKeyService>? = null
+
+        /** The panel set or turned off the sleep timer. */
+        fun sleepTimerChanged() {
+            running?.get()?.sleepTimer()
+        }
+    }
 }
 
 /**

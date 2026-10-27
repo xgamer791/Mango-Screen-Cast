@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
 
     <!-- The Games page reads RetroArch's playlists, screenshots and the games' gamelist.xml on
          the TV's shared storage; Android 11 and later allow that only with all files access. -->
@@ -8,6 +9,19 @@
         android:name="android.permission.READ_EXTERNAL_STORAGE"
         android:maxSdkVersion="29" />
     <uses-permission android:name="android.permission.INTERNET" />
+    <!-- The gear panel's account monogram: the Google account's first letter (granted over adb). -->
+    <uses-permission android:name="android.permission.GET_ACCOUNTS" />
+    <!-- The gear panel's Help opens the TV's Help & feedback, which asks for this permission.
+         Nothing on this TV declares it, so Mango does, and holds it. -->
+    <permission
+        android:name="com.android.tv.settings.HELP_SETTINGS_PERMISSION"
+        android:protectionLevel="normal" />
+    <uses-permission android:name="com.android.tv.settings.HELP_SETTINGS_PERMISSION" />
+    <!-- The gear panel's Bluetooth tile opens the TV's Remotes & Accessories slice, whose screen
+         (TvSettings' SliceActivity) asks for this; granted once over adb. -->
+    <uses-permission
+        android:name="android.permission.WRITE_SECURE_SETTINGS"
+        tools:ignore="ProtectedPermissions" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <uses-permission android:name="android.permission.CHANGE_WIFI_MULTICAST_STATE" />
@@ -69,6 +83,11 @@
             <action android:name="android.intent.action.MAIN" />
             <category android:name="android.intent.category.LEANBACK_LAUNCHER" />
         </intent>
+        <!-- The gear panel's tiles (ui/PanelTiles.kt): the TV's own settings screens. -->
+        <package android:name="com.android.tv.settings" />
+        <package android:name="com.vt.customsettings" />
+        <package android:name="com.vt.tv.input" />
+        <package android:name="com.google.android.apps.tv.dreamx" />
         <!-- The menu's Search. -->
         <intent>
             <action android:name="android.search.action.GLOBAL_SEARCH" />
@@ -157,8 +176,8 @@
             </intent-filter>
         </activity>
 
-        <!-- The gear's menu (ui/SettingsMenuActivity.kt): its own task, over the app
-             the gear was pressed in, which it goes back to as it closes. -->
+        <!-- The gear's panel (ui/SettingsMenuActivity.kt), a copy of the Hisense's: its own
+             task, over the app the gear was pressed in, which it goes back to as it closes. -->
         <activity
             android:name=".ui.SettingsMenuActivity"
             android:exported="false"
@@ -182,6 +201,17 @@
             <meta-data
                 android:name="android.accessibilityservice"
                 android:resource="@xml/gear_key_service" />
+        </service>
+
+        <!-- The gear panel's notifications (ui/PanelNotifications.kt). Allowed once over adb. -->
+        <service
+            android:name=".ui.PanelNotifications"
+            android:exported="true"
+            android:label="@string/panel_notification_settings"
+            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
+            <intent-filter>
+                <action android:name="android.service.notification.NotificationListenerService" />
+            </intent-filter>
         </service>
 
         <service

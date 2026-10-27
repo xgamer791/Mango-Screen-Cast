@@ -18,9 +18,11 @@ import org.robolectric.annotation.LooperMode
 import java.time.Duration
 
 /**
- * The gear's menu: a panel 540 px of a 1920 px wide screen on the right, that
- * slides in from the right edge as it opens and back out the same way as it
- * closes, with the gear or Back: the same time and the same curve each way.
+ * The gear's panel, a copy of the Hisense's (Google TV's dashboard): 272 dp wide,
+ * 24 dp from the right edge and 16 dp from the top and bottom; in 300 ms on
+ * (0.12, 1, 0.4, 1) it comes in from beyond the right edge, fading in, and dims
+ * what's behind to 60%; Back or the gear takes it out its own width to the right
+ * in 500 ms on (0.4, 1, 0.12, 1), fading out, the dim going evenly.
  */
 @RunWith(RobolectricTestRunner::class)
 @Config(sdk = [34], application = Application::class, qualifiers = "w960dp-h540dp-xhdpi")
@@ -29,6 +31,7 @@ class SettingsMenuTest {
     private val controller by lazy { Robolectric.buildActivity(SettingsMenuActivity::class.java) }
     private val menu get() = controller.get()
     private val panel: View get() = menu.findViewById(R.id.menu_panel)
+    private val scrim: View get() = menu.findViewById(R.id.menu_scrim)
 
     // Animation frames come as the test moves the clock on, one every 16 ms, as on the TV
     // (otherwise showing the activity runs every frame of the slide at once).
@@ -46,85 +49,196 @@ class SettingsMenuTest {
 
     private fun open(): SettingsMenuActivity {
         controller.setup()
-        pass(SettingsMenuActivity.SLIDE_MS + 100)
+        pass(SettingsMenuActivity.OPEN_MS + 100)
         return menu
     }
 
     @Test
-    fun its540PixelsOfThe1920WideScreenOnTheRight() {
+    fun its272dpWide24dpFromTheRightAnd16dpFromTopAndBottom() {
         open()
-        val screen = menu.resources.displayMetrics.widthPixels
-        assertEquals(1920, screen)
-        assertEquals(540, panel.width)
-        assertEquals("flush with the right edge", screen, panel.right)
+        val screen = menu.resources.displayMetrics
+        assertEquals(1920, screen.widthPixels)
+        assertEquals(544, panel.width)
+        assertEquals("48 px in from the right edge", screen.widthPixels - 48, panel.right)
+        assertEquals(32, panel.top)
+        assertEquals(screen.heightPixels - 32, panel.bottom)
         assertEquals(0f, panel.translationX)
+        assertEquals(1f, panel.alpha)
     }
 
     @Test
-    fun itSlidesInFromTheRightEdge() {
+    fun itComesInFromBeyondTheRightEdgeFadingInAndDimsWhatsBehind() {
         controller.setup()
-        val width = panel.layoutParams.width.toFloat()
-        assertEquals("it starts just off the right edge", width, panel.translationX)
-        pass(SettingsMenuActivity.SLIDE_MS / 2)
-        assertTrue("on its way: ${panel.translationX}", panel.translationX > 0f && panel.translationX < width)
-        pass(SettingsMenuActivity.SLIDE_MS / 2 + 100)
+        assertEquals("its width and margin out", 592f, panel.translationX, 0.5f)
+        assertEquals(0f, panel.alpha)
+        assertEquals(0f, scrim.alpha)
+        pass(SettingsMenuActivity.OPEN_MS / 3)
+        assertTrue("on its way: ${panel.translationX}", panel.translationX > 0f && panel.translationX < 592f)
+        assertTrue(panel.alpha > 0f && panel.alpha < 1f)
+        pass(SettingsMenuActivity.OPEN_MS)
         assertEquals("in place", 0f, panel.translationX)
+        assertEquals(1f, panel.alpha)
+        assertEquals("what's behind at 60%", 0.6f, scrim.alpha, 0.001f)
     }
 
     @Test
-    fun theGearSlidesItBackOutThenItCloses() {
+    fun itOpensIn300msOnTheDashboardsCurve() {
+        assertEquals(300L, SettingsMenuActivity.OPEN_MS)
+        val curve = SettingsMenuActivity.OPEN_CURVE
+        val reference = android.view.animation.PathInterpolator(0.12f, 1f, 0.4f, 1f)
+        for (i in 0..20) assertEquals(reference.getInterpolation(i / 20f), curve.getInterpolation(i / 20f), 0.001f)
+        // Fast out, settling in: most of the way in the first third.
+        assertTrue(curve.getInterpolation(1f / 3) > 0.75f)
+    }
+
+    @Test
+    fun backTakesItOutItsWidthToTheRightIn500msThenItCloses() {
         open()
-        menu.gear()
+        menu.onBackPressed()
         assertFalse("not at once", menu.isFinishing)
-        pass(SettingsMenuActivity.SLIDE_MS / 2)
-        assertFalse("still sliding out", menu.isFinishing)
-        assertTrue(panel.translationX > 0f)
-        pass(SettingsMenuActivity.SLIDE_MS / 2 + 100)
-        assertEquals("all the way out", panel.layoutParams.width.toFloat(), panel.translationX)
+        pass(SettingsMenuActivity.CLOSE_MS / 2)
+        assertFalse("still going", menu.isFinishing)
+        assertTrue(panel.translationX > 0f && panel.translationX < 544f)
+        assertTrue(panel.alpha < 1f)
+        assertEquals("the dim goes evenly", 0.3f, scrim.alpha, 0.05f)
+        pass(SettingsMenuActivity.CLOSE_MS / 2 + 100)
+        assertEquals("its own width out", 544f, panel.translationX, 0.5f)
+        assertEquals(0f, panel.alpha)
+        assertEquals(0f, scrim.alpha)
         assertTrue("then it closes", menu.isFinishing)
     }
 
     @Test
-    fun backSlidesItOutTheSameWay() {
+    fun theGearClosesItToo() {
         open()
-        menu.onBackPressed()
-        assertFalse(menu.isFinishing)
-        pass(SettingsMenuActivity.SLIDE_MS + 100)
+        menu.gear()
+        pass(SettingsMenuActivity.CLOSE_MS + 100)
         assertTrue(menu.isFinishing)
     }
 
     @Test
-    fun theGearWhileItSlidesOutBringsItBack() {
+    fun theGearWhileItsGoingBringsItBack() {
         open()
         menu.gear()
-        pass(SettingsMenuActivity.SLIDE_MS / 2)
+        pass(SettingsMenuActivity.CLOSE_MS / 3)
         menu.gear()
-        pass(SettingsMenuActivity.SLIDE_MS + 100)
+        pass(SettingsMenuActivity.OPEN_MS + 100)
         assertFalse("it stays", menu.isFinishing)
         assertEquals(0f, panel.translationX)
+        assertEquals(1f, panel.alpha)
+        assertEquals(0.6f, scrim.alpha, 0.001f)
     }
 
     @Test
-    fun outTakesAsLongAsIn() {
-        controller.setup()
-        val width = panel.layoutParams.width.toFloat()
-        var opened = 0L
-        while (panel.translationX > 0f && opened < 2000) { pass(10); opened += 10 }
-        menu.gear()
-        var closed = 0L
-        while (panel.translationX < width && closed < 2000) { pass(10); closed += 10 }
-        assertEquals("in: $opened ms, out: $closed ms", opened.toDouble(), closed.toDouble(), 40.0)
-        assertEquals(SettingsMenuActivity.SLIDE_MS.toDouble(), opened.toDouble(), 60.0)
-    }
-
-    @Test
-    fun theCurveIsTheSameBothWays() {
-        // Played backwards, closing looks exactly like opening: f(t) + f(1 - t) = 1.
-        val ease = SettingsMenuActivity.EASE
+    fun itClosesOnTheDashboardWindowsCurve() {
+        assertEquals(500L, SettingsMenuActivity.CLOSE_MS)
+        val reference = android.view.animation.PathInterpolator(0.4f, 1f, 0.12f, 1f)
         for (i in 0..20) {
-            val t = i / 20f
-            assertEquals("t=$t", 1f, ease.getInterpolation(t) + ease.getInterpolation(1 - t), 0.01f)
+            assertEquals(reference.getInterpolation(i / 20f), SettingsMenuActivity.CLOSE_CURVE.getInterpolation(i / 20f), 0.001f)
         }
+    }
+
+    @Test
+    fun allSettingsHasTheFocusAsItOpens() {
+        open()
+        assertTrue("the panel's first focus", menu.findViewById<View>(R.id.panel_all_settings).isFocusedByDefault)
+    }
+
+    private fun tiles(): List<View> {
+        val pages = menu.findViewById<android.view.ViewGroup>(R.id.panel_pages)
+        val first = pages.getChildAt(0) as android.view.ViewGroup
+        return (0 until first.childCount).map { first.getChildAt(it) }
+    }
+
+    @Test
+    fun theHisensePanelsTilesDownTheColumnsTwoColumnsInView() {
+        open()
+        val names = tiles().map { it.contentDescription.toString() }
+        assertEquals(
+            listOf(
+                "Screensaver", "Display & Picture", "Wi-Fi", "Bluetooth",
+                "Inputs", "Sound", "Google Home", "Sleep timer",
+                "Accessibility",
+            ),
+            names,
+        )
+        val all = tiles()
+        assertEquals(242, all[0].width)
+        assertEquals(108, all[0].height)
+        assertEquals("two across, 12 px apart", all[0].right + 12, all[4].left)
+        assertEquals("rows 12 px apart", all[0].bottom + 12, all[1].top)
+        val dots = menu.findViewById<android.view.ViewGroup>(R.id.panel_dots)
+        assertEquals("a dot for each place the tiles scroll to", 2, dots.childCount)
+        assertEquals(View.VISIBLE, dots.visibility)
+    }
+
+    @Test
+    fun theThirdColumnGlidesInAsItsTileGetsTheFocusAndBackAtOnce() {
+        open()
+        val grid = tiles()[0].parent as View
+        assertEquals(0f, grid.translationX)
+        tiles()[8].requestFocus() // Accessibility, in the third column
+        pass(SettingsMenuActivity.SCROLL_MS + 50)
+        assertEquals("a column (254 px) to the left", -254f, grid.translationX, 0.5f)
+        tiles()[0].requestFocus() // Screensaver, in the first
+        assertEquals("back at once", 0f, grid.translationX, 0.5f)
+    }
+
+    @Test
+    fun theSleepTimerTileOpensItsPageOfTimesAndATimeStartsIt() {
+        open()
+        SleepTimer.now = { 1_000_000L }
+        try {
+            tiles()[7].performClick() // Sleep timer
+            val page = menu.findViewById<View>(R.id.panel_sleep_page)
+            assertEquals(View.VISIBLE, page.visibility)
+            val list = menu.findViewById<android.view.ViewGroup>(R.id.panel_sleep_choices)
+            assertEquals(
+                listOf("15 minutes", "30 minutes", "45 minutes", "1 hour", "1 hour 30 minutes", "2 hours", "3 hours"),
+                (0 until list.childCount).map { list.getChildAt(it).contentDescription.toString() },
+            )
+            list.getChildAt(1).performClick()
+            assertEquals(View.GONE, page.visibility)
+            assertEquals(1_000_000L + 30 * 60_000L, SleepTimer.end(menu))
+            tiles()[7].performClick()
+            assertEquals("while it runs, Turn off timer first", "Turn off timer", list.getChildAt(0).contentDescription)
+            list.getChildAt(0).performClick()
+            assertEquals(null, SleepTimer.end(menu))
+        } finally {
+            SleepTimer.now = System::currentTimeMillis
+        }
+    }
+
+    @Test
+    fun backLeavesTheSleepTimerPageNotThePanel() {
+        open()
+        tiles()[7].performClick()
+        menu.onBackPressed()
+        assertEquals(View.GONE, menu.findViewById<View>(R.id.panel_sleep_page).visibility)
+        pass(SettingsMenuActivity.CLOSE_MS + 100)
+        assertFalse(menu.isFinishing)
+    }
+
+    @Test
+    fun aTileWithTheFocusGrowsTo1025In300ms() {
+        open()
+        val tile = tiles()[3]
+        tile.requestFocus()
+        pass(SettingsMenuActivity.FOCUS_IN_MS + 50)
+        assertEquals(1.025f, tile.scaleX, 0.001f)
+        tiles()[2].requestFocus()
+        pass(SettingsMenuActivity.FOCUS_OUT_MS + 50)
+        assertEquals(1f, tile.scaleX, 0.001f)
+    }
+
+    @Test
+    fun aTileOpensTheTvsOwnScreenAndThePanelGoes() {
+        open()
+        tiles()[1].performClick()
+        val started = shadowOf(menu).nextStartedActivity
+        assertEquals(android.provider.Settings.ACTION_DISPLAY_SETTINGS, started.action)
+        assertEquals("Hisense's Picture", "com.vt.customsettings", started.`package`)
+        assertTrue(menu.isFinishing)
     }
 
     @Test

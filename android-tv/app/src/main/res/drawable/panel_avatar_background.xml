@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The account's disc; with the focus, a ring round it. -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_focused="true">
+        <shape android:shape="oval">
+            <solid android:color="@color/panel_avatar" />
+            <stroke android:width="2dp" android:color="@color/panel_button_focused" />
+        </shape>
+    </item>
+    <item>
+        <shape android:shape="oval">
+            <solid android:color="@color/panel_avatar" />
+        </shape>
+    </item>
+</selector>
