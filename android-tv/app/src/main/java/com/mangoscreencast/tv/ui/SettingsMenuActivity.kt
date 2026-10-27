@@ -582,8 +582,9 @@ class SettingsMenuActivity : Activity() {
         val view = LinearLayout(this).apply {
             orientation = LinearLayout.HORIZONTAL
             gravity = Gravity.CENTER_VERTICAL
-            minimumHeight = (56 * dp).roundToInt()
-            setPadding((11 * dp).roundToInt(), (8 * dp).roundToInt(), (11 * dp).roundToInt(), (8 * dp).roundToInt())
+            // 54 dp for a line, 56 for two, as the dashboard's cards.
+            minimumHeight = (54 * dp).roundToInt()
+            setPadding((11 * dp).roundToInt(), (10 * dp).roundToInt(), (11 * dp).roundToInt(), (10 * dp).roundToInt())
             this.background = background
             isFocusable = true
             contentDescription = listOf(item.title, item.text).filter { it.isNotEmpty() }.joinToString(". ")
