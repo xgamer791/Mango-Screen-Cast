@@ -18,7 +18,6 @@
     <!-- The dots: the one for where the tiles are now grey, the other light. -->
     <color name="panel_dot">#A0ACB5</color>
     <color name="panel_dot_current">#868B92</color>
-    <color name="panel_wordmark">#80868B</color>
     <!-- The Sleep timer page: Google's own slate, its rows, its title and their text. -->
     <color name="panel_page_background">#1E232C</color>
     <color name="panel_row">#272B35</color>

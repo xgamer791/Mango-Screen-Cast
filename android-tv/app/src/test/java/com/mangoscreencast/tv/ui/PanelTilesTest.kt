@@ -84,7 +84,7 @@ class PanelTilesTest {
                 sbn(3, 200, null, null),
                 sbn(4, 400, "Summary", "s", summary = true),
             ),
-        ) { null }
+        )
         assertEquals(listOf("Newest", "Older"), items.map { it.title })
         assertEquals("b", items.first().text)
     }

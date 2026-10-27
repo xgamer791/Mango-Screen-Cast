@@ -3,7 +3,7 @@
      opened: over whatever is on screen, which it dims, a rounded panel 272 dp wide,
      24 dp from the right edge and 16 dp from the top and bottom. In it, as there: the
      date and time with All settings and the account, two columns of setting tiles a
-     page at a time, the TV's notifications, and the wordmark and Help at the foot. -->
+     page at a time, the TV's notifications, and Help at the foot. -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
@@ -174,7 +174,7 @@
             </LinearLayout>
         </ScrollView>
 
-        <!-- The foot: the wordmark, Help, and the arrow that says there's more below. -->
+        <!-- The foot: Help, and the arrow that says there's more below (no wordmark). -->
         <FrameLayout
             android:id="@+id/panel_footer"
             android:layout_width="match_parent"
@@ -182,16 +182,6 @@
             android:layout_gravity="bottom"
             android:paddingStart="16dp"
             android:paddingEnd="12dp">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center_vertical"
-                android:fontFamily="@font/geist_medium"
-                android:includeFontPadding="false"
-                android:text="@string/panel_wordmark"
-                android:textColor="@color/panel_wordmark"
-                android:textSize="12sp" />
 
             <ImageView
                 android:id="@+id/panel_more"

@@ -2,15 +2,14 @@ package com.mangoscreencast.tv.ui
 
 import android.app.Notification
 import android.app.PendingIntent
-import android.graphics.drawable.Drawable
 import android.service.notification.NotificationListenerService
 import android.service.notification.StatusBarNotification
 import java.lang.ref.WeakReference
 
 /**
  * The TV's notifications, for the gear's panel, as the Hisense panel listed them:
- * newest first, each with its app's icon, its title and its text, opening what
- * the notification opens. Android shows them to a notification listener only, so
+ * newest first, each with its title and its text, opening what the notification
+ * opens. Android shows them to a notification listener only, so
  * this is one; it's allowed once over adb, as the TV's settings have no screen
  * for it: `adb shell cmd notification allow_listener
  * com.mangoscreencast.tv/com.mangoscreencast.tv.ui.PanelNotifications`
@@ -24,7 +23,7 @@ class PanelNotifications : NotificationListenerService() {
         if (connected?.get() === this) connected = null
     }
 
-    class Item(val title: String, val text: String, val icon: Drawable?, private val intent: PendingIntent?) {
+    class Item(val title: String, val text: String, private val intent: PendingIntent?) {
         /** Opens what the notification opens; false when it opens nothing. */
         fun open(): Boolean = try {
             intent?.send()
@@ -45,17 +44,11 @@ class PanelNotifications : NotificationListenerService() {
             } catch (_: RuntimeException) {
                 return emptyList()
             }
-            return items(active.toList()) { sbn ->
-                try {
-                    sbn.notification.smallIcon?.loadDrawable(service.createPackageContext(sbn.packageName, 0))
-                } catch (_: Exception) {
-                    null
-                }
-            }
+            return items(active.toList())
         }
 
         /** The ones worth listing (a title or text, not a group's summary), newest first. */
-        internal fun items(active: List<StatusBarNotification>, icon: (StatusBarNotification) -> Drawable?): List<Item> =
+        internal fun items(active: List<StatusBarNotification>): List<Item> =
             active
                 .filter { it.notification.flags and Notification.FLAG_GROUP_SUMMARY == 0 }
                 .sortedByDescending { it.postTime }
@@ -63,7 +56,7 @@ class PanelNotifications : NotificationListenerService() {
                     val extras = sbn.notification.extras
                     val title = extras.getCharSequence(Notification.EXTRA_TITLE)?.toString().orEmpty()
                     val text = extras.getCharSequence(Notification.EXTRA_TEXT)?.toString().orEmpty()
-                    if (title.isEmpty() && text.isEmpty()) null else Item(title, text, icon(sbn), sbn.notification.contentIntent)
+                    if (title.isEmpty() && text.isEmpty()) null else Item(title, text, sbn.notification.contentIntent)
                 }
     }
 }

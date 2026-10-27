@@ -50,7 +50,7 @@ import kotlin.math.roundToLong
  * In it: the date and time, All settings (which has the focus as it opens) and
  * the account, the setting tiles (PanelTiles) four down a column and two
  * columns in view, a dot for each place the tiles can scroll to, the TV's
- * notifications (PanelNotifications), and the wordmark and Help at the foot.
+ * notifications (PanelNotifications), and Help at the foot.
  * A tile with the focus grows to 1.025 and turns light in 300 ms; each opens
  * the TV's own screen for its setting, and the panel goes as that opens. The
  * Sleep timer opens a page of times in the panel (SleepTimer).
@@ -547,7 +547,8 @@ class SettingsMenuActivity : Activity() {
             setColor(getColor(R.color.panel_notification))
         }
         val icon = ImageView(this).apply {
-            setImageDrawable(item.icon)
+            // Lucide's bell for every notification: the app's icons are Lucide only.
+            setImageResource(R.drawable.ic_panel_notification)
             val pad = (8 * dp).roundToInt()
             setPadding(pad, pad, pad, pad)
             this.background = GradientDrawable().apply {
