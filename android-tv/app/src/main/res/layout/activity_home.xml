@@ -47,7 +47,8 @@
         android:textColor="#FFFFFF"
         android:textSize="27.5sp" />
 
-    <!-- The clock and the count, right edges at 872.3 dp; the clock sits on the wordmark's baseline. -->
+    <!-- The clock, its right edge at 872.3 dp, on the wordmark's baseline; the count, its right edge on
+         the wall's (101.8 + 726 = 827.8 dp, the cards' right side). -->
     <com.mangoscreencast.tv.ui.ClockView
         android:id="@+id/clock"
         android:layout_width="wrap_content"
@@ -67,7 +68,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="top|end"
         android:layout_marginTop="91.1dp"
-        android:layout_marginEnd="86.4dp"
+        android:layout_marginEnd="132.2dp"
         android:fontFamily="@font/geist_medium"
         android:includeFontPadding="false"
         android:maxLines="1"
@@ -171,16 +172,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content" />
     </com.mangoscreencast.tv.ui.TileWall>
-
-    <!-- The arrow right of the wall's first row, level with the menu's bar; hidden while the menu is open. -->
-    <ImageView
-        android:id="@+id/home_chevron"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="896.9dp"
-        android:layout_marginTop="119.3dp"
-        android:contentDescription="@null"
-        android:src="@drawable/ic_home_chevron" />
 
     <!-- Under the menu, only while there's an update to tell about. -->
     <LinearLayout

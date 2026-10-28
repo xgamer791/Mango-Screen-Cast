@@ -52,7 +52,6 @@ object HomeMenu {
         val wall = page.findViewById<View>(R.id.tile_wall)
         val name = page.findViewById<View>(R.id.tile_name)
         val density = page.resources.displayMetrics.density
-        page.findViewById<View>(R.id.home_chevron).visibility = if (open) View.INVISIBLE else View.VISIBLE
         val start = ((if (open) WALL_OPEN_DP else WALL_CLOSED_DP) * density).roundToInt()
         val params = wall.layoutParams as ViewGroup.MarginLayoutParams
         val gliding = menu.getTag(R.id.menu) as? ValueAnimator

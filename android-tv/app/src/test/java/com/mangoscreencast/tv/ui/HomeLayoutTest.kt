@@ -229,13 +229,14 @@ class HomeLayoutTest {
                 (iconTop + icon.bounds.height() / 2f).toDouble(), 0.6 * dp)
         }
         val wall = root.findViewById<View>(R.id.tile_wall)
+        val grid = root.findViewById<TileGrid>(R.id.tile_grid)
         val name = root.findViewById<TextView>(R.id.tile_name)
         val count = root.findViewById<TextView>(R.id.item_count)
         assertEquals(101.8 * dp, wall.left.toDouble(), 1.0)
         assertTrue("the closed menu (to ${menu.right}) reaches over the wall (from ${wall.left})", menu.right <= wall.left)
         assertEquals(wall.left, name.left)
         assertEquals((count.top + count.baseline).toDouble(), (name.top + name.baseline).toDouble(), 1.0)
-        assertEquals(View.VISIBLE, root.findViewById<View>(R.id.home_chevron).visibility)
+        assertEquals("the count's right side on the cards' (${wall.left + grid.width})", (wall.left + grid.width).toDouble(), count.right.toDouble(), 1.0)
     }
 
     /** Left along every row of the wall steps one column at a time, and only the first column leads to the menu. */
@@ -256,7 +257,7 @@ class HomeLayoutTest {
         }
     }
 
-    /** The menu open: its words show, and the wall and the name move right of its bars, the arrow under them. */
+    /** The menu open: its words show, and the wall and the name move right of its bars. */
     @Test
     fun theMenuOpen() {
         val root = laidOut { HomeMenu.show(it, open = true) }
@@ -270,7 +271,6 @@ class HomeLayoutTest {
         assertEquals(402.3 * dp, root.findViewById<View>(R.id.tile_wall).left.toDouble(), 1.0)
         assertTrue(menu.right < root.findViewById<View>(R.id.tile_wall).left)
         assertEquals(402.3 * dp, root.findViewById<View>(R.id.tile_name).left.toDouble(), 1.0)
-        assertEquals(View.INVISIBLE, root.findViewById<View>(R.id.home_chevron).visibility)
         // Closed again, all back.
         HomeMenu.show(root, open = false)
         root.relayout()
