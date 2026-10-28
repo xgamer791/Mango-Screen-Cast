@@ -140,7 +140,8 @@ class HomeActivity : Activity(), AirPlayReceiver.Listener, AppUpdater.Listener {
 
     /** The wall's tiles, and how many there are; again only if the TV's other apps have changed. */
     private fun fillWall() {
-        val own = StreamingApps.ALL.flatMap { it.packages }.toSet() + AppLauncher.LIVE_TV_PACKAGES + AppLauncher.EMULATION_PACKAGES + packageName
+        val own = StreamingApps.ALL.flatMap { it.packages }.toSet() + AppLauncher.LIVE_TV_PACKAGES + AppLauncher.EMULATION_PACKAGES +
+            AppLauncher.NOT_ON_WALL + packageName
         val others = launcher.otherApps(own)
         val names = others.map { it.packageName }
         if (names == othersShown) return

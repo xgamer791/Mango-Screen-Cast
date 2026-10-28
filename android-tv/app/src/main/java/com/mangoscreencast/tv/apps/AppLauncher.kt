@@ -107,6 +107,9 @@ class AppLauncher(private val packageManager: PackageManager, private val onFire
         /** RetroArch: the 32-bit build (all this TV's apps can be), then the others. */
         val EMULATION_PACKAGES = listOf("com.retroarch.ra32", "com.retroarch", "com.retroarch.aarch64")
 
+        /** The TV's own settings, kept off the wall: the remote's gear and its panel open them. */
+        val NOT_ON_WALL = listOf("com.android.tv.settings")
+
         val LIVE_TV_PACKAGES = listOf(
             "com.vt.tv.tvcenter", "com.mediatek.wwtv.tvcenter", "com.google.android.tv", "com.android.tv",
         )
