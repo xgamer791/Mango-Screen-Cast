@@ -47,5 +47,8 @@ object StreamingApps {
         StreamingApp("Disney+", R.drawable.app_disneyplus, R.drawable.tile_bg_disney, listOf("com.disney.disneyplus"),
             logoHeight = 0.62f),
         StreamingApp("Tubi", R.drawable.app_tubi, R.drawable.tile_bg_white, listOf("com.tubitv")),
+        // NVIDIA's cloud gaming: its logo (Wikimedia's GeForce NOW 2022 with NVIDIA's eye and name in the
+        // green, as the app shows it) on the dark tile.
+        StreamingApp("GeForce NOW", R.drawable.app_geforcenow, R.drawable.tile_bg_dark, listOf("com.nvidia.geforcenow")),
     )
 }

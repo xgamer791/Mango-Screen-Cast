@@ -144,12 +144,13 @@ class HomeLayoutTest {
             down()
             scrolls += wall.scrollY / pitch
         }
-        // Rows 2 and 3 are in view; row 4 runs past the bottom, so it brings the wall up exactly one row;
-        // row 4 is the last, so no more.
-        val rows = listOf(0f, 0f, 1f, 1f, 1f)
+        // Rows 2 and 3 are in view; rows 4 and 5 run past the bottom, so each brings the wall up exactly
+        // one row; row 5 is the last, so no more.
+        val rows = listOf(0f, 0f, 1f, 2f, 2f, 2f)
         assertEquals(rows.size, grid.rows + 1)
         for (i in rows.indices) assertEquals("$scrolls", rows[i].toDouble(), scrolls[i].toDouble(), 0.01)
-        assertEquals(grid.childCount - TileGrid.COLUMNS, grid.indexOfChild(grid.findFocus()))
+        // On the last row's first tile (the last row needn't be full).
+        assertEquals((grid.rows - 1) * TileGrid.COLUMNS, grid.indexOfChild(grid.findFocus()))
         // Back up to the first row, and once more: the focus stays on it, not the menu beside it.
         repeat(grid.rows + 1) {
             wall.dispatchKeyEvent(KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_DPAD_UP))

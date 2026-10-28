@@ -65,6 +65,7 @@
         <package android:name="com.hulu.plus" />
         <package android:name="com.disney.disneyplus" />
         <package android:name="com.tubitv" />
+        <package android:name="com.nvidia.geforcenow" />
         <!-- The home screen's Live TV (AppLauncher.LIVE_TV_PACKAGES) and Streaming Store. -->
         <package android:name="com.vt.tv.tvcenter" />
         <package android:name="com.mediatek.wwtv.tvcenter" />

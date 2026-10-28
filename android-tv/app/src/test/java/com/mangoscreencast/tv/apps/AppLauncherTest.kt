@@ -42,9 +42,9 @@ class AppLauncherTest {
     private fun opened(): Intent = shadowOf(context).nextStartedActivity
 
     @Test
-    fun theNineApps() {
+    fun theTenApps() {
         assertEquals(
-            listOf("Netflix", "YouTube", "HBO Max", "Paramount+", "Peacock", "Prime Video", "Hulu", "Disney+", "Tubi"),
+            listOf("Netflix", "YouTube", "HBO Max", "Paramount+", "Peacock", "Prime Video", "Hulu", "Disney+", "Tubi", "GeForce NOW"),
             StreamingApps.ALL.map { it.name },
         )
     }
