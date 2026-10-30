@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!-- Over a white wall tile (Netflix, YouTube, Tubi): the ring round the focused one in black, as white
-     on white can't be seen. Otherwise as tile_focus. -->
+     on white can't be seen. 4.5 dp to tile_focus's 3 dp so the two look as thick on the TV: the panel's
+     light spreads about 0.75 px (at 1080p) past every edge of a lit area, so a white ring looks 1.5 px
+     wider than it is and a black one on white 1.5 px narrower (measured on a photo of the TV). -->
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:state_focused="true">
         <shape>
             <stroke
-                android:width="3dp"
+                android:width="4.5dp"
                 android:color="@android:color/black" />
         </shape>
     </item>
