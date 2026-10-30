@@ -8,6 +8,7 @@ import android.content.IntentFilter
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.os.SystemClock
 import android.view.KeyEvent
 import android.view.View
 import android.view.ViewGroup
@@ -70,6 +71,15 @@ class HomeActivity : Activity(), AirPlayReceiver.Listener, AppUpdater.Listener {
     /** The TV's other apps on the wall now, so it's filled again only when they change. */
     private var othersShown: List<String>? = null
 
+    /** Everything on the page but the wallpaper, which Back twice hides. */
+    private lateinit var overWallpaper: List<View>
+
+    /** When Back was last pressed: pressed again within [BACK_TWICE_MS], only the wallpaper shows. */
+    private var lastBack = 0L
+
+    /** Whether only the wallpaper shows; the next key brings the rest back and does nothing else. */
+    private var wallpaperOnly = false
+
     /** A TV left on this screen still picks up a new release within minutes. */
     private val recheckUpdates = object : Runnable {
         override fun run() {
@@ -98,6 +108,9 @@ class HomeActivity : Activity(), AirPlayReceiver.Listener, AppUpdater.Listener {
         })
         page = window.decorView
         grid = findViewById(R.id.tile_grid)
+        val layout = findViewById<View>(R.id.wallpaper).parent as ViewGroup
+        overWallpaper = (0 until layout.childCount).map(layout::getChildAt)
+            .filter { it.id != R.id.wallpaper && it.id != R.id.wallpaper_next }
         updateButton.setOnClickListener {
             when (updater.state) {
                 is AppUpdater.State.Failed -> updater.checkNow()
@@ -180,6 +193,12 @@ class HomeActivity : Activity(), AirPlayReceiver.Listener, AppUpdater.Listener {
 
     /** Right from the menu goes back to the tile the wall was left from, as on the Roku. */
     override fun dispatchKeyEvent(event: KeyEvent): Boolean {
+        // With only the wallpaper showing, a key (its press and its release) just brings the rest back.
+        if (wallpaperOnly) {
+            if (event.action == KeyEvent.ACTION_UP) showWallpaperOnly(false)
+            return true
+        }
+        if (event.action == KeyEvent.ACTION_DOWN && event.keyCode != KeyEvent.KEYCODE_BACK) lastBack = 0L
         if (event.keyCode == KeyEvent.KEYCODE_DPAD_RIGHT && HomeMenu.has(page, currentFocus)) {
             val tile = grid.getChildAt(lastTile.coerceAtMost(grid.childCount - 1))
             if (tile != null) {
@@ -218,8 +237,33 @@ class HomeActivity : Activity(), AirPlayReceiver.Listener, AppUpdater.Listener {
         return super.onKeyDown(keyCode, event)
     }
 
-    // As the TV's Home app there is nowhere to go back to: Back must not close this screen.
-    override fun onBackPressed() {}
+    // As the TV's Home app there is nowhere to go back to: Back must not close this screen. Twice in a
+    // row, it hides everything but the wallpaper.
+    override fun onBackPressed() {
+        val now = SystemClock.uptimeMillis()
+        if (lastBack != 0L && now - lastBack <= BACK_TWICE_MS) {
+            lastBack = 0L
+            showWallpaperOnly(true)
+        } else {
+            lastBack = now
+        }
+    }
+
+    /** The Home button, while only the wallpaper shows, brings the rest back too. */
+    override fun onNewIntent(intent: Intent) {
+        super.onNewIntent(intent)
+        if (wallpaperOnly) showWallpaperOnly(false)
+    }
+
+    /** Fades everything but the wallpaper out (`only`) or back in; at once if not `fade`. */
+    private fun showWallpaperOnly(only: Boolean, fade: Boolean = true) {
+        wallpaperOnly = only
+        val alpha = if (only) 0f else 1f
+        for (view in overWallpaper) {
+            view.animate().cancel()
+            if (fade) view.animate().alpha(alpha).setDuration(WALLPAPER_ONLY_FADE_MS) else view.alpha = alpha
+        }
+    }
 
     override fun onStart() {
         super.onStart()
@@ -240,6 +284,8 @@ class HomeActivity : Activity(), AirPlayReceiver.Listener, AppUpdater.Listener {
     }
 
     override fun onStop() {
+        // An app opened from the remote's own buttons comes back to the whole page.
+        if (wallpaperOnly) showWallpaperOnly(false, fade = false)
         unregisterReceiver(packages)
         handler.removeCallbacks(recheckUpdates)
         wallpaper.stop()
@@ -276,5 +322,11 @@ class HomeActivity : Activity(), AirPlayReceiver.Listener, AppUpdater.Listener {
         updateStatus.text = text
         updateButton.visibility = if (button == null) View.GONE else View.VISIBLE
         button?.let { updateButton.text = it }
+    }
+
+    private companion object {
+        /** How soon the second Back must follow the first to show the wallpaper alone. */
+        const val BACK_TWICE_MS = 1500L
+        const val WALLPAPER_ONLY_FADE_MS = 300L
     }
 }
