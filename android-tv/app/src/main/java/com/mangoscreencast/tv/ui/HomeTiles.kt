@@ -70,6 +70,7 @@ object HomeTiles {
         for (app in StreamingApps.ALL) {
             val tile = appTile(inflater, grid, app.name)
             tile.setBackgroundResource(app.tile)
+            if (app.tile == R.drawable.tile_bg_white) ringInBlack(tile)
             tile.findViewById<ImageView>(R.id.app_logo).apply {
                 setImageResource(app.logo)
                 fit(this, LOGO_WIDTH, app.logoHeight)
@@ -82,7 +83,9 @@ object HomeTiles {
             val banner = other.banner
             if (banner != null) {
                 // The app's own TV banner across the tile, on the colour of its edge.
-                tile.background = ColorDrawable(edgeColour(banner))
+                val edge = edgeColour(banner)
+                tile.background = ColorDrawable(edge)
+                if (isWhite(edge)) ringInBlack(tile)
                 tile.findViewById<ImageView>(R.id.app_logo).apply {
                     setImageDrawable(banner)
                     fit(this, 1f, 1f)
@@ -94,6 +97,14 @@ object HomeTiles {
             grid.addView(tile)
         }
     }
+
+    /** A white tile's focus ring is black: the wall's white ring can't be seen on it. */
+    private fun ringInBlack(tile: FrameLayout) {
+        tile.foreground = tile.context.getDrawable(R.drawable.tile_focus_on_white)
+    }
+
+    /** Whether a banner's edge is white, as the white tiles' are (#DFE2E1 at their greyest). */
+    private fun isWhite(colour: Int) = min(Color.red(colour), min(Color.green(colour), Color.blue(colour))) >= 0xD8
 
     private fun appTile(inflater: LayoutInflater, grid: TileGrid, name: String): FrameLayout =
         (inflater.inflate(R.layout.item_app_tile, grid, false) as FrameLayout).also { it.contentDescription = name }

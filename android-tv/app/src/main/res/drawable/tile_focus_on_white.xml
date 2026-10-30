@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Over a white wall tile (Netflix, YouTube, Tubi): the ring round the focused one in black, as white
+     on white can't be seen. Otherwise as tile_focus. -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_focused="true">
+        <shape>
+            <stroke
+                android:width="3dp"
+                android:color="@android:color/black" />
+        </shape>
+    </item>
+    <item android:drawable="@android:color/transparent" />
+</selector>
