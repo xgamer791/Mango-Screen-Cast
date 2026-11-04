@@ -251,7 +251,6 @@ class AirPlayReceiver(private val context: Context, private val settings: Settin
 
     override fun onClientRequest(deviceId: String, model: String, name: String): Boolean {
         log("connection from $name ($model)")
-        offerDisplayTo(model)
         update {
             it.copy(
                 state = if (it.state == State.MIRRORING) State.MIRRORING else State.CONNECTED,
@@ -263,33 +262,8 @@ class AirPlayReceiver(private val context: Context, private val settings: Settin
         return true
     }
 
-    /**
-     * Sizes the display this device is about to be offered: an iPhone 1440
-     * rows held sideways ([DisplayCapabilities.iphoneOffer]), anything else
-     * the TV's [MirrorProfile]. The server offers one size at a time, so it's
-     * set for every device that connects.
-     */
-    private fun offerDisplayTo(model: String) {
-        val profile = status.profile ?: return
-        val offer = DisplayCapabilities.iphoneOffer(model, profile)
-        val (width, height) = offer?.let { it.width to it.height } ?: (profile.width to profile.height)
-        AirPlayNative.nativeOfferDisplay(width, height, profile.maxFps)
-        offered = width to height
-        if (offer != null) {
-            log("offering $model ${offer.width}x${offer.height}: " +
-                "${offer.width}x${DisplayCapabilities.IPHONE_SIDEWAYS_ROWS} sideways")
-        }
-    }
-
-    /** What the connected device was offered. */
-    @Volatile
-    private var offered: Pair<Int, Int>? = null
-
     override fun onConnectionsChanged(open: Int) {
         if (open == 0) {
-            // Back to the TV's own size for whatever connects next.
-            status.profile?.let { AirPlayNative.nativeOfferDisplay(it.width, it.height, it.maxFps) }
-            offered = null
             endMirroring()
             update { it.copy(state = State.READY, clientName = null, clientModel = null, paused = false) }
         }
@@ -301,8 +275,7 @@ class AirPlayReceiver(private val context: Context, private val settings: Settin
         // What the device chose to send for the size the TV offered: it fits
         // its screen inside that size, keeping its shape, so a 4K offer gets
         // about 1000x2160 from an iPhone held upright.
-        val offered = (offered ?: status.profile?.let { it.width to it.height })
-            ?.let { (width, height) -> " for a ${width}x$height offer" } ?: ""
+        val offered = status.profile?.let { " for the TV's ${it.width}x${it.height} offer" } ?: ""
         log("mirroring starts: ${if (h265) "HEVC" else "H.264"} ${sourceWidth}x$sourceHeight$offered, " +
             "picture ${width}x$height at ($x, $y)")
         if (h265 && status.profile?.h265 == false) return -1

@@ -17,10 +17,7 @@ iPad: put your Mac's screen on it, or use it as a second display. See
 - **iPhone and iPad:** they fit their screen inside the size the TV offers,
   keeping its shape, so with 4K an upright iPhone sends about 1000 × 2160
   (998 × 2160 from a 15 Pro Max: every row a 4K TV has; a 1080p offer gets
-  498 × 1080) and an upright iPad 1620 × 2160. Sideways, an iPhone sends
-  1440p: the TV offers iPhones (only) a width of 1440 rows of their shape, so
-  a 15 Pro Max sends 3122 × 1440 where 4K's 3840 wide got a 3840 × 1772
-  picture scaled up past its own 1290 rows. Upright it still gets 2160.
+  498 × 1080) and an upright iPad 1620 × 2160.
   The TV shows the whole picture in its own shape, never cropped (unless you
   pick Fill for a landscape iPhone) or squeezed. Above 1080p takes HEVC, which
   every iPhone from the 8 on and recent iPads send.
