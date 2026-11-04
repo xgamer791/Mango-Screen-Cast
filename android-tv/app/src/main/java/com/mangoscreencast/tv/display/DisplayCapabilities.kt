@@ -60,6 +60,9 @@ data class MirrorProfile(
     val codecs: String get() = if (h265) "HEVC + H.264" else "H.264"
 }
 
+/** What an iPhone is offered in place of [MirrorProfile]'s size: see [DisplayCapabilities.iphoneOffer]. */
+data class IphoneOffer(val width: Int, val height: Int)
+
 /** What the TV's hardware decoders take; an interface so [DisplayCapabilities.choose] can be tested. */
 internal interface DecoderInfo {
     val hevcAvailable: Boolean
@@ -80,6 +83,7 @@ object DisplayCapabilities {
     private val CANDIDATES = listOf(3840 to 2160, 2560 to 1440, 1920 to 1080)
     private const val HEVC = MediaFormat.MIMETYPE_VIDEO_HEVC
     private const val AVC = MediaFormat.MIMETYPE_VIDEO_AVC
+    const val IPHONE_SIDEWAYS_ROWS = 1440
 
     fun panel(context: Context): Panel {
         val display = context.getSystemService(DisplayManager::class.java).getDisplay(Display.DEFAULT_DISPLAY)
@@ -183,6 +187,31 @@ object DisplayCapabilities {
         if (limits.isEmpty()) return offer(wanted, wanted)
         return offer(wanted, wanted, "Offering $wanted fps as picked. ${limits.joinToString(" ")} " +
             "What Apple devices send is up to them (Show stats shows it).")
+    }
+
+    /**
+     * What `model` is offered when it's an iPhone (the 8 or later), so that
+     * held sideways it sends 1440 rows; null for anything else (Macs and
+     * iPads get the [MirrorProfile]), and when the TV offers fewer than 1440
+     * rows or no HEVC.
+     *
+     * Apple devices fit their screen inside the size offered, keeping its
+     * shape. Sideways an iPhone is wider than the TV, so the offer's width
+     * sets its size: 4K's 3840 gets 3840 × 1772 from a 15 Pro Max, scaled up
+     * past its own 1290 rows. Here the width is 1440 rows of the iPhone's
+     * shape (3122 for a 15 Pro Max, which then sends 3122 × 1440) and the
+     * height is the TV's, which sets its size upright: still every row the
+     * TV has (998 × 2160 at 4K).
+     */
+    fun iphoneOffer(model: String, profile: MirrorProfile): IphoneOffer? = iphoneOffer(model, profile, SystemDecoders)
+
+    internal fun iphoneOffer(model: String, profile: MirrorProfile, decoders: DecoderInfo): IphoneOffer? {
+        val (short, long) = IphoneScreens.nativeSize(model) ?: return null
+        if (!profile.h265 || profile.height < IPHONE_SIDEWAYS_ROWS) return null
+        // The even width closest to 1440 rows of its shape.
+        val width = (2 * ((IPHONE_SIDEWAYS_ROWS.toLong() * long + short) / (2 * short))).toInt()
+        if (!decoders.supportsSize(HEVC, width, IPHONE_SIDEWAYS_ROWS)) return null
+        return IphoneOffer(width, profile.height)
     }
 
     private fun takes(decoders: DecoderInfo, width: Int, height: Int): Boolean {

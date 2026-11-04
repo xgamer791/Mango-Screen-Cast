@@ -35,6 +35,13 @@ void mango_server_stop(void);
 bool mango_server_is_running(void);
 void mango_server_disconnect_clients(void);
 
+/* Changes the display offered in /info replies from now on. A sender reads
+ * it after its first SETUP, so calling this from report_client_request
+ * sizes that sender's stream. Only call it from a server callback (or while
+ * nothing can stop the server): it runs without the lock, which a stop may
+ * be holding while it waits for the server's thread. */
+void mango_server_offer_display(int width, int height, int max_fps);
+
 #ifdef __cplusplus
 }
 #endif
