@@ -65,11 +65,15 @@ class HomeActivity : Activity(), AirPlayReceiver.Listener, AppUpdater.Listener {
 
     private fun openSettings() = startActivity(Intent(this, SettingsActivity::class.java))
 
-    // Some remotes deliver the gear as a key. The Hisense gear sends
-    // android.settings.SETTINGS instead; the manifest claims that intent.
+    /**
+     * The Hisense gear doesn't reach apps as a key: the system opens the
+     * MAIN + LEANBACK_SETTINGS handler, [SettingsActivity] (the manifest says
+     * how). A remote or TV that delivers KEYCODE_SETTINGS opens the same
+     * screen from here.
+     */
     override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {
-        if (keyCode == KeyEvent.KEYCODE_SETTINGS) {
-            if (event.repeatCount == 0) openSettings()
+        if (keyCode == KeyEvent.KEYCODE_SETTINGS && event.repeatCount == 0) {
+            openSettings()
             return true
         }
         return super.onKeyDown(keyCode, event)

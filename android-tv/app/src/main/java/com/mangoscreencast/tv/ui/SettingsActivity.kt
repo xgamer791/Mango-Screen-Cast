@@ -2,6 +2,7 @@ package com.mangoscreencast.tv.ui
 
 import android.app.Activity
 import android.app.AlertDialog
+import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.graphics.Typeface
 import android.net.Uri
@@ -14,6 +15,7 @@ import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
+import android.widget.Toast
 import com.mangoscreencast.tv.BuildConfig
 import com.mangoscreencast.tv.LatencyMode
 import com.mangoscreencast.tv.MangoApp
@@ -49,6 +51,17 @@ class SettingsActivity : Activity(), AppUpdater.Listener {
         receiver.acquire(this)
         build()
         updater.addListener(this)
+    }
+
+    // In front: the gear closes it (GearKeyService).
+    override fun onResume() {
+        super.onResume()
+        FrontSettings.shown(this)
+    }
+
+    override fun onPause() {
+        FrontSettings.hidden(this)
+        super.onPause()
     }
 
     override fun onStop() {
@@ -105,7 +118,21 @@ class SettingsActivity : Activity(), AppUpdater.Listener {
         row(R.string.setting_diagnostics, getString(R.string.view), R.string.setting_diagnostics_hint) {
             showDiagnostics()
         }
+        // Last, so the gear can open this screen without losing the TV's own settings.
+        row(R.string.setting_google_tv, getString(R.string.setting_google_tv_open), R.string.setting_google_tv_hint) {
+            openGoogleTvSettings()
+        }
         list.getChildAt(focusedRow.coerceIn(0, list.childCount - 1))?.requestFocus()
+    }
+
+    private fun openGoogleTvSettings() {
+        try {
+            startActivity(GoogleTvSettings.intent(this))
+        } catch (_: ActivityNotFoundException) {
+            Toast.makeText(this, R.string.setting_google_tv_missing, Toast.LENGTH_LONG).show()
+        } catch (_: SecurityException) {
+            Toast.makeText(this, R.string.setting_google_tv_missing, Toast.LENGTH_LONG).show()
+        }
     }
 
     private fun showDiagnostics() {

@@ -24,6 +24,11 @@
     <string name="app_not_installed">%1$s isn’t on this TV yet: here it is in the app store</string>
     <string name="app_open_failed">Couldn’t open %1$s or an app store on this TV</string>
     <string name="settings">Settings</string>
+    <!-- Shown when the gear key has both this app and the TV's settings to choose from. -->
+    <string name="settings_gear_label">Mango Settings</string>
+    <!-- The gear key service, as the TV's accessibility settings list it. -->
+    <string name="gear_service_label">Mango gear button</string>
+    <string name="gear_service_description">Opens Mango Settings when you press the gear button on the remote. Mango only acts on that button; every other key works as usual.</string>
 
     <!-- Player -->
     <string name="mirroring_banner">Mirroring %1$s · press Back twice to stop</string>
@@ -63,6 +68,10 @@
     <string name="setting_stats_hint">You can also press OK on the remote while mirroring</string>
     <string name="setting_background">Stay visible after closing the app</string>
     <string name="setting_background_hint">Keeps the TV in Screen Mirroring lists while you use other apps</string>
+    <string name="setting_google_tv">Google TV settings</string>
+    <string name="setting_google_tv_open">Open</string>
+    <string name="setting_google_tv_hint">Network, accounts, apps, and the rest of this TV’s own settings</string>
+    <string name="setting_google_tv_missing">This TV’s own settings are turned off, so the gear button opens Mango’s settings</string>
     <string name="setting_diagnostics">Diagnostics</string>
     <string name="setting_diagnostics_hint">What the TV detected and offers, plus the recent AirPlay log. Useful when reporting a problem.</string>
     <string name="view">View</string>
